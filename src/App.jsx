@@ -285,7 +285,7 @@ export default function App() {
     setError('');
     const { error: sendErr } = await client.auth.signInWithOtp({
       email: em,
-      options: { emailRedirectTo: window.location.href },
+      options: { emailRedirectTo: window.location.origin },
     });
     setSending(false);
     setLinkSent(!sendErr);
