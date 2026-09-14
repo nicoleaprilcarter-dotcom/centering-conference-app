@@ -2,7 +2,7 @@ import ChatThread from '../components/ChatThread';
 import Avatar from '../components/Avatar';
 import { colorForId } from '../lib/helpers';
 
-export default function DirectThread({ userId, myName, myAvatarUrl, otherId, otherName, otherAvatarUrl, messages, draft, setDraft, onSend, onBack }) {
+export default function DirectThread({ t, userId, myName, myAvatarUrl, otherId, otherName, otherAvatarUrl, messages, draft, setDraft, onSend, onBack }) {
   return (
     <div className="screen">
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px 0' }}>
@@ -18,6 +18,7 @@ export default function DirectThread({ userId, myName, myAvatarUrl, otherId, oth
         <div style={{ font: '600 15px/1.2 Poppins' }}>{otherName}</div>
       </div>
       <ChatThread
+        youLabel={t.you}
         userId={userId}
         myName={myName}
         myAvatarUrl={myAvatarUrl}
@@ -28,8 +29,8 @@ export default function DirectThread({ userId, myName, myAvatarUrl, otherId, oth
         draft={draft}
         setDraft={setDraft}
         onSend={onSend}
-        placeholder={`Message ${otherName}`}
-        emptyText="No messages yet. Say hello."
+        placeholder={`${t.directMessagePlaceholder} ${otherName}`}
+        emptyText={t.noMessages}
       />
     </div>
   );

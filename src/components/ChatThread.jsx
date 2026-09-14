@@ -6,14 +6,14 @@ import Avatar from './Avatar';
 // group chat, and 1:1 direct message threads. `messages` items need
 // `id`, `user_id` (or `sender_id`), `body`, and the caller resolves a
 // display name + avatar for each via `nameFor` / `avatarFor`.
-export default function ChatThread({ userId, myName, myAvatarUrl, messages, idField = 'user_id', nameFor, avatarFor, draft, setDraft, onSend, placeholder = 'Message the group', emptyText = 'No messages yet. Say hello.' }) {
+export default function ChatThread({ youLabel = 'You', userId, myName, myAvatarUrl, messages, idField = 'user_id', nameFor, avatarFor, draft, setDraft, onSend, placeholder = 'Message the group', emptyText = 'No messages yet. Say hello.' }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 420 }}>
       <div className="chat-list">
         {messages.map((m) => {
           const otherId = m[idField];
           const mine = otherId === userId;
-          const who = mine ? 'You' : nameFor(otherId);
+          const who = mine ? youLabel : nameFor(otherId);
           const avatarUrl = mine ? myAvatarUrl : avatarFor(otherId);
           const avatarName = mine ? myName : who;
           const color = mine ? '#2E1035' : colorForId(otherId);

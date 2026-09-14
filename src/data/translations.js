@@ -1,0 +1,254 @@
+export const TRANSLATIONS = {
+  en: {
+    langToggle: 'ES',
+    langName: 'English',
+
+    tabAgenda: 'Agenda',
+    tabSession: 'Live',
+    tabWall: 'Wall',
+    tabChat: 'Chat',
+    tabPeople: 'People',
+    tabProfile: 'Me',
+
+    titleAgenda: 'Friday, November 6',
+    titleSession: 'Fireside Chat',
+    titleWall: 'Pledge wall',
+    titleChat: 'Chat',
+    titlePeople: 'Attendees',
+    titleProfileNew: 'Set up your profile',
+    titleProfileExisting: 'Your profile',
+
+    subAgenda: 'Dayton Hub · 9:00–4:00',
+    subSession: 'Main Hall · 12:00',
+    subWall: 'Closing circle at 3:45',
+    subChat: 'Everyone at the conference',
+    subPeople: 'Opted into the directory',
+    subProfile: 'Saved to your account',
+
+    live: 'Live',
+    offline: 'Offline',
+    you: 'You',
+
+    // Check-in
+    checkInPromptTitle: "You're not checked in yet",
+    checkInPromptBody: 'Tap to check in when you arrive.',
+    checkInButton: 'Check in',
+    checkedInAt: 'Checked in',
+
+    // Sign in
+    signInEyebrow: 'Expressions of Health',
+    signInTitleLine1: 'Centering',
+    signInTitleLine2: 'Women',
+    signInTitleLine3: 'of Color',
+    signInBody: 'Friday, November 6, 2026 · Dayton Hub\nEnter your email and we will send you a sign-in link. No password to remember.',
+    signInEmailPlaceholder: 'you@email.com',
+    signInSend: 'Email me a link',
+    signInSending: 'Sending…',
+    signInLinkSent: 'Check your email. The link signs you straight in — open it on this phone.',
+    signInChangeDb: 'Change database connection',
+
+    // Agenda
+    tagWelcome: 'Welcome',
+    tagPlenary: 'Plenary',
+    tagKeynote: 'Keynote',
+    tagWorkshop: 'Workshop',
+    tagFeatured: 'Featured',
+    tagOpenAllDay: 'Open all day',
+
+    // Session (chat / poll)
+    groupChat: 'Group chat',
+    livePoll: 'Live poll',
+    messagePlaceholder: 'Message the group',
+    noMessages: 'No messages yet. Say hello.',
+    pollResponsesOne: 'response in this room',
+    pollResponsesMany: 'responses in this room',
+    wordCloudTitle: 'What health looks like today',
+    wordCloudEmpty: "Nobody's added a word yet.",
+    addWordPlaceholder: 'Add one word',
+    add: 'Add',
+
+    // Wall
+    wallTitle: 'One thing I will do for my health',
+    wallIntro: 'Your pledge joins the wall and is read aloud during the closing circle at 3:45.',
+    wallPlaceholder: 'I will…',
+    wallPost: 'Add to the wall',
+    pledgeOne: 'pledge today',
+    pledgeMany: 'pledges today',
+
+    // Chat (lobby / direct)
+    chatEveryone: 'Everyone',
+    chatDirect: 'Direct',
+    lobbyPlaceholder: 'Message everyone here',
+    lobbyEmpty: 'No messages yet. Say hello to the room.',
+    directEmpty: 'No conversations yet. Tap "Message" on someone in the People tab to start one.',
+    directMessagePlaceholder: 'Message',
+
+    // People / Speakers
+    speakers: 'Speakers',
+    attendees: 'Attendees',
+    speakersEmpty: "Speakers haven't been announced yet. Check back soon.",
+    attendeesNote: 'Only attendees who turned on directory visibility appear here.',
+    attendeesEmpty: 'Nobody is in the directory yet.',
+    message: 'Message',
+    attendee: 'Attendee',
+
+    // Profile
+    profileIntro: 'Only what you want to share. Everything here saves to your account.',
+    profilePhoto: 'Profile photo',
+    profilePhotoSub: 'Optional. Helps people find you at the vendor fair.',
+    upload: 'Upload',
+    change: 'Change',
+    uploading: 'Uploading…',
+    displayName: 'Display name',
+    displayNamePh: 'How you want to be greeted',
+    pronouns: 'Pronouns',
+    pronounsPh: 'Optional — she/her, they/them',
+    whatBrings: 'What brings you today',
+    whatBringsPh: 'One or two lines. Skip it if you would rather not.',
+    interests: 'Interests',
+    showInDirectory: 'Show me in the attendee directory',
+    showInDirectorySub: 'Off means no one can find you.',
+    saveChanges: 'Save changes',
+    saveAndEnter: 'Save and enter',
+    signOut: 'Sign out',
+    signedInAs: 'Signed in as',
+    language: 'Language',
+
+    interestTags: [
+      'Maternal health', 'Doula care', 'Peer support', 'Español', 'Outreach', 'Clinical',
+      'Chronic care', 'Policy', 'Language access', 'Mental health', 'Caregiving', 'Research',
+      'Reproductive health', 'Birth equity', 'Community health workers', 'Faith-based support',
+      'LGBTQ+ health', 'Disability advocacy', 'Nutrition', 'Movement & fitness',
+      'Financial wellness', 'Youth health', 'Elder care', 'Nonprofit leadership',
+    ],
+  },
+
+  es: {
+    langToggle: 'EN',
+    langName: 'Español',
+
+    tabAgenda: 'Agenda',
+    tabSession: 'En vivo',
+    tabWall: 'Muro',
+    tabChat: 'Chat',
+    tabPeople: 'Personas',
+    tabProfile: 'Yo',
+
+    titleAgenda: 'Viernes 6 de noviembre',
+    titleSession: 'Charla íntima',
+    titleWall: 'Muro de compromisos',
+    titleChat: 'Chat',
+    titlePeople: 'Asistentes',
+    titleProfileNew: 'Crea tu perfil',
+    titleProfileExisting: 'Tu perfil',
+
+    subAgenda: 'Dayton Hub · 9:00–4:00',
+    subSession: 'Main Hall · 12:00',
+    subWall: 'Círculo de cierre a las 3:45',
+    subChat: 'Todas las personas de la conferencia',
+    subPeople: 'Aceptaron aparecer en el directorio',
+    subProfile: 'Guardado en tu cuenta',
+
+    live: 'En vivo',
+    offline: 'Sin conexión',
+    you: 'Tú',
+
+    checkInPromptTitle: 'Todavía no te has registrado',
+    checkInPromptBody: 'Toca para registrarte cuando llegues.',
+    checkInButton: 'Registrarme',
+    checkedInAt: 'Registrada',
+
+    signInEyebrow: 'Expresiones de la salud',
+    signInTitleLine1: 'Centrando',
+    signInTitleLine2: 'a Mujeres',
+    signInTitleLine3: 'de Color',
+    signInBody: 'Viernes 6 de noviembre de 2026 · Dayton Hub\nEscribe tu correo y te enviaremos un enlace para entrar. No necesitas contraseña.',
+    signInEmailPlaceholder: 'tu@correo.com',
+    signInSend: 'Enviarme un enlace',
+    signInSending: 'Enviando…',
+    signInLinkSent: 'Revisa tu correo. El enlace te deja entrar directamente — ábrelo en este teléfono.',
+    signInChangeDb: 'Cambiar la conexión de la base de datos',
+
+    tagWelcome: 'Bienvenida',
+    tagPlenary: 'Plenaria',
+    tagKeynote: 'Discurso',
+    tagWorkshop: 'Taller',
+    tagFeatured: 'Destacado',
+    tagOpenAllDay: 'Abierto todo el día',
+
+    groupChat: 'Chat del grupo',
+    livePoll: 'Encuesta en vivo',
+    messagePlaceholder: 'Escribe al grupo',
+    noMessages: 'Aún no hay mensajes. Saluda.',
+    pollResponsesOne: 'respuesta en esta sala',
+    pollResponsesMany: 'respuestas en esta sala',
+    wordCloudTitle: 'Cómo se ve la salud hoy',
+    wordCloudEmpty: 'Nadie ha agregado una palabra todavía.',
+    addWordPlaceholder: 'Agrega una palabra',
+    add: 'Agregar',
+
+    wallTitle: 'Algo que haré por mi salud',
+    wallIntro: 'Tu compromiso se suma al muro y se lee en voz alta en el círculo de cierre a las 3:45.',
+    wallPlaceholder: 'Yo voy a…',
+    wallPost: 'Sumar al muro',
+    pledgeOne: 'compromiso hoy',
+    pledgeMany: 'compromisos hoy',
+
+    chatEveryone: 'Todos',
+    chatDirect: 'Directo',
+    lobbyPlaceholder: 'Escribe a todas las personas aquí',
+    lobbyEmpty: 'Aún no hay mensajes. Saluda a la sala.',
+    directEmpty: 'Aún no tienes conversaciones. Toca "Mensaje" en alguien en la pestaña Personas para empezar una.',
+    directMessagePlaceholder: 'Mensaje para',
+
+    speakers: 'Ponentes',
+    attendees: 'Asistentes',
+    speakersEmpty: 'Las ponentes aún no se han anunciado. Vuelve pronto.',
+    attendeesNote: 'Solo aparecen las asistentes que activaron su visibilidad en el directorio.',
+    attendeesEmpty: 'Todavía no hay nadie en el directorio.',
+    message: 'Mensaje',
+    attendee: 'Asistente',
+
+    profileIntro: 'Solo lo que quieras compartir. Todo aquí se guarda en tu cuenta.',
+    profilePhoto: 'Foto de perfil',
+    profilePhotoSub: 'Opcional. Ayuda a que te encuentren en la feria de proveedores.',
+    upload: 'Subir',
+    change: 'Cambiar',
+    uploading: 'Subiendo…',
+    displayName: 'Nombre visible',
+    displayNamePh: 'Cómo quieres que te saluden',
+    pronouns: 'Pronombres',
+    pronounsPh: 'Opcional — ella, elle',
+    whatBrings: 'Qué te trae hoy',
+    whatBringsPh: 'Una o dos líneas. Puedes dejarlo en blanco.',
+    interests: 'Intereses',
+    showInDirectory: 'Aparecer en el directorio de asistentes',
+    showInDirectorySub: 'Si lo apagas, nadie puede encontrarte.',
+    saveChanges: 'Guardar cambios',
+    saveAndEnter: 'Guardar y entrar',
+    signOut: 'Cerrar sesión',
+    signedInAs: 'Sesión iniciada como',
+    language: 'Idioma',
+
+    interestTags: [
+      'Salud materna', 'Cuidado de doula', 'Apoyo entre pares', 'Español', 'Alcance comunitario', 'Clínica',
+      'Cuidado crónico', 'Política pública', 'Acceso lingüístico', 'Salud mental', 'Cuidadora', 'Investigación',
+      'Salud reproductiva', 'Equidad en el parto', 'Promotoras de salud comunitaria', 'Apoyo basado en la fe',
+      'Salud LGBTQ+', 'Defensa de la discapacidad', 'Nutrición', 'Movimiento y actividad física',
+      'Bienestar financiero', 'Salud juvenil', 'Cuidado de personas mayores', 'Liderazgo sin fines de lucro',
+    ],
+  },
+};
+
+export function t(lang) {
+  return TRANSLATIONS[lang] || TRANSLATIONS.en;
+}
+
+// Interest tags are stored in the database as their English label
+// (a stable id independent of the viewer's language). This looks up
+// the matching label in whichever language is currently displayed.
+export function translateTagLabel(englishLabel, lang) {
+  const idx = TRANSLATIONS.en.interestTags.indexOf(englishLabel);
+  if (idx === -1) return englishLabel;
+  return TRANSLATIONS[lang]?.interestTags[idx] || englishLabel;
+}

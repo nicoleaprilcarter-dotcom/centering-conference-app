@@ -1,15 +1,15 @@
 import { AgendaIcon, LiveIcon, WallIcon, ChatIcon, PeopleIcon, ProfileIcon } from './icons';
 
-const TABS = [
-  { key: 'agenda', label: 'Agenda', Icon: AgendaIcon },
-  { key: 'session', label: 'Live', Icon: LiveIcon },
-  { key: 'wall', label: 'Wall', Icon: WallIcon },
-  { key: 'chat', label: 'Chat', Icon: ChatIcon },
-  { key: 'people', label: 'People', Icon: PeopleIcon },
-  { key: 'profile', label: 'Me', Icon: ProfileIcon },
-];
+export default function BottomNav({ screen, onNavigate, t }) {
+  const TABS = [
+    { key: 'agenda', label: t.tabAgenda, Icon: AgendaIcon },
+    { key: 'session', label: t.tabSession, Icon: LiveIcon },
+    { key: 'wall', label: t.tabWall, Icon: WallIcon },
+    { key: 'chat', label: t.tabChat, Icon: ChatIcon },
+    { key: 'people', label: t.tabPeople, Icon: PeopleIcon },
+    { key: 'profile', label: t.tabProfile, Icon: ProfileIcon },
+  ];
 
-export default function BottomNav({ screen, onNavigate }) {
   return (
     <nav className="bottom-nav">
       {TABS.map(({ key, label, Icon }) => {

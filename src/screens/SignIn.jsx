@@ -1,43 +1,47 @@
 import { useState } from 'react';
 
-export default function SignIn({ onSendLink, sending, linkSent, error, onChangeDatabase }) {
+export default function SignIn({ t, onSendLink, sending, linkSent, error, onChangeDatabase }) {
   const [email, setEmail] = useState('');
+  const bodyLines = t.signInBody.split('\n');
 
   return (
     <div className="hero">
-      <div className="hero-eyebrow">Expressions of Health</div>
+      <div className="hero-eyebrow">{t.signInEyebrow}</div>
       <div className="hero-title">
-        Centering
+        {t.signInTitleLine1}
         <br />
-        Women
+        {t.signInTitleLine2}
         <br />
-        of Color
+        {t.signInTitleLine3}
       </div>
       <div className="hero-body">
-        Friday, November 6, 2026 · Dayton Hub
-        <br />
-        Enter your email and we will send you a sign-in link. No password to remember.
+        {bodyLines.map((line, i) => (
+          <span key={i}>
+            {line}
+            {i < bodyLines.length - 1 && <br />}
+          </span>
+        ))}
       </div>
       <div className="hero-spacer" />
       {linkSent ? (
-        <div className="hero-success">Check your email. The link signs you straight in — open it on this phone.</div>
+        <div className="hero-success">{t.signInLinkSent}</div>
       ) : (
         <>
           <input
             className="field-input"
             type="email"
-            placeholder="you@email.com"
+            placeholder={t.signInEmailPlaceholder}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
           <div className="btn-hero" style={{ marginTop: 12 }} onClick={() => onSendLink(email)}>
-            {sending ? 'Sending…' : 'Email me a link'}
+            {sending ? t.signInSending : t.signInSend}
           </div>
         </>
       )}
       {error && <div className="hero-error">{error}</div>}
       <div className="hero-link" onClick={onChangeDatabase}>
-        Change database connection
+        {t.signInChangeDb}
       </div>
     </div>
   );

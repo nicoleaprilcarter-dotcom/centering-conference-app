@@ -302,6 +302,87 @@ create policy "send own direct message" on direct_messages
 
 
 -- ------------------------------------------------------------
+-- CHECK-IN
+-- Self check-in. checked_in_at is null until the attendee taps
+-- "Check in" in the app.
+-- ------------------------------------------------------------
+alter table profiles add column if not exists checked_in_at timestamptz;
+
+
+-- ------------------------------------------------------------
+-- LANGUAGE PREFERENCE
+-- Persisted so it follows the attendee across devices.
+-- ------------------------------------------------------------
+alter table profiles add column if not exists language text not null default 'en';
+
+
+-- ------------------------------------------------------------
+-- SPEAKERS
+-- Managed by HUES staff — add a row and a photo whenever a
+-- speaker is confirmed. Nothing here needs the app rebuilt.
+-- ------------------------------------------------------------
+create table if not exists speakers (
+  id         bigint generated always as identity primary key,
+  name       text not null,
+  role_en    text not null default '',
+  role_es    text not null default '',
+  bio_en     text not null default '',
+  bio_es     text not null default '',
+  photo_url  text,
+  session_id text,
+  sort       int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+alter table speakers enable row level security;
+
+-- Everyone signed in can read the speaker list.
+drop policy if exists "read speakers" on speakers;
+create policy "read speakers" on speakers
+  for select to authenticated using (true);
+
+-- Only moderators can add, edit, or remove speakers.
+drop policy if exists "moderators manage speakers" on speakers;
+create policy "moderators manage speakers" on speakers
+  for all to authenticated
+  using (exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator))
+  with check (exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator));
+
+-- Speaker photos: public bucket, only moderators can upload/replace/remove.
+insert into storage.buckets (id, name, public)
+values ('speaker-photos', 'speaker-photos', true)
+on conflict (id) do nothing;
+
+drop policy if exists "speaker photo public read" on storage.objects;
+create policy "speaker photo public read" on storage.objects
+  for select using (bucket_id = 'speaker-photos');
+
+drop policy if exists "speaker photo moderator write" on storage.objects;
+create policy "speaker photo moderator write" on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'speaker-photos'
+    and exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator)
+  );
+
+drop policy if exists "speaker photo moderator update" on storage.objects;
+create policy "speaker photo moderator update" on storage.objects
+  for update to authenticated
+  using (
+    bucket_id = 'speaker-photos'
+    and exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator)
+  );
+
+drop policy if exists "speaker photo moderator delete" on storage.objects;
+create policy "speaker photo moderator delete" on storage.objects
+  for delete to authenticated
+  using (
+    bucket_id = 'speaker-photos'
+    and exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator)
+  );
+
+
+-- ------------------------------------------------------------
 -- REALTIME
 -- Lets the app update without refreshing. Wrapped so this whole
 -- file is safe to run again later (a plain ALTER PUBLICATION
@@ -327,6 +408,9 @@ begin
   end if;
   if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'profiles') then
     alter publication supabase_realtime add table profiles;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'speakers') then
+    alter publication supabase_realtime add table speakers;
   end if;
 end $$;
 

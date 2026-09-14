@@ -5,7 +5,8 @@ import {
   clearStoredConfig,
   createSupabaseClient,
 } from './lib/supabaseClient';
-import { INTEREST_TAGS, POLL_QUESTION_ID } from './data/sessions';
+import { POLL_QUESTION_ID } from './data/sessions';
+import { TRANSLATIONS } from './data/translations';
 
 import Setup from './screens/Setup';
 import SignIn from './screens/SignIn';
@@ -22,20 +23,13 @@ import ErrorBanner from './components/ErrorBanner';
 
 const LOBBY_SESSION_ID = 'lobby';
 
-const TITLES = {
-  agenda: 'Friday, November 6',
-  session: 'Fireside Chat',
-  wall: 'Pledge wall',
-  chat: 'Chat',
-  people: 'Attendees',
-};
-const SUBTITLES = {
-  agenda: 'Dayton Hub · 9:00–4:00',
-  session: 'Main Hall · 12:00',
-  wall: 'Closing circle at 3:45',
-  chat: 'Everyone at the conference',
-  people: 'Opted into the directory',
-};
+function readStoredLang() {
+  try {
+    return localStorage.getItem('cwoc_lang') || 'en';
+  } catch {
+    return 'en';
+  }
+}
 
 export default function App() {
   const [config, setConfig] = useState(null); // { url, key, fromEnv }
@@ -76,6 +70,12 @@ export default function App() {
   const [dmMsgs, setDmMsgs] = useState([]);
   const [dmDraft, setDmDraft] = useState('');
   const [activeDmUserId, setActiveDmUserId] = useState(null);
+
+  const [lang, setLang] = useState(readStoredLang);
+  const [checkedInAt, setCheckedInAt] = useState(null);
+  const [speakers, setSpeakers] = useState([]);
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
   const channelRef = useRef(null);
 
@@ -123,7 +123,7 @@ export default function App() {
   // ---------- after sign-in ----------
   const loadAll = useCallback(
     async (c, uid) => {
-      const [sv, ms, pp, vt, wd, pl, lb, dm] = await Promise.all([
+      const [sv, ms, pp, vt, wd, pl, lb, dm, sp] = await Promise.all([
         c.from('saved_sessions').select('session_id').eq('user_id', uid),
         c.from('messages').select('*').eq('session_id', sid).order('created_at'),
         c.from('profiles').select('*').eq('visible', true),
@@ -132,6 +132,7 @@ export default function App() {
         c.from('pledges').select('*').order('created_at', { ascending: false }),
         c.from('messages').select('*').eq('session_id', LOBBY_SESSION_ID).order('created_at'),
         c.from('direct_messages').select('*').or(`sender_id.eq.${uid},recipient_id.eq.${uid}`).order('created_at'),
+        c.from('speakers').select('*').order('sort').order('created_at'),
       ]);
       const savedMap = {};
       (sv.data || []).forEach((r) => {
@@ -145,6 +146,7 @@ export default function App() {
       setPledges(pl.data || []);
       setLobbyMsgs(lb.data || []);
       setDmMsgs(dm.data || []);
+      setSpeakers(sp.data || []);
     },
     [sid],
   );
@@ -184,6 +186,10 @@ export default function App() {
           .order('created_at');
         setDmMsgs(data || []);
       }
+      if (what === 'speakers') {
+        const { data } = await client.from('speakers').select('*').order('sort').order('created_at');
+        setSpeakers(data || []);
+      }
     },
     [client, sid, user],
   );
@@ -202,6 +208,7 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pledges' }, () => reload('pledges'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => reload('people'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'direct_messages' }, () => reload('directMessages'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'speakers' }, () => reload('speakers'))
       .subscribe((status) => setLive(status === 'SUBSCRIBED'));
     channelRef.current = ch;
   }, [client, reload]);
@@ -224,7 +231,7 @@ export default function App() {
       if (prof) {
         const tagMap = {};
         (prof.interests || []).forEach((x) => {
-          const i = INTEREST_TAGS.indexOf(x);
+          const i = TRANSLATIONS.en.interestTags.indexOf(x);
           if (i >= 0) tagMap[i] = true;
         });
         setProfile(prof);
@@ -234,6 +241,15 @@ export default function App() {
         setPfTags(tagMap);
         setPfVisible(prof.visible);
         setPfAvatarUrl(prof.avatar_url || '');
+        setCheckedInAt(prof.checked_in_at || null);
+        if (prof.language) {
+          setLang(prof.language);
+          try {
+            localStorage.setItem('cwoc_lang', prof.language);
+          } catch {
+            // ignore
+          }
+        }
         setScreen(prof.display_name ? 'agenda' : 'profile');
       } else {
         setScreen('profile');
@@ -368,7 +384,7 @@ export default function App() {
     setPfSaving(true);
     const interests = Object.keys(pfTags)
       .filter((k) => pfTags[k])
-      .map((k) => INTEREST_TAGS[k]);
+      .map((k) => TRANSLATIONS.en.interestTags[k]);
     const row = {
       id: user.id,
       display_name: pfName.trim(),
@@ -438,7 +454,7 @@ export default function App() {
         const p = people.find((x) => x.id === otherId);
         return {
           userId: otherId,
-          name: p && p.display_name ? p.display_name : 'Attendee',
+          name: p && p.display_name ? p.display_name : t.attendee,
           avatarUrl: p ? p.avatar_url : null,
           lastMessage: byOther[otherId].body,
           lastAt: byOther[otherId].created_at,
@@ -447,12 +463,41 @@ export default function App() {
       .sort((a, b) => (a.lastAt < b.lastAt ? 1 : -1));
   })();
 
+  const toggleLang = () => {
+    const next = lang === 'en' ? 'es' : 'en';
+    setLang(next);
+    try {
+      localStorage.setItem('cwoc_lang', next);
+    } catch {
+      // ignore
+    }
+    if (client && user) {
+      client
+        .from('profiles')
+        .update({ language: next })
+        .eq('id', user.id)
+        .then(({ error: err }) => {
+          if (err) setError('Could not save language preference. ' + err.message);
+        });
+    }
+  };
+
+  const checkIn = async () => {
+    const now = new Date().toISOString();
+    setCheckedInAt(now);
+    const { error: err } = await client.from('profiles').update({ checked_in_at: now }).eq('id', user.id);
+    if (err) {
+      setCheckedInAt(null);
+      setError('Could not check in. ' + err.message);
+    }
+  };
+
   // ---------- render ----------
   if (loading) {
     return (
       <div className="app-shell">
         <div className="hero" style={{ alignItems: 'center', justifyContent: 'center' }}>
-          <div className="hero-eyebrow">Expressions of Health</div>
+          <div className="hero-eyebrow">{t.signInEyebrow}</div>
         </div>
       </div>
     );
@@ -470,6 +515,7 @@ export default function App() {
     return (
       <div className="app-shell">
         <SignIn
+          t={t}
           onSendLink={handleSendLink}
           sending={sending}
           linkSent={linkSent}
@@ -483,14 +529,29 @@ export default function App() {
   const activeDmPerson = activeDmUserId ? people.find((p) => p.id === activeDmUserId) : null;
   const inDmThread = screen === 'chat' && !!activeDmUserId;
 
+  const TITLES = {
+    agenda: t.titleAgenda,
+    session: t.titleSession,
+    wall: t.titleWall,
+    chat: t.titleChat,
+    people: t.titlePeople,
+  };
+  const SUBTITLES = {
+    agenda: t.subAgenda,
+    session: t.subSession,
+    wall: t.subWall,
+    chat: t.subChat,
+    people: t.subPeople,
+  };
+
   const title = inDmThread
-    ? (activeDmPerson && activeDmPerson.display_name) || 'Attendee'
+    ? (activeDmPerson && activeDmPerson.display_name) || t.attendee
     : screen === 'profile'
       ? profile && profile.display_name
-        ? 'Your profile'
-        : 'Set up your profile'
+        ? t.titleProfileExisting
+        : t.titleProfileNew
       : TITLES[screen] || '';
-  const subtitle = inDmThread ? 'Direct message' : screen === 'profile' ? 'Saved to your account' : SUBTITLES[screen] || '';
+  const subtitle = inDmThread ? t.chatDirect : screen === 'profile' ? t.subProfile : SUBTITLES[screen] || '';
 
   const navigate = (key) => {
     setActiveDmUserId(null);
@@ -499,14 +560,38 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <Header name={pfName} avatarUrl={pfAvatarUrl} title={title} subtitle={subtitle} live={live} onAvatarClick={() => navigate('profile')} />
+      <Header
+        name={pfName}
+        avatarUrl={pfAvatarUrl}
+        title={title}
+        subtitle={subtitle}
+        live={live}
+        liveLabel={t.live}
+        offlineLabel={t.offline}
+        langToggle={t.langToggle}
+        onToggleLang={toggleLang}
+        onAvatarClick={() => navigate('profile')}
+      />
       <ErrorBanner message={error} onDismiss={() => setError('')} />
 
-      {screen === 'agenda' && <Agenda saved={saved} onOpenSession={openSession} onToggleStar={toggleStar} />}
+      {screen === 'agenda' && (
+        <Agenda
+          t={t}
+          lang={lang}
+          saved={saved}
+          onOpenSession={openSession}
+          onToggleStar={toggleStar}
+          checkedInAt={checkedInAt}
+          onCheckIn={checkIn}
+        />
+      )}
       {screen === 'session' && (
         <Session
+          t={t}
+          lang={lang}
           userId={user.id}
           myName={pfName}
+          myAvatarUrl={pfAvatarUrl}
           messages={msgs}
           votes={votes}
           words={words}
@@ -521,16 +606,17 @@ export default function App() {
         />
       )}
       {screen === 'wall' && (
-        <Wall userId={user.id} pledges={pledges} draft={pledgeDraft} setDraft={setPledgeDraft} onPost={postPledge} />
+        <Wall t={t} userId={user.id} pledges={pledges} draft={pledgeDraft} setDraft={setPledgeDraft} onPost={postPledge} />
       )}
       {screen === 'chat' &&
         (inDmThread ? (
           <DirectThread
+            t={t}
             userId={user.id}
             myName={pfName}
             myAvatarUrl={pfAvatarUrl}
             otherId={activeDmUserId}
-            otherName={(activeDmPerson && activeDmPerson.display_name) || 'Attendee'}
+            otherName={(activeDmPerson && activeDmPerson.display_name) || t.attendee}
             otherAvatarUrl={activeDmPerson && activeDmPerson.avatar_url}
             messages={dmMsgs.filter(
               (m) =>
@@ -544,6 +630,7 @@ export default function App() {
           />
         ) : (
           <Chat
+            t={t}
             userId={user.id}
             myName={pfName}
             myAvatarUrl={pfAvatarUrl}
@@ -556,9 +643,12 @@ export default function App() {
             onOpenThread={openDirectThread}
           />
         ))}
-      {screen === 'people' && <People userId={user.id} people={people} onMessage={openDirectThread} />}
+      {screen === 'people' && (
+        <People t={t} lang={lang} userId={user.id} people={people} speakers={speakers} onMessage={openDirectThread} />
+      )}
       {screen === 'profile' && (
         <Profile
+          t={t}
           name={pfName}
           pron={pfPron}
           bio={pfBio}
@@ -580,7 +670,7 @@ export default function App() {
         />
       )}
 
-      <BottomNav screen={screen} onNavigate={navigate} />
+      <BottomNav screen={screen} onNavigate={navigate} t={t} />
     </div>
   );
 }
