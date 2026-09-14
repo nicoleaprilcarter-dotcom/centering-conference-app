@@ -1,6 +1,7 @@
 import { colorForId } from '../lib/helpers';
 import { SendIcon } from './icons';
 import Avatar from './Avatar';
+import Flourish from './Flourish';
 
 // Shared list-of-bubbles + composer, used by the lobby room, session
 // group chat, and 1:1 direct message threads. `messages` items need
@@ -33,7 +34,13 @@ export default function ChatThread({ youLabel = 'You', userId, myName, myAvatarU
             </div>
           );
         })}
-        {messages.length === 0 && <div className="empty-note">{emptyText}</div>}
+        {messages.length === 0 && (
+          <div className="empty-state">
+            <Flourish color="#FFDCEF" size={150} top={-30} left={-40} opacity={0.5} />
+            <Flourish color="#FBEAB0" size={120} bottom={-30} right={-30} opacity={0.5} rotate={40} />
+            <div className="empty-note">{emptyText}</div>
+          </div>
+        )}
       </div>
       <div className="chat-input-row">
         <input

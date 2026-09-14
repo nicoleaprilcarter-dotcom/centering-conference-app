@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { colorForId } from '../lib/helpers';
 import { translateTagLabel } from '../data/translations';
 import Avatar from '../components/Avatar';
+import Flourish from '../components/Flourish';
 
 export default function People({ t, lang, userId, people, speakers, onMessage }) {
   const [tab, setTab] = useState('speakers');
@@ -44,7 +45,13 @@ export default function People({ t, lang, userId, people, speakers, onMessage })
               )}
             </div>
           ))}
-          {speakers.length === 0 && <div className="empty-note">{t.speakersEmpty}</div>}
+          {speakers.length === 0 && (
+            <div className="empty-state">
+              <Flourish color="#FBD9BC" size={160} top={-40} right={-40} opacity={0.5} />
+              <Flourish color="#FFDCEF" size={130} bottom={-30} left={-30} opacity={0.5} rotate={-25} />
+              <div className="empty-note">{t.speakersEmpty}</div>
+            </div>
+          )}
         </div>
       ) : (
         <>
@@ -84,7 +91,13 @@ export default function People({ t, lang, userId, people, speakers, onMessage })
               </div>
             ))}
           </div>
-          {visiblePeople.length === 0 && <div className="empty-note">{t.attendeesEmpty}</div>}
+          {visiblePeople.length === 0 && (
+            <div className="empty-state">
+              <Flourish color="#FBD9BC" size={160} top={-40} right={-40} opacity={0.5} />
+              <Flourish color="#FFDCEF" size={130} bottom={-30} left={-30} opacity={0.5} rotate={-25} />
+              <div className="empty-note">{t.attendeesEmpty}</div>
+            </div>
+          )}
         </>
       )}
     </div>

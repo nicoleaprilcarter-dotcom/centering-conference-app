@@ -18,6 +18,16 @@
   padding: max(28px, env(safe-area-inset-top)) 24px 36px;
   background: linear-gradient(160deg, #e8660d 0%, #ff2d95 48%, #6b1029 100%);
   color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .hero-eyebrow {
@@ -596,6 +606,14 @@
   color: var(--muted);
   text-align: center;
   padding: 30px 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.empty-state {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
 }
 
 /* ---------- profile ---------- */

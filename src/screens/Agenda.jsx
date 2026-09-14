@@ -4,6 +4,7 @@ import { tagColors } from '../lib/helpers';
 import { badgeCode } from '../lib/badge';
 import { StarIcon, CheckCircleIcon } from '../components/icons';
 import QrCode from '../components/QrCode';
+import Flourish from '../components/Flourish';
 
 export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, checkedInAt, onCheckIn, onUndoCheckIn, sessionCheckins, onToggleSessionCheckIn, userId }) {
   const [view, setView] = useState('all');
@@ -92,7 +93,13 @@ export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, ch
         </div>
       </div>
 
-      {view === 'mine' && visibleSessions.length === 0 && <div className="empty-note">{t.myScheduleEmpty}</div>}
+      {view === 'mine' && visibleSessions.length === 0 && (
+        <div className="empty-state">
+          <Flourish color="#FFDCEF" size={160} top={-40} right={-40} opacity={0.5} />
+          <Flourish color="#FBEAB0" size={130} bottom={-30} left={-30} opacity={0.5} rotate={30} />
+          <div className="empty-note">{t.myScheduleEmpty}</div>
+        </div>
+      )}
 
       {visibleSessions.map((s) => {
         const [tagBg, tagFg] = tagColors(s.kind);

@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import Avatar from '../components/Avatar';
+import Flourish from '../components/Flourish';
 
 export default function Profile({
   t,
@@ -29,7 +30,9 @@ export default function Profile({
     <div className="screen-pad">
       <div style={{ font: '400 12.5px/1.6 Poppins', color: '#4A3348' }}>{t.profileIntro}</div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '18px 0 4px' }}>
+      <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 20 }}>
+        <Flourish color="#FFDCEF" size={130} top={-40} right={-50} opacity={0.45} rotate={15} />
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 14, margin: '18px 0 4px' }}>
         <Avatar url={avatarUrl} name={name} size={66} fontSize={22} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="toggle-title">{t.profilePhoto}</div>
@@ -60,6 +63,7 @@ export default function Profile({
             e.target.value = '';
           }}
         />
+        </div>
       </div>
 
       <div className="field-block">
