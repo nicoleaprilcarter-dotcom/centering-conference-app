@@ -13,14 +13,14 @@ export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, ch
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 10,
-          background: checkedInAt ? '#E9F4F3' : '#FFF0F6',
+          background: checkedInAt ? '#FBF0D3' : '#FFF0F6',
           border: 'none',
           cursor: checkedInAt ? 'default' : 'pointer',
         }}
         onClick={checkedInAt ? undefined : onCheckIn}
       >
         <div>
-          <div style={{ font: '600 13.5px/1.3 Poppins', color: checkedInAt ? '#1F5F5E' : '#B01253' }}>
+          <div style={{ font: '600 13.5px/1.3 Poppins', color: checkedInAt ? '#8A6A12' : '#B01253' }}>
             {checkedInAt ? t.checkedInAt : t.checkInPromptTitle}
           </div>
           <div style={{ font: '400 11.5px/1.4 Poppins', color: '#7A6070', marginTop: 3 }}>

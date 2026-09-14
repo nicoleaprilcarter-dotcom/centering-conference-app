@@ -113,7 +113,7 @@ export default function Session({ t, lang, userId, myName, myAvatarUrl, messages
               });
               const keys = Object.keys(counts);
               if (keys.length === 0) return <div className="word-cloud-empty">{t.wordCloudEmpty}</div>;
-              const colors = ['#D81B60', '#1F7A78', '#F58220', '#5C1A4C', '#8E1148', '#B96B0C'];
+              const colors = ['#C6106B', '#7A5205', '#A63D06', '#6B1029', '#8A6A12', '#1F7A78'];
               return keys.map((w, i) => (
                 <span key={w} style={{ fontFamily: 'Poppins', fontWeight: 600, lineHeight: 1, fontSize: 13 + Math.min(counts[w], 12) * 2.6, color: colors[i % colors.length] }}>
                   {w}

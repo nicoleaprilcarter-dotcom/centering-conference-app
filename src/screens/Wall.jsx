@@ -1,4 +1,4 @@
-const BG_ROTATION = ['#E9F4F3', '#FFF0DC', '#FFE2ED'];
+const BG_ROTATION = ['#E9F4F3', '#FFF0DC', '#FFE2ED', '#FBF0D3'];
 
 export default function Wall({ t, userId, pledges, draft, setDraft, onPost }) {
   return (
@@ -22,7 +22,7 @@ export default function Wall({ t, userId, pledges, draft, setDraft, onPost }) {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {pledges.map((p, i) => (
-          <div className="pledge-card" style={{ background: BG_ROTATION[i % 3] }} key={p.id}>
+          <div className="pledge-card" style={{ background: BG_ROTATION[i % 4] }} key={p.id}>
             <div className="pledge-text">{p.body}</div>
             <div className="pledge-who">{p.user_id === userId ? t.you : t.attendee}</div>
           </div>

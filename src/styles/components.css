@@ -16,7 +16,7 @@
   display: flex;
   flex-direction: column;
   padding: max(28px, env(safe-area-inset-top)) 24px 36px;
-  background: linear-gradient(160deg, #f58220 0%, #ff2e8b 48%, #8e1148 100%);
+  background: linear-gradient(160deg, #e8660d 0%, #ff2d95 48%, #6b1029 100%);
   color: #fff;
 }
 
@@ -237,6 +237,17 @@
 
 .nav-label {
   font: 500 10px/1 'Poppins', sans-serif;
+}
+
+.nav-dot {
+  position: absolute;
+  top: -2px;
+  right: -5px;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--hotpink, #ff2d95);
+  border: 1.5px solid var(--cream, #fff7ef);
 }
 
 /* ---------- cards / rows ---------- */

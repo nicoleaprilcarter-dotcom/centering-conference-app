@@ -11,7 +11,7 @@ export default function Avatar({ url, name, color, size = 44, fontSize = 15, onC
     justifyContent: 'center',
     overflow: 'hidden',
     cursor: onClick ? 'pointer' : undefined,
-    background: color || 'linear-gradient(135deg,#F58220,#D81B60)',
+    background: color || 'linear-gradient(135deg,#E8660D,#FF2D95)',
   };
 
   return (

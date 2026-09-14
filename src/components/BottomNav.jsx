@@ -1,23 +1,26 @@
 import { AgendaIcon, LiveIcon, WallIcon, ChatIcon, PeopleIcon, ProfileIcon } from './icons';
 
-export default function BottomNav({ screen, onNavigate, t }) {
+export default function BottomNav({ screen, onNavigate, t, chatUnread }) {
   const TABS = [
     { key: 'agenda', label: t.tabAgenda, Icon: AgendaIcon },
     { key: 'session', label: t.tabSession, Icon: LiveIcon },
     { key: 'wall', label: t.tabWall, Icon: WallIcon },
-    { key: 'chat', label: t.tabChat, Icon: ChatIcon },
+    { key: 'chat', label: t.tabChat, Icon: ChatIcon, dot: chatUnread },
     { key: 'people', label: t.tabPeople, Icon: PeopleIcon },
     { key: 'profile', label: t.tabProfile, Icon: ProfileIcon },
   ];
 
   return (
     <nav className="bottom-nav">
-      {TABS.map(({ key, label, Icon }) => {
+      {TABS.map(({ key, label, Icon, dot }) => {
         const active = screen === key;
         const color = active ? '#D81B60' : '#A08E9A';
         return (
           <button key={key} className="nav-item" onClick={() => onNavigate(key)}>
-            <Icon color={color} />
+            <div style={{ position: 'relative' }}>
+              <Icon color={color} />
+              {dot && <span className="nav-dot" />}
+            </div>
             <div className="nav-label" style={{ color }}>
               {label}
             </div>

@@ -13,6 +13,23 @@
   --gold: #b8862b;
   --teal: #1f7a78;
   --card: #ffffff;
+
+  /* accent family — light/pastel for backgrounds, "deep" for text on
+     those backgrounds or directly on cream. Always pair light-bg with
+     its matching deep-text (or vice versa) to keep contrast high. */
+  --hotpink: #ff2d95;
+  --hotpink-deep: #c6106b;
+  --hotpink-bg: #ffe0f0;
+  --mustard: #d9a426;
+  --mustard-deep: #7a5205;
+  --mustard-bg: #fbeab0;
+  --pumpkin: #e8660d;
+  --pumpkin-deep: #a63d06;
+  --pumpkin-bg: #fbd9bc;
+  --burgundy: #6b1029;
+  --burgundy-bg: #f1e0e6;
+  --gold-deep: #8a6a12;
+  --gold-bg: #fbf0d3;
 }
 
 * {

@@ -31,6 +31,14 @@ function readStoredLang() {
   }
 }
 
+function readLastDmRead() {
+  try {
+    return localStorage.getItem('cwoc_dm_read_at') || '';
+  } catch {
+    return '';
+  }
+}
+
 export default function App() {
   const [config, setConfig] = useState(null); // { url, key, fromEnv }
   const [client, setClient] = useState(null);
@@ -74,6 +82,7 @@ export default function App() {
   const [lang, setLang] = useState(readStoredLang);
   const [checkedInAt, setCheckedInAt] = useState(null);
   const [speakers, setSpeakers] = useState([]);
+  const [lastDmReadAt, setLastDmReadAt] = useState(readLastDmRead);
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
@@ -463,6 +472,21 @@ export default function App() {
       .sort((a, b) => (a.lastAt < b.lastAt ? 1 : -1));
   })();
 
+  const chatUnread = dmMsgs.some((m) => m.recipient_id === user?.id && m.created_at > lastDmReadAt);
+
+  // Mark direct messages as read whenever the Chat screen is open.
+  useEffect(() => {
+    if (screen !== 'chat' || !user) return;
+    const now = new Date().toISOString();
+    setLastDmReadAt(now);
+    try {
+      localStorage.setItem('cwoc_dm_read_at', now);
+    } catch {
+      // ignore
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen, user, dmMsgs.length]);
+
   const toggleLang = () => {
     const next = lang === 'en' ? 'es' : 'en';
     setLang(next);
@@ -670,7 +694,7 @@ export default function App() {
         />
       )}
 
-      <BottomNav screen={screen} onNavigate={navigate} t={t} />
+      <BottomNav screen={screen} onNavigate={navigate} t={t} chatUnread={chatUnread} />
     </div>
   );
 }
