@@ -10,6 +10,10 @@ export const TRANSLATIONS = {
     tabPeople: 'People',
     tabProfile: 'Me',
 
+    allSessions: 'All sessions',
+    mySchedule: 'My schedule',
+    myScheduleEmpty: 'Nothing starred yet. Tap the star on a session to add it here.',
+
     titleAgenda: 'Friday, November 6',
     titleSession: 'Fireside Chat',
     titleWall: 'Pledge wall',
@@ -160,6 +164,10 @@ export const TRANSLATIONS = {
     tabChat: 'Chat',
     tabPeople: 'Personas',
     tabProfile: 'Yo',
+
+    allSessions: 'Todas las sesiones',
+    mySchedule: 'Mi agenda',
+    myScheduleEmpty: 'Aún no marcaste ninguna. Toca la estrella en una sesión para agregarla aquí.',
 
     titleAgenda: 'Viernes 6 de noviembre',
     titleSession: 'Charla íntima',

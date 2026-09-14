@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { SESSIONS } from '../data/sessions';
 import { tagColors } from '../lib/helpers';
 import { badgeCode } from '../lib/badge';
@@ -5,6 +6,9 @@ import { StarIcon, CheckCircleIcon } from '../components/icons';
 import QrCode from '../components/QrCode';
 
 export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, checkedInAt, onCheckIn, onUndoCheckIn, sessionCheckins, onToggleSessionCheckIn, userId }) {
+  const [view, setView] = useState('all');
+  const visibleSessions = view === 'mine' ? SESSIONS.filter((s) => saved[s.id]) : SESSIONS;
+
   return (
     <div className="screen-pad" style={{ display: 'flex', flexDirection: 'column' }}>
       <div
@@ -55,7 +59,42 @@ export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, ch
         )}
       </div>
 
-      {SESSIONS.map((s) => {
+      <div style={{ display: 'flex', background: '#F0E7EC', borderRadius: 999, padding: 4, marginBottom: 14 }}>
+        <div
+          onClick={() => setView('all')}
+          style={{
+            flex: 1,
+            textAlign: 'center',
+            padding: '9px 0',
+            borderRadius: 999,
+            font: '600 13px/1 Poppins',
+            cursor: 'pointer',
+            background: view === 'all' ? '#2E1035' : 'transparent',
+            color: view === 'all' ? '#fff' : '#7A6070',
+          }}
+        >
+          {t.allSessions}
+        </div>
+        <div
+          onClick={() => setView('mine')}
+          style={{
+            flex: 1,
+            textAlign: 'center',
+            padding: '9px 0',
+            borderRadius: 999,
+            font: '600 13px/1 Poppins',
+            cursor: 'pointer',
+            background: view === 'mine' ? '#2E1035' : 'transparent',
+            color: view === 'mine' ? '#fff' : '#7A6070',
+          }}
+        >
+          {t.mySchedule}
+        </div>
+      </div>
+
+      {view === 'mine' && visibleSessions.length === 0 && <div className="empty-note">{t.myScheduleEmpty}</div>}
+
+      {visibleSessions.map((s) => {
         const [tagBg, tagFg] = tagColors(s.kind);
         const isSaved = !!saved[s.id];
         const isCheckedIn = !!sessionCheckins[s.id];
