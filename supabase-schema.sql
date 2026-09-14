@@ -1,0 +1,357 @@
+-- ============================================================
+-- Centering Women of Color Conference 2026 — database schema
+-- HUES Women's Health Advocacy Institute
+--
+-- HOW TO RUN THIS:
+--   1. Open your project at supabase.com
+--   2. Click "SQL Editor" in the left sidebar
+--   3. Click "New query", paste this whole file in, click "Run"
+--
+-- Running it twice is safe — it drops and recreates cleanly.
+-- (Adding profile photos, lobby chat, and direct messages on 2026-09-14:
+-- this version can be re-run on top of the original one safely too.)
+-- ============================================================
+
+
+-- ------------------------------------------------------------
+-- PROFILES
+-- One row per attendee. Created after they sign in.
+-- ------------------------------------------------------------
+create table if not exists profiles (
+  id            uuid primary key references auth.users on delete cascade,
+  display_name  text not null default '',
+  pronouns      text not null default '',
+  bio           text not null default '',
+  interests     text[] not null default '{}',
+  visible       boolean not null default true,
+  is_moderator  boolean not null default false,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+
+alter table profiles enable row level security;
+
+-- Anyone signed in can see profiles that opted into the directory.
+drop policy if exists "read visible profiles" on profiles;
+create policy "read visible profiles" on profiles
+  for select to authenticated
+  using (visible = true or id = auth.uid());
+
+-- You can only create your own profile.
+drop policy if exists "insert own profile" on profiles;
+create policy "insert own profile" on profiles
+  for insert to authenticated
+  with check (id = auth.uid());
+
+-- You can only edit your own profile.
+drop policy if exists "update own profile" on profiles;
+create policy "update own profile" on profiles
+  for update to authenticated
+  using (id = auth.uid())
+  with check (id = auth.uid());
+
+-- You can delete your own profile.
+drop policy if exists "delete own profile" on profiles;
+create policy "delete own profile" on profiles
+  for delete to authenticated
+  using (id = auth.uid());
+
+
+-- ------------------------------------------------------------
+-- SAVED SESSIONS
+-- Which sessions an attendee starred.
+-- ------------------------------------------------------------
+create table if not exists saved_sessions (
+  user_id    uuid not null references auth.users on delete cascade,
+  session_id text not null,
+  created_at timestamptz not null default now(),
+  primary key (user_id, session_id)
+);
+
+alter table saved_sessions enable row level security;
+
+drop policy if exists "own saved sessions" on saved_sessions;
+create policy "own saved sessions" on saved_sessions
+  for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+
+-- ------------------------------------------------------------
+-- SESSION CHAT
+-- One row per message. hidden = removed by a moderator.
+-- ------------------------------------------------------------
+create table if not exists messages (
+  id         bigint generated always as identity primary key,
+  session_id text not null,
+  user_id    uuid not null references auth.users on delete cascade,
+  body       text not null check (char_length(body) between 1 and 1000),
+  hidden     boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists messages_session_idx on messages (session_id, created_at);
+
+alter table messages enable row level security;
+
+-- Everyone signed in reads messages that have not been hidden.
+drop policy if exists "read visible messages" on messages;
+create policy "read visible messages" on messages
+  for select to authenticated
+  using (hidden = false);
+
+-- You post as yourself, and only as yourself.
+drop policy if exists "post own message" on messages;
+create policy "post own message" on messages
+  for insert to authenticated
+  with check (user_id = auth.uid());
+
+-- Moderators can hide anything. Authors can hide their own.
+drop policy if exists "moderate messages" on messages;
+create policy "moderate messages" on messages
+  for update to authenticated
+  using (
+    user_id = auth.uid()
+    or exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator)
+  );
+
+
+-- ------------------------------------------------------------
+-- LIVE POLL
+-- Questions and options are seeded by staff; votes come from attendees.
+-- ------------------------------------------------------------
+create table if not exists poll_questions (
+  id         text primary key,
+  session_id text not null,
+  prompt_en  text not null,
+  prompt_es  text not null,
+  active     boolean not null default true
+);
+
+create table if not exists poll_options (
+  id          text primary key,
+  question_id text not null references poll_questions on delete cascade,
+  label_en    text not null,
+  label_es    text not null,
+  sort        int not null default 0
+);
+
+create table if not exists poll_votes (
+  question_id text not null references poll_questions on delete cascade,
+  user_id     uuid not null references auth.users on delete cascade,
+  option_id   text not null references poll_options on delete cascade,
+  created_at  timestamptz not null default now(),
+  primary key (question_id, user_id)
+);
+
+alter table poll_questions enable row level security;
+alter table poll_options   enable row level security;
+alter table poll_votes     enable row level security;
+
+drop policy if exists "read questions" on poll_questions;
+create policy "read questions" on poll_questions
+  for select to authenticated using (true);
+
+drop policy if exists "read options" on poll_options;
+create policy "read options" on poll_options
+  for select to authenticated using (true);
+
+-- Everyone sees the tallies; you can only cast or change your own vote.
+drop policy if exists "read votes" on poll_votes;
+create policy "read votes" on poll_votes
+  for select to authenticated using (true);
+
+drop policy if exists "own vote" on poll_votes;
+create policy "own vote" on poll_votes
+  for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+
+-- ------------------------------------------------------------
+-- WORD CLOUD
+-- ------------------------------------------------------------
+create table if not exists cloud_words (
+  id         bigint generated always as identity primary key,
+  user_id    uuid not null references auth.users on delete cascade,
+  word       text not null check (char_length(word) between 1 and 24),
+  hidden     boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table cloud_words enable row level security;
+
+drop policy if exists "read words" on cloud_words;
+create policy "read words" on cloud_words
+  for select to authenticated using (hidden = false);
+
+drop policy if exists "add own word" on cloud_words;
+create policy "add own word" on cloud_words
+  for insert to authenticated with check (user_id = auth.uid());
+
+drop policy if exists "moderate words" on cloud_words;
+create policy "moderate words" on cloud_words
+  for update to authenticated
+  using (
+    user_id = auth.uid()
+    or exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator)
+  );
+
+
+-- ------------------------------------------------------------
+-- PLEDGE WALL
+-- approved defaults to true. Set it to false if you want
+-- every pledge reviewed before it appears.
+-- ------------------------------------------------------------
+create table if not exists pledges (
+  id         bigint generated always as identity primary key,
+  user_id    uuid not null references auth.users on delete cascade,
+  body       text not null check (char_length(body) between 1 and 300),
+  approved   boolean not null default true,
+  anonymous  boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table pledges enable row level security;
+
+drop policy if exists "read approved pledges" on pledges;
+create policy "read approved pledges" on pledges
+  for select to authenticated
+  using (approved = true or user_id = auth.uid());
+
+drop policy if exists "post own pledge" on pledges;
+create policy "post own pledge" on pledges
+  for insert to authenticated with check (user_id = auth.uid());
+
+drop policy if exists "moderate pledges" on pledges;
+create policy "moderate pledges" on pledges
+  for update to authenticated
+  using (
+    user_id = auth.uid()
+    or exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator)
+  );
+
+
+-- ------------------------------------------------------------
+-- PROFILE PHOTOS
+-- A public storage bucket. Each attendee can only add/replace/
+-- remove files inside their own folder (named with their user id).
+-- ------------------------------------------------------------
+alter table profiles add column if not exists avatar_url text;
+
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true)
+on conflict (id) do nothing;
+
+drop policy if exists "avatar public read" on storage.objects;
+create policy "avatar public read" on storage.objects
+  for select using (bucket_id = 'avatars');
+
+drop policy if exists "avatar own upload" on storage.objects;
+create policy "avatar own upload" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "avatar own update" on storage.objects;
+create policy "avatar own update" on storage.objects
+  for update to authenticated
+  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "avatar own delete" on storage.objects;
+create policy "avatar own delete" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+
+-- ------------------------------------------------------------
+-- LOBBY CHAT
+-- The all-attendee room. No new table needed — it reuses
+-- "messages" above with session_id = 'lobby', so the same
+-- policies (post as yourself, moderators can hide) apply.
+-- ------------------------------------------------------------
+
+
+-- ------------------------------------------------------------
+-- DIRECT MESSAGES
+-- Private 1:1 messages between two attendees.
+-- ------------------------------------------------------------
+create table if not exists direct_messages (
+  id           bigint generated always as identity primary key,
+  sender_id    uuid not null references auth.users on delete cascade,
+  recipient_id uuid not null references auth.users on delete cascade,
+  body         text not null check (char_length(body) between 1 and 1000),
+  created_at   timestamptz not null default now()
+);
+
+create index if not exists direct_messages_pair_idx
+  on direct_messages (sender_id, recipient_id, created_at);
+
+alter table direct_messages enable row level security;
+
+-- You can only read messages you sent or received.
+drop policy if exists "read own direct messages" on direct_messages;
+create policy "read own direct messages" on direct_messages
+  for select to authenticated
+  using (sender_id = auth.uid() or recipient_id = auth.uid());
+
+-- You send only as yourself.
+drop policy if exists "send own direct message" on direct_messages;
+create policy "send own direct message" on direct_messages
+  for insert to authenticated
+  with check (sender_id = auth.uid());
+
+
+-- ------------------------------------------------------------
+-- REALTIME
+-- Lets the app update without refreshing. Wrapped so this whole
+-- file is safe to run again later (a plain ALTER PUBLICATION
+-- ADD TABLE errors the second time since the table is already
+-- a member — this checks first).
+-- ------------------------------------------------------------
+do $$
+begin
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'messages') then
+    alter publication supabase_realtime add table messages;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'poll_votes') then
+    alter publication supabase_realtime add table poll_votes;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'pledges') then
+    alter publication supabase_realtime add table pledges;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'cloud_words') then
+    alter publication supabase_realtime add table cloud_words;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'direct_messages') then
+    alter publication supabase_realtime add table direct_messages;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'profiles') then
+    alter publication supabase_realtime add table profiles;
+  end if;
+end $$;
+
+
+-- ------------------------------------------------------------
+-- SEED — the live poll for the fireside chat
+-- ------------------------------------------------------------
+insert into poll_questions (id, session_id, prompt_en, prompt_es, active)
+values ('q-health-today', 's8',
+        'Where is your health showing up today?',
+        '¿Dónde se expresa tu salud hoy?', true)
+on conflict (id) do nothing;
+
+insert into poll_options (id, question_id, label_en, label_es, sort) values
+  ('o-body',      'q-health-today', 'In my body',      'En mi cuerpo',    1),
+  ('o-mind',      'q-health-today', 'In my mind',      'En mi mente',     2),
+  ('o-spirit',    'q-health-today', 'In my spirit',    'En mi espíritu',  3),
+  ('o-community', 'q-health-today', 'In my community', 'En mi comunidad', 4)
+on conflict (id) do nothing;
+
+
+-- ------------------------------------------------------------
+-- MAKING SOMEONE A MODERATOR
+-- After they have signed in once, find their id in the
+-- Authentication tab and run:
+--
+--   update profiles set is_moderator = true where id = 'paste-uuid-here';
+-- ------------------------------------------------------------

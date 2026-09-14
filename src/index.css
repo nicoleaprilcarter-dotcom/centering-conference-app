@@ -1,0 +1,105 @@
+:root {
+  --ink: #2e1035;
+  --ink2: #7a6070;
+  --ink3: #4a3348;
+  --muted: #a08e9a;
+  --cream: #fff7ef;
+  --bg: #efebe6;
+  --line: rgba(46, 16, 53, 0.1);
+  --line2: rgba(46, 16, 53, 0.06);
+  --mag: #d81b60;
+  --pink: #ff3d8f;
+  --or: #f58220;
+  --gold: #b8862b;
+  --teal: #1f7a78;
+  --card: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Poppins', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--mag);
+}
+a:hover {
+  color: var(--pink);
+}
+
+input,
+textarea,
+button {
+  font-family: inherit;
+}
+
+button {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.font-display {
+  font-family: 'Anton', 'Poppins', sans-serif;
+  text-transform: uppercase;
+}
+
+.font-script {
+  font-family: 'Yellowtail', cursive;
+  font-style: normal;
+}
+
+@keyframes pulseDot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.app-shell {
+  min-height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--cream);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+@media (min-width: 481px) {
+  .app-shell {
+    min-height: 100vh;
+    box-shadow: 0 0 0 1px var(--line);
+  }
+}
