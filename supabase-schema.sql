@@ -317,6 +317,76 @@ alter table profiles add column if not exists language text not null default 'en
 
 
 -- ------------------------------------------------------------
+-- SESSION CHECK-INS
+-- Which specific sessions an attendee actually checked into
+-- (separate from "saved_sessions", which is just their plan).
+-- Reversible — tapping again removes the row.
+-- ------------------------------------------------------------
+create table if not exists session_checkins (
+  user_id       uuid not null references auth.users on delete cascade,
+  session_id    text not null,
+  checked_in_at timestamptz not null default now(),
+  primary key (user_id, session_id)
+);
+
+alter table session_checkins enable row level security;
+
+drop policy if exists "own session checkins" on session_checkins;
+create policy "own session checkins" on session_checkins
+  for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+
+-- ------------------------------------------------------------
+-- FEEDBACK / CHECKOUT
+-- One overall rating per attendee, plus an optional rating per
+-- session they want to weigh in on. Upsert on both — tapping a
+-- different star just updates the row.
+-- ------------------------------------------------------------
+create table if not exists conference_feedback (
+  user_id    uuid primary key references auth.users on delete cascade,
+  rating     int not null check (rating between 1 and 5),
+  comments   text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table conference_feedback enable row level security;
+
+drop policy if exists "own conference feedback" on conference_feedback;
+create policy "own conference feedback" on conference_feedback
+  for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+create table if not exists session_feedback (
+  user_id    uuid not null references auth.users on delete cascade,
+  session_id text not null,
+  rating     int not null check (rating between 1 and 5),
+  created_at timestamptz not null default now(),
+  primary key (user_id, session_id)
+);
+
+alter table session_feedback enable row level security;
+
+drop policy if exists "own session feedback" on session_feedback;
+create policy "own session feedback" on session_feedback
+  for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+
+-- ------------------------------------------------------------
+-- WAITING ROOM & TRIAGE
+-- Two more chat rooms, same idea as the lobby: no new table,
+-- just more session_id values on "messages" above —
+-- 'waiting-room' for introductions, 'triage' for check-ins on
+-- how attendees are doing throughout the day.
+-- ------------------------------------------------------------
+
+
+-- ------------------------------------------------------------
 -- SPEAKERS
 -- Managed by HUES staff — add a row and a photo whenever a
 -- speaker is confirmed. Nothing here needs the app rebuilt.

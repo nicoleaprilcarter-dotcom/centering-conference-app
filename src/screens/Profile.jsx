@@ -21,6 +21,7 @@ export default function Profile({
   toggleVisible,
   onSave,
   onSignOut,
+  onOpenCheckout,
 }) {
   const fileInputRef = useRef(null);
 
@@ -128,6 +129,17 @@ export default function Profile({
       <div className="primary-btn" onClick={onSave}>
         {saving ? '…' : isExisting ? t.saveChanges : t.saveAndEnter}
       </div>
+
+      <div className="toggle-row" style={{ cursor: 'pointer' }} onClick={onOpenCheckout}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="toggle-title">{t.rateConference}</div>
+          <div className="toggle-sub">{t.rateConferenceSub}</div>
+        </div>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C0AEBA" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+
       <div className="text-link-btn" onClick={onSignOut}>
         {t.signOut}
       </div>

@@ -17,11 +17,14 @@ import People from './screens/People';
 import Chat from './screens/Chat';
 import DirectThread from './screens/DirectThread';
 import Profile from './screens/Profile';
+import Checkout from './screens/Checkout';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import ErrorBanner from './components/ErrorBanner';
 
 const LOBBY_SESSION_ID = 'lobby';
+const WAITING_ROOM_SESSION_ID = 'waiting-room';
+const TRIAGE_SESSION_ID = 'triage';
 
 function readStoredLang() {
   try {
@@ -84,6 +87,19 @@ export default function App() {
   const [speakers, setSpeakers] = useState([]);
   const [lastDmReadAt, setLastDmReadAt] = useState(readLastDmRead);
 
+  const [sessionCheckins, setSessionCheckins] = useState({});
+  const [waitingRoomMsgs, setWaitingRoomMsgs] = useState([]);
+  const [waitingRoomDraft, setWaitingRoomDraft] = useState('');
+  const [triageMsgs, setTriageMsgs] = useState([]);
+  const [triageDraft, setTriageDraft] = useState('');
+
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackComments, setFeedbackComments] = useState('');
+  const [feedbackSaving, setFeedbackSaving] = useState(false);
+  const [feedbackSaved, setFeedbackSaved] = useState(false);
+  const [sessionRatings, setSessionRatings] = useState({});
+
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
   const channelRef = useRef(null);
@@ -132,7 +148,7 @@ export default function App() {
   // ---------- after sign-in ----------
   const loadAll = useCallback(
     async (c, uid) => {
-      const [sv, ms, pp, vt, wd, pl, lb, dm, sp] = await Promise.all([
+      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf] = await Promise.all([
         c.from('saved_sessions').select('session_id').eq('user_id', uid),
         c.from('messages').select('*').eq('session_id', sid).order('created_at'),
         c.from('profiles').select('*').eq('visible', true),
@@ -142,6 +158,11 @@ export default function App() {
         c.from('messages').select('*').eq('session_id', LOBBY_SESSION_ID).order('created_at'),
         c.from('direct_messages').select('*').or(`sender_id.eq.${uid},recipient_id.eq.${uid}`).order('created_at'),
         c.from('speakers').select('*').order('sort').order('created_at'),
+        c.from('session_checkins').select('session_id').eq('user_id', uid),
+        c.from('messages').select('*').eq('session_id', WAITING_ROOM_SESSION_ID).order('created_at'),
+        c.from('messages').select('*').eq('session_id', TRIAGE_SESSION_ID).order('created_at'),
+        c.from('conference_feedback').select('*').eq('user_id', uid).maybeSingle(),
+        c.from('session_feedback').select('*').eq('user_id', uid),
       ]);
       const savedMap = {};
       (sv.data || []).forEach((r) => {
@@ -156,6 +177,23 @@ export default function App() {
       setLobbyMsgs(lb.data || []);
       setDmMsgs(dm.data || []);
       setSpeakers(sp.data || []);
+      const checkinMap = {};
+      (sc.data || []).forEach((r) => {
+        checkinMap[r.session_id] = true;
+      });
+      setSessionCheckins(checkinMap);
+      setWaitingRoomMsgs(wr.data || []);
+      setTriageMsgs(tr.data || []);
+      if (cf.data) {
+        setFeedbackRating(cf.data.rating);
+        setFeedbackComments(cf.data.comments || '');
+        setFeedbackSaved(true);
+      }
+      const ratingMap = {};
+      (sf.data || []).forEach((r) => {
+        ratingMap[r.session_id] = r.rating;
+      });
+      setSessionRatings(ratingMap);
     },
     [sid],
   );
@@ -199,6 +237,14 @@ export default function App() {
         const { data } = await client.from('speakers').select('*').order('sort').order('created_at');
         setSpeakers(data || []);
       }
+      if (what === 'waitingRoomMessages') {
+        const { data } = await client.from('messages').select('*').eq('session_id', WAITING_ROOM_SESSION_ID).order('created_at');
+        setWaitingRoomMsgs(data || []);
+      }
+      if (what === 'triageMessages') {
+        const { data } = await client.from('messages').select('*').eq('session_id', TRIAGE_SESSION_ID).order('created_at');
+        setTriageMsgs(data || []);
+      }
     },
     [client, sid, user],
   );
@@ -211,6 +257,8 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
         reload('messages');
         reload('lobbyMessages');
+        reload('waitingRoomMessages');
+        reload('triageMessages');
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'poll_votes' }, () => reload('votes'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'cloud_words' }, () => reload('words'))
@@ -516,6 +564,83 @@ export default function App() {
     }
   };
 
+  const undoCheckIn = async () => {
+    const prev = checkedInAt;
+    setCheckedInAt(null);
+    const { error: err } = await client.from('profiles').update({ checked_in_at: null }).eq('id', user.id);
+    if (err) {
+      setCheckedInAt(prev);
+      setError('Could not undo check-in. ' + err.message);
+    }
+  };
+
+  const toggleSessionCheckIn = async (sessionId) => {
+    const uid = user.id;
+    const on = !!sessionCheckins[sessionId];
+    setSessionCheckins((s) => ({ ...s, [sessionId]: !on }));
+    const { error: err } = on
+      ? await client.from('session_checkins').delete().eq('user_id', uid).eq('session_id', sessionId)
+      : await client.from('session_checkins').insert({ user_id: uid, session_id: sessionId });
+    if (err) {
+      setSessionCheckins((s) => ({ ...s, [sessionId]: on }));
+      setError('Could not update session check-in. ' + err.message);
+    }
+  };
+
+  const sendWaitingRoom = async () => {
+    const v = waitingRoomDraft.trim();
+    if (!v) return;
+    setWaitingRoomDraft('');
+    const { error: err } = await client.from('messages').insert({ session_id: WAITING_ROOM_SESSION_ID, user_id: user.id, body: v });
+    if (err) {
+      setWaitingRoomDraft(v);
+      setError('Message not sent. ' + err.message);
+    }
+    reload('waitingRoomMessages');
+  };
+
+  const sendTriage = async () => {
+    const v = triageDraft.trim();
+    if (!v) return;
+    setTriageDraft('');
+    const { error: err } = await client.from('messages').insert({ session_id: TRIAGE_SESSION_ID, user_id: user.id, body: v });
+    if (err) {
+      setTriageDraft(v);
+      setError('Message not sent. ' + err.message);
+    }
+    reload('triageMessages');
+  };
+
+  const saveOverallFeedback = async () => {
+    if (!feedbackRating) {
+      setError('Pick a star rating first.');
+      return;
+    }
+    setFeedbackSaving(true);
+    const { error: err } = await client.from('conference_feedback').upsert({
+      user_id: user.id,
+      rating: feedbackRating,
+      comments: feedbackComments.trim(),
+      updated_at: new Date().toISOString(),
+    });
+    setFeedbackSaving(false);
+    if (err) {
+      setError('Could not save feedback. ' + err.message);
+      return;
+    }
+    setFeedbackSaved(true);
+  };
+
+  const rateSession = async (sessionId, rating) => {
+    const prev = sessionRatings[sessionId];
+    setSessionRatings((s) => ({ ...s, [sessionId]: rating }));
+    const { error: err } = await client.from('session_feedback').upsert({ user_id: user.id, session_id: sessionId, rating });
+    if (err) {
+      setSessionRatings((s) => ({ ...s, [sessionId]: prev }));
+      setError('Could not save that rating. ' + err.message);
+    }
+  };
+
   // ---------- render ----------
   if (loading) {
     return (
@@ -568,17 +693,22 @@ export default function App() {
     people: t.subPeople,
   };
 
-  const title = inDmThread
-    ? (activeDmPerson && activeDmPerson.display_name) || t.attendee
-    : screen === 'profile'
-      ? profile && profile.display_name
-        ? t.titleProfileExisting
-        : t.titleProfileNew
-      : TITLES[screen] || '';
-  const subtitle = inDmThread ? t.chatDirect : screen === 'profile' ? t.subProfile : SUBTITLES[screen] || '';
+  const title =
+    screen === 'profile' && showCheckout
+      ? t.checkout
+      : inDmThread
+        ? (activeDmPerson && activeDmPerson.display_name) || t.attendee
+        : screen === 'profile'
+          ? profile && profile.display_name
+            ? t.titleProfileExisting
+            : t.titleProfileNew
+          : TITLES[screen] || '';
+  const subtitle =
+    screen === 'profile' && showCheckout ? t.checkoutSub : inDmThread ? t.chatDirect : screen === 'profile' ? t.subProfile : SUBTITLES[screen] || '';
 
   const navigate = (key) => {
     setActiveDmUserId(null);
+    setShowCheckout(false);
     setScreen(key);
   };
 
@@ -607,6 +737,10 @@ export default function App() {
           onToggleStar={toggleStar}
           checkedInAt={checkedInAt}
           onCheckIn={checkIn}
+          onUndoCheckIn={undoCheckIn}
+          sessionCheckins={sessionCheckins}
+          onToggleSessionCheckIn={toggleSessionCheckIn}
+          userId={user.id}
         />
       )}
       {screen === 'session' && (
@@ -659,10 +793,18 @@ export default function App() {
             myName={pfName}
             myAvatarUrl={pfAvatarUrl}
             people={people}
+            waitingRoomMsgs={waitingRoomMsgs}
+            waitingRoomDraft={waitingRoomDraft}
+            setWaitingRoomDraft={setWaitingRoomDraft}
+            onSendWaitingRoom={sendWaitingRoom}
             lobbyMsgs={lobbyMsgs}
             lobbyDraft={lobbyDraft}
             setLobbyDraft={setLobbyDraft}
             onSendLobby={sendLobby}
+            triageMsgs={triageMsgs}
+            triageDraft={triageDraft}
+            setTriageDraft={setTriageDraft}
+            onSendTriage={sendTriage}
             dmThreads={dmThreads}
             onOpenThread={openDirectThread}
           />
@@ -670,29 +812,46 @@ export default function App() {
       {screen === 'people' && (
         <People t={t} lang={lang} userId={user.id} people={people} speakers={speakers} onMessage={openDirectThread} />
       )}
-      {screen === 'profile' && (
-        <Profile
-          t={t}
-          name={pfName}
-          pron={pfPron}
-          bio={pfBio}
-          tags={pfTags}
-          visible={pfVisible}
-          saving={pfSaving}
-          isExisting={!!(profile && profile.display_name)}
-          email={user.email}
-          avatarUrl={pfAvatarUrl}
-          avatarUploading={avatarUploading}
-          onAvatarSelected={handleAvatarSelected}
-          setName={setPfName}
-          setPron={setPfPron}
-          setBio={setPfBio}
-          toggleTag={toggleProfileTag}
-          toggleVisible={() => setPfVisible((v) => !v)}
-          onSave={saveProfile}
-          onSignOut={signOut}
-        />
-      )}
+      {screen === 'profile' &&
+        (showCheckout ? (
+          <Checkout
+            t={t}
+            lang={lang}
+            onBack={() => setShowCheckout(false)}
+            rating={feedbackRating}
+            setRating={setFeedbackRating}
+            comments={feedbackComments}
+            setComments={setFeedbackComments}
+            saving={feedbackSaving}
+            saved={feedbackSaved}
+            onSaveOverall={saveOverallFeedback}
+            sessionRatings={sessionRatings}
+            onRateSession={rateSession}
+          />
+        ) : (
+          <Profile
+            t={t}
+            name={pfName}
+            pron={pfPron}
+            bio={pfBio}
+            tags={pfTags}
+            visible={pfVisible}
+            saving={pfSaving}
+            isExisting={!!(profile && profile.display_name)}
+            email={user.email}
+            avatarUrl={pfAvatarUrl}
+            avatarUploading={avatarUploading}
+            onAvatarSelected={handleAvatarSelected}
+            setName={setPfName}
+            setPron={setPfPron}
+            setBio={setPfBio}
+            toggleTag={toggleProfileTag}
+            toggleVisible={() => setPfVisible((v) => !v)}
+            onSave={saveProfile}
+            onSignOut={signOut}
+            onOpenCheckout={() => setShowCheckout(true)}
+          />
+        ))}
 
       <BottomNav screen={screen} onNavigate={navigate} t={t} chatUnread={chatUnread} />
     </div>

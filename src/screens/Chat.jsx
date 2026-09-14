@@ -9,14 +9,22 @@ export default function Chat({
   myName,
   myAvatarUrl,
   people,
+  waitingRoomMsgs,
+  waitingRoomDraft,
+  setWaitingRoomDraft,
+  onSendWaitingRoom,
   lobbyMsgs,
   lobbyDraft,
   setLobbyDraft,
   onSendLobby,
+  triageMsgs,
+  triageDraft,
+  setTriageDraft,
+  onSendTriage,
   dmThreads,
   onOpenThread,
 }) {
-  const [tab, setTab] = useState('lobby');
+  const [tab, setTab] = useState('waitingRoom');
 
   const personFor = (id) => people.find((p) => p.id === id);
   const nameFor = (id) => {
@@ -29,28 +37,51 @@ export default function Chat({
     return p ? p.avatar_url : null;
   };
 
+  const TABS = [
+    { key: 'waitingRoom', label: t.chatWaitingRoom },
+    { key: 'lobby', label: t.chatEveryone },
+    { key: 'triage', label: t.chatTriage },
+    { key: 'direct', label: t.chatDirect },
+  ];
+
   return (
     <div className="screen">
       <div style={{ padding: '14px 18px 0' }}>
-        <div className="tab-row">
-          <div
-            className="tab-item"
-            style={{ color: tab === 'lobby' ? '#2E1035' : '#A08E9A', borderColor: tab === 'lobby' ? '#D81B60' : 'transparent' }}
-            onClick={() => setTab('lobby')}
-          >
-            {t.chatEveryone}
-          </div>
-          <div
-            className="tab-item"
-            style={{ color: tab === 'direct' ? '#2E1035' : '#A08E9A', borderColor: tab === 'direct' ? '#D81B60' : 'transparent' }}
-            onClick={() => setTab('direct')}
-          >
-            {t.chatDirect}
-          </div>
+        <div className="tab-row" style={{ overflowX: 'auto', flexWrap: 'nowrap' }}>
+          {TABS.map(({ key, label }) => (
+            <div
+              key={key}
+              className="tab-item"
+              style={{ flex: 'none', whiteSpace: 'nowrap', color: tab === key ? '#2E1035' : '#A08E9A', borderColor: tab === key ? '#D81B60' : 'transparent' }}
+              onClick={() => setTab(key)}
+            >
+              {label}
+            </div>
+          ))}
         </div>
       </div>
 
-      {tab === 'lobby' ? (
+      {tab === 'waitingRoom' && (
+        <>
+          <div style={{ padding: '14px 18px 0', font: '400 12.5px/1.55 Poppins', color: '#4A3348' }}>{t.waitingRoomIntro}</div>
+          <ChatThread
+            youLabel={t.you}
+            userId={userId}
+            myName={myName}
+            myAvatarUrl={myAvatarUrl}
+            messages={waitingRoomMsgs}
+            nameFor={nameFor}
+            avatarFor={avatarFor}
+            draft={waitingRoomDraft}
+            setDraft={setWaitingRoomDraft}
+            onSend={onSendWaitingRoom}
+            placeholder={t.waitingRoomPlaceholder}
+            emptyText={t.waitingRoomEmpty}
+          />
+        </>
+      )}
+
+      {tab === 'lobby' && (
         <ChatThread
           youLabel={t.you}
           userId={userId}
@@ -65,7 +96,29 @@ export default function Chat({
           placeholder={t.lobbyPlaceholder}
           emptyText={t.lobbyEmpty}
         />
-      ) : (
+      )}
+
+      {tab === 'triage' && (
+        <>
+          <div style={{ padding: '14px 18px 0', font: '400 12.5px/1.55 Poppins', color: '#4A3348' }}>{t.triageIntro}</div>
+          <ChatThread
+            youLabel={t.you}
+            userId={userId}
+            myName={myName}
+            myAvatarUrl={myAvatarUrl}
+            messages={triageMsgs}
+            nameFor={nameFor}
+            avatarFor={avatarFor}
+            draft={triageDraft}
+            setDraft={setTriageDraft}
+            onSend={onSendTriage}
+            placeholder={t.triagePlaceholder}
+            emptyText={t.triageEmpty}
+          />
+        </>
+      )}
+
+      {tab === 'direct' && (
         <div className="screen-pad">
           {dmThreads.length === 0 && <div className="empty-note">{t.directEmpty}</div>}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>

@@ -6,6 +6,15 @@ export function StarIcon({ filled, color = '#A08E9A' }) {
   );
 }
 
+export function CheckCircleIcon({ filled, color = '#A08E9A' }) {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill={filled ? color : 'none'} stroke={color}>
+      <circle cx="12" cy="12" r="9" fill={filled ? color : 'none'} />
+      <path d="M8 12.5l2.5 2.5L16 9.5" stroke={filled ? '#fff' : color} />
+    </svg>
+  );
+}
+
 export function SendIcon() {
   return (
     <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
