@@ -133,7 +133,7 @@ export default function Profile({
           <div className="toggle-title">{t.showInDirectory}</div>
           <div className="toggle-sub">{t.showInDirectorySub}</div>
         </div>
-        <div className="toggle-track" style={{ background: visible ? '#1F7A78' : 'rgba(46,16,53,.15)', justifyContent: visible ? 'flex-end' : 'flex-start' }}>
+        <div className="toggle-track" style={{ background: visible ? '#FF2D95' : 'rgba(46,16,53,.15)', justifyContent: visible ? 'flex-end' : 'flex-start' }}>
           <div className="toggle-knob" />
         </div>
       </div>

@@ -11,7 +11,7 @@ export default function Header({ name, hideAvatar, live, liveLabel, offlineLabel
           {langToggle}
         </div>
         <div className="live-pill">
-          <div className="live-dot" style={{ background: live ? '#1F7A78' : '#C0AEBA' }} />
+          <div className="live-dot" style={{ background: live ? '#FF2D95' : '#C0AEBA' }} />
           <div className="live-label">{live ? liveLabel : offlineLabel}</div>
         </div>
       </div>
