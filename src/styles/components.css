@@ -245,7 +245,7 @@
   z-index: 5;
   display: flex;
   padding: 9px 8px max(14px, env(safe-area-inset-bottom));
-  background: var(--burgundy);
+  background: var(--hotpink-deep);
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
@@ -271,7 +271,7 @@
   height: 9px;
   border-radius: 999px;
   background: var(--mustard, #d9a426);
-  border: 1.5px solid var(--burgundy, #6b1029);
+  border: 1.5px solid var(--hotpink-deep, #c6106b);
 }
 
 /* ---------- cards / rows ---------- */
