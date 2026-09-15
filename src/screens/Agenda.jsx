@@ -76,21 +76,33 @@ export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, se
                 <div className="session-sub">{s.room}</div>
                 {hosts.length > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 9 }}>
-                    {hosts.map((h) => (
-                      <div
-                        key={h.userId}
-                        onClick={() => onOpenPerson(h.userId)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer' }}
-                      >
-                        <Avatar url={h.avatarUrl} name={h.name} color={colorForId(h.userId)} size={24} fontSize={10} />
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ font: '600 12px/1.2 Poppins', color: '#2E1035' }}>{h.name}</div>
-                          {(lang === 'es' ? h.roleEs || h.roleEn : h.roleEn) && (
-                            <div style={{ font: '400 10.5px/1.2 Poppins', color: '#A08E9A' }}>{lang === 'es' ? h.roleEs || h.roleEn : h.roleEn}</div>
-                          )}
+                    {hosts.map((h) => {
+                      const role = lang === 'es' ? h.roleEs || h.roleEn : h.roleEn;
+                      return (
+                        <div
+                          key={h.userId || h.name}
+                          onClick={() =>
+                            onOpenPerson({
+                              userId: h.userId,
+                              name: h.name,
+                              avatarUrl: h.avatarUrl,
+                              pronouns: h.pronouns,
+                              bio: h.bio,
+                              interests: h.interests,
+                              designation: h.designation,
+                              role,
+                            })
+                          }
+                          style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer' }}
+                        >
+                          <Avatar url={h.avatarUrl} name={h.name} color={colorForId(h.userId || h.name)} size={24} fontSize={10} />
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ font: '600 12px/1.2 Poppins', color: '#2E1035' }}>{h.name}</div>
+                            {role && <div style={{ font: '400 10.5px/1.2 Poppins', color: '#A08E9A' }}>{role}</div>}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>

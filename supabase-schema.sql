@@ -534,23 +534,39 @@ create policy "sponsor logo moderator delete" on storage.objects
 
 -- ------------------------------------------------------------
 -- SESSION HOSTS
--- Assigns an attendee (who has signed into the app at least once,
--- so they have a row in profiles) as a host/presenter of one of the
--- fixed schedule entries in src/data/sessions.js. session_id is the
--- session's id from that file (e.g. 's2', 's11'), not a database
--- row — nothing to look up, just copy the id off the Agenda screen
--- or the file. Their name/photo show on that session's card in the
--- app and link to a direct message with them.
+-- Assigns someone as a host/presenter of one of the fixed schedule
+-- entries in src/data/sessions.js. session_id is the session's id
+-- from that file (e.g. 's2', 's11'), not a database row — nothing
+-- to look up, just copy the id off the Agenda screen or the file.
+--
+-- Two ways to fill in who it is:
+--   - They've signed into the app at least once (so they have a row
+--     in profiles): set user_id to their id. Name/photo/bio come
+--     from their profile automatically, and tapping them opens a
+--     direct message.
+--   - They haven't signed in / never will (a guest presenter, a
+--     board member without the app): leave user_id blank and just
+--     fill in name (and optionally photo_url, uploaded to the
+--     speaker-photos bucket same as a speaker photo). No message
+--     button shows for these since there's no account to message.
 -- ------------------------------------------------------------
 create table if not exists session_hosts (
   id         bigint generated always as identity primary key,
   session_id text not null,
-  user_id    uuid not null references profiles(id) on delete cascade,
+  name       text not null default '',
+  photo_url  text,
+  user_id    uuid references profiles(id) on delete set null,
   role_en    text not null default '',
   role_es    text not null default '',
   sort       int not null default 0,
   created_at timestamptz not null default now()
 );
+
+-- Safe to run again if session_hosts already existed from an
+-- earlier version of this file (required user_id, no name/photo_url).
+alter table session_hosts alter column user_id drop not null;
+alter table session_hosts add column if not exists name text not null default '';
+alter table session_hosts add column if not exists photo_url text;
 
 alter table session_hosts enable row level security;
 

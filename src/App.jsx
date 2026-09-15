@@ -19,6 +19,7 @@ import Chat from './screens/Chat';
 import DirectThread from './screens/DirectThread';
 import Profile from './screens/Profile';
 import Checkout from './screens/Checkout';
+import PersonProfile from './screens/PersonProfile';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import ErrorBanner from './components/ErrorBanner';
@@ -47,12 +48,15 @@ function groupSessionHosts(rows) {
   const map = {};
   (rows || []).forEach((row) => {
     const profile = row.profile;
-    if (!profile) return;
     if (!map[row.session_id]) map[row.session_id] = [];
     map[row.session_id].push({
-      userId: profile.id,
-      name: profile.display_name,
-      avatarUrl: profile.avatar_url,
+      userId: profile ? profile.id : null,
+      name: row.name || (profile && profile.display_name) || '',
+      avatarUrl: row.photo_url || (profile && profile.avatar_url) || '',
+      pronouns: profile && profile.pronouns,
+      bio: profile && profile.bio,
+      interests: profile && profile.interests,
+      designation: profile && profile.designation,
       roleEn: row.role_en,
       roleEs: row.role_es,
     });
@@ -184,7 +188,7 @@ export default function App() {
         c.from('conference_feedback').select('*').eq('user_id', uid).maybeSingle(),
         c.from('session_feedback').select('*').eq('user_id', uid),
         c.from('sponsors').select('*').order('sort').order('created_at'),
-        c.from('session_hosts').select('*, profile:profiles(id, display_name, avatar_url)').order('sort'),
+        c.from('session_hosts').select('*, profile:profiles(id, display_name, avatar_url, pronouns, bio, interests, designation)').order('sort'),
       ]);
       const savedMap = {};
       (sv.data || []).forEach((r) => {
@@ -266,7 +270,7 @@ export default function App() {
         setSponsors(data || []);
       }
       if (what === 'sessionHosts') {
-        const { data } = await client.from('session_hosts').select('*, profile:profiles(id, display_name, avatar_url)').order('sort');
+        const { data } = await client.from('session_hosts').select('*, profile:profiles(id, display_name, avatar_url, pronouns, bio, interests, designation)').order('sort');
         setSessionHosts(groupSessionHosts(data));
       }
       if (what === 'waitingRoomMessages') {
@@ -518,6 +522,12 @@ export default function App() {
     setScreen('chat');
   };
 
+  const [viewingPerson, setViewingPerson] = useState(null);
+
+  const openPersonProfile = (host) => {
+    setViewingPerson(host);
+  };
+
   const sendDirect = async () => {
     const v = dmDraft.trim();
     if (!v || !activeDmUserId) return;
@@ -715,6 +725,7 @@ export default function App() {
   const navigate = (key) => {
     setActiveDmUserId(null);
     setShowCheckout(false);
+    setViewingPerson(null);
     setScreen(key);
   };
 
@@ -734,6 +745,16 @@ export default function App() {
       <ErrorBanner message={error} onDismiss={() => setError('')} />
 
       <div className="content-sheet">
+      {viewingPerson ? (
+        <PersonProfile
+          t={t}
+          lang={lang}
+          person={viewingPerson}
+          onBack={() => setViewingPerson(null)}
+          onMessage={viewingPerson.userId ? () => openDirectThread(viewingPerson.userId) : null}
+        />
+      ) : (
+        <>
       {screen === 'agenda' && (
         <Agenda
           t={t}
@@ -744,7 +765,7 @@ export default function App() {
           sessionCheckins={sessionCheckins}
           onToggleSessionCheckIn={toggleSessionCheckIn}
           sessionHosts={sessionHosts}
-          onOpenPerson={openDirectThread}
+          onOpenPerson={openPersonProfile}
         />
       )}
       {screen === 'resources' && (
@@ -860,6 +881,8 @@ export default function App() {
             onOpenCheckout={() => setShowCheckout(true)}
           />
         ))}
+        </>
+      )}
       </div>
 
       <BottomNav screen={screen} onNavigate={navigate} t={t} chatUnread={chatUnread} />

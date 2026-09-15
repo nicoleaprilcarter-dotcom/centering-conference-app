@@ -138,6 +138,7 @@ export const TRANSLATIONS = {
     attendeesEmpty: 'Nobody is in the directory yet.',
     message: 'Message',
     attendee: 'Attendee',
+    profile: 'Profile',
 
     designationSpeaker: 'Speaker',
     designationFounder: 'Founder',
@@ -309,6 +310,7 @@ export const TRANSLATIONS = {
     attendeesEmpty: 'Todavía no hay nadie en el directorio.',
     message: 'Mensaje',
     attendee: 'Asistente',
+    profile: 'Perfil',
 
     designationSpeaker: 'Ponente',
     designationFounder: 'Fundadora',
