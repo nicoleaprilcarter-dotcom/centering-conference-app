@@ -14,11 +14,6 @@ export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, ch
 
   return (
     <div className="screen-pad" style={{ display: 'flex', flexDirection: 'column' }}>
-      <img
-        src="/images/conference-banner.jpg"
-        alt="Centering Women of Color — Friday, November 6, 2026 — Expressions of Health"
-        style={{ width: '100%', display: 'block', borderRadius: 18, marginBottom: 14 }}
-      />
       <div
         className="card"
         style={{
