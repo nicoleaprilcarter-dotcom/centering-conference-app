@@ -14,7 +14,7 @@ export default function DirectThread({ t, userId, myName, myAvatarUrl, otherId, 
             <path d="M15 5l-7 7 7 7" />
           </svg>
         </div>
-        <Avatar url={otherAvatarUrl} name={otherName} color={colorForId(otherId)} size={32} fontSize={12} />
+        <Avatar url={otherAvatarUrl} name={otherName} color={colorForId(otherId)} size={40} fontSize={14} />
         <div style={{ font: '600 15px/1.2 Poppins' }}>{otherName}</div>
       </div>
       <ChatThread

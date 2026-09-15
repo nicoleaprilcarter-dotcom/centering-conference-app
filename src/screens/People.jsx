@@ -92,7 +92,7 @@ export default function People({ t, lang, userId, people, speakers, sponsors = [
           {speakers.map((sp) => (
             <div className="person-card" key={sp.id}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Avatar url={sp.photo_url} name={sp.name} color={colorForId(sp.id)} size={52} fontSize={17} />
+                <Avatar url={sp.photo_url} name={sp.name} color={colorForId(sp.id)} size={72} fontSize={22} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="person-name">{sp.name}</div>
                   <div className="person-bio">{lang === 'es' ? sp.role_es || sp.role_en : sp.role_en}</div>
@@ -133,7 +133,7 @@ export default function People({ t, lang, userId, people, speakers, sponsors = [
           {sponsors.map((sp) => (
             <div className="person-card" key={`org-${sp.id}`}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Avatar url={sp.logo_url} name={sp.name} color={colorForId(sp.id)} size={52} fontSize={17} />
+                <Avatar url={sp.logo_url} name={sp.name} color={colorForId(sp.id)} size={72} fontSize={22} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="person-name">{sp.name}</div>
                   {(lang === 'es' ? sp.note_es || sp.note_en : sp.note_en) && (

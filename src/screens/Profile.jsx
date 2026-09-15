@@ -40,7 +40,7 @@ export default function Profile({
       <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 20 }}>
         <Flourish color="#FFDCEF" size={130} top={-40} right={-50} opacity={0.45} rotate={15} />
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 14, margin: '18px 0 4px' }}>
-        <Avatar url={avatarUrl} name={name} size={66} fontSize={22} />
+        <Avatar url={avatarUrl} name={name} size={88} fontSize={28} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="toggle-title">{t.profilePhoto}</div>
           <div className="toggle-sub">{t.profilePhotoSub}</div>

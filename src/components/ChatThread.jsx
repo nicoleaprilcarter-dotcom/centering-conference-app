@@ -24,7 +24,7 @@ export default function ChatThread({ youLabel = 'You', userId, myName, myAvatarU
               key={m.id}
               style={{ alignSelf: mine ? 'flex-end' : 'flex-start', flexDirection: mine ? 'row-reverse' : 'row' }}
             >
-              <Avatar url={avatarUrl} name={avatarName} color={color} size={32} fontSize={12} />
+              <Avatar url={avatarUrl} name={avatarName} color={color} size={40} fontSize={14} />
               <div>
                 <div className="chat-who">{who}</div>
                 <div className="chat-bubble" style={{ background: mine ? '#2E1035' : '#fff', color: mine ? '#fff' : '#2E1035' }}>

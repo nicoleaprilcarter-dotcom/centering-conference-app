@@ -1,6 +1,6 @@
 import { initials } from '../lib/helpers';
 
-export default function Avatar({ url, name, color, size = 44, fontSize = 15, onClick, rounded = true }) {
+export default function Avatar({ url, name, color, size = 52, fontSize = 17, onClick, rounded = true }) {
   const style = {
     width: size,
     height: size,
