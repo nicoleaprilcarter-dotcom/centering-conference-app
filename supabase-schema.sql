@@ -317,6 +317,18 @@ alter table profiles add column if not exists language text not null default 'en
 
 
 -- ------------------------------------------------------------
+-- DIRECTORY DESIGNATION
+-- Lets an attendee's People-directory card carry a role badge and
+-- puts them on the matching People tab (Leadership, Volunteers,
+-- Sponsors). Null/anything else just shows as a regular attendee.
+-- Set it in the Table Editor, profiles table, designation column,
+-- using exactly one of:
+--   speaker | chair | board | staff | volunteer | sponsor | moderator
+-- ------------------------------------------------------------
+alter table profiles add column if not exists designation text;
+
+
+-- ------------------------------------------------------------
 -- SESSION CHECK-INS
 -- Which specific sessions an attendee actually checked into
 -- (separate from "saved_sessions", which is just their plan).

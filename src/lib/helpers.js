@@ -9,11 +9,27 @@ const TAG_COLOR_MAP = {
   mustard: ['#FBEAB0', '#7A5205'], // mustard yellow — workshops
   pumpkin: ['#FBD9BC', '#A63D06'], // pumpkin orange — featured
   plum: ['#F1E0E6', '#6B1029'], // deep burgundy — welcome / plenary
+  teal: ['#DFF1EF', '#12615D'], // teal — moderator
   soft: ['#F3EFF1', '#7A6070'], // neutral
 };
 
 export function tagColors(kind) {
   return TAG_COLOR_MAP[kind] || TAG_COLOR_MAP.soft;
+}
+
+// Which color family each People-directory designation borrows.
+const DESIGNATION_KIND = {
+  speaker: 'pumpkin',
+  chair: 'plum',
+  board: 'plum',
+  staff: 'plum',
+  volunteer: 'mustard',
+  sponsor: 'pink',
+  moderator: 'teal',
+};
+
+export function designationColors(designation) {
+  return tagColors(DESIGNATION_KIND[designation]);
 }
 
 export function initials(name) {
