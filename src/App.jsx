@@ -728,6 +728,7 @@ export default function App() {
       />
       <ErrorBanner message={error} onDismiss={() => setError('')} />
 
+      <div className="content-sheet">
       {screen === 'agenda' && (
         <Agenda
           t={t}
@@ -852,6 +853,7 @@ export default function App() {
             onOpenCheckout={() => setShowCheckout(true)}
           />
         ))}
+      </div>
 
       <BottomNav screen={screen} onNavigate={navigate} t={t} chatUnread={chatUnread} />
     </div>

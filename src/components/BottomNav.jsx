@@ -14,7 +14,7 @@ export default function BottomNav({ screen, onNavigate, t, chatUnread }) {
     <nav className="bottom-nav">
       {TABS.map(({ key, label, Icon, dot }) => {
         const active = screen === key;
-        const color = active ? '#D81B60' : '#A08E9A';
+        const color = active ? '#FBEAB0' : 'rgba(255,255,255,0.55)';
         return (
           <button key={key} className="nav-item" onClick={() => onNavigate(key)}>
             <div style={{ position: 'relative' }}>
