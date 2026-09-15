@@ -678,34 +678,6 @@ export default function App() {
   const activeDmPerson = activeDmUserId ? people.find((p) => p.id === activeDmUserId) : null;
   const inDmThread = screen === 'chat' && !!activeDmUserId;
 
-  const TITLES = {
-    agenda: t.titleAgenda,
-    session: t.titleSession,
-    wall: t.titleWall,
-    chat: t.titleChat,
-    people: t.titlePeople,
-  };
-  const SUBTITLES = {
-    agenda: t.subAgenda,
-    session: t.subSession,
-    wall: t.subWall,
-    chat: t.subChat,
-    people: t.subPeople,
-  };
-
-  const title =
-    screen === 'profile' && showCheckout
-      ? t.checkout
-      : inDmThread
-        ? (activeDmPerson && activeDmPerson.display_name) || t.attendee
-        : screen === 'profile'
-          ? profile && profile.display_name
-            ? t.titleProfileExisting
-            : t.titleProfileNew
-          : TITLES[screen] || '';
-  const subtitle =
-    screen === 'profile' && showCheckout ? t.checkoutSub : inDmThread ? t.chatDirect : screen === 'profile' ? t.subProfile : SUBTITLES[screen] || '';
-
   const navigate = (key) => {
     setActiveDmUserId(null);
     setShowCheckout(false);
@@ -717,8 +689,6 @@ export default function App() {
       <Header
         name={pfName}
         avatarUrl={pfAvatarUrl}
-        title={title}
-        subtitle={subtitle}
         live={live}
         liveLabel={t.live}
         offlineLabel={t.offline}
