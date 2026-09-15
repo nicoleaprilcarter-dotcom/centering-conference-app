@@ -6,6 +6,8 @@ import { StarIcon, CheckCircleIcon } from '../components/icons';
 import QrCode from '../components/QrCode';
 import Flourish from '../components/Flourish';
 
+const VENUE_ADDRESS_ENCODED = encodeURIComponent('Dayton Hub, 31 S Main St, Dayton, OH 45402');
+
 export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, checkedInAt, onCheckIn, onUndoCheckIn, sessionCheckins, onToggleSessionCheckIn, userId }) {
   const [view, setView] = useState('all');
   const visibleSessions = view === 'mine' ? SESSIONS.filter((s) => saved[s.id]) : SESSIONS;
@@ -63,6 +65,32 @@ export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, ch
             </div>
           </div>
         )}
+      </div>
+
+      <div className="card" style={{ marginBottom: 14, border: 'none', background: '#fff' }}>
+        <div style={{ font: '600 13.5px/1.3 Poppins', color: '#2E1035', marginBottom: 2 }}>{t.venueTitle}</div>
+        <div style={{ font: '400 12.5px/1.5 Poppins', color: '#7A6070', marginBottom: 10 }}>
+          {t.venueName} · {t.venueAddress}
+        </div>
+        <div style={{ borderRadius: 14, overflow: 'hidden' }}>
+          <iframe
+            title="Venue map"
+            src={`https://www.google.com/maps?q=${VENUE_ADDRESS_ENCODED}&output=embed`}
+            width="100%"
+            height="160"
+            style={{ border: 0, display: 'block' }}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
+        <a
+          href={`https://www.google.com/maps/dir/?api=1&destination=${VENUE_ADDRESS_ENCODED}`}
+          target="_blank"
+          rel="noreferrer"
+          style={{ display: 'block', textAlign: 'center', font: '600 12px/1 Poppins', color: '#B01253', marginTop: 12, textDecoration: 'none' }}
+        >
+          {t.venueDirections}
+        </a>
       </div>
 
       <div style={{ display: 'flex', background: '#F0E7EC', borderRadius: 999, padding: 4, marginBottom: 14 }}>

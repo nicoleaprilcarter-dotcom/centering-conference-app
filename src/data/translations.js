@@ -43,6 +43,12 @@ export const TRANSLATIONS = {
     sessionCheckIn: 'Check in to this session',
     sessionCheckedIn: 'Checked in to this session',
 
+    // Venue
+    venueTitle: 'Venue',
+    venueName: 'Dayton Hub',
+    venueAddress: '31 S Main St, Dayton, OH 45402',
+    venueDirections: 'Get directions',
+
     // Chat channels
     chatWaitingRoom: 'Waiting Room',
     chatTriage: 'Triage',
@@ -196,6 +202,12 @@ export const TRANSLATIONS = {
     undoCheckIn: 'No fui yo — deshacer registro',
     sessionCheckIn: 'Registrarme en esta sesión',
     sessionCheckedIn: 'Registrada en esta sesión',
+
+    // Sede
+    venueTitle: 'Sede',
+    venueName: 'Dayton Hub',
+    venueAddress: '31 S Main St, Dayton, OH 45402',
+    venueDirections: 'Cómo llegar',
 
     chatWaitingRoom: 'Sala de espera',
     chatTriage: 'Triaje',
