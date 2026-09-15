@@ -1,29 +1,9 @@
 import { useState } from 'react';
-import { colorForId, designationColors } from '../lib/helpers';
+import { colorForId, normalizeDesignation } from '../lib/helpers';
 import { translateTagLabel } from '../data/translations';
 import Avatar from '../components/Avatar';
 import Flourish from '../components/Flourish';
-
-const DESIGNATION_KEY = {
-  speaker: 'designationSpeaker',
-  chair: 'designationChair',
-  board: 'designationBoard',
-  staff: 'designationStaff',
-  volunteer: 'designationVolunteer',
-  sponsor: 'designationSponsor',
-  moderator: 'designationModerator',
-};
-
-function DesignationBadge({ designation, t }) {
-  const key = DESIGNATION_KEY[designation];
-  if (!key) return null;
-  const [bg, fg] = designationColors(designation);
-  return (
-    <span className="person-tag" style={{ background: bg, color: fg, fontWeight: 600 }}>
-      {t[key]}
-    </span>
-  );
-}
+import DesignationBadge from '../components/DesignationBadge';
 
 function PersonCard({ p, userId, lang, t, onMessage }) {
   return (
@@ -80,9 +60,9 @@ function PersonList({ list, emptyText, userId, lang, t, onMessage }) {
 export default function People({ t, lang, userId, people, speakers, onMessage }) {
   const [tab, setTab] = useState('speakers');
   const visiblePeople = people.filter((p) => p.display_name);
-  const leadership = visiblePeople.filter((p) => ['chair', 'board', 'staff'].includes(p.designation));
-  const volunteers = visiblePeople.filter((p) => p.designation === 'volunteer');
-  const sponsors = visiblePeople.filter((p) => p.designation === 'sponsor');
+  const leadership = visiblePeople.filter((p) => ['chair', 'board', 'staff'].includes(normalizeDesignation(p.designation)));
+  const volunteers = visiblePeople.filter((p) => normalizeDesignation(p.designation) === 'volunteer');
+  const sponsors = visiblePeople.filter((p) => normalizeDesignation(p.designation) === 'sponsor');
 
   const TABS = [
     { key: 'speakers', label: t.speakers },

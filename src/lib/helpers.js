@@ -32,6 +32,12 @@ export function designationColors(designation) {
   return tagColors(DESIGNATION_KIND[designation]);
 }
 
+// Table Editor entries can pick up stray spaces or mixed case — match
+// forgivingly so "Board ", "BOARD", and "board" all land the same way.
+export function normalizeDesignation(designation) {
+  return typeof designation === 'string' ? designation.trim().toLowerCase() : '';
+}
+
 export function initials(name) {
   if (!name) return '—';
   return (

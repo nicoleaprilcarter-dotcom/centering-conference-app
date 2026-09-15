@@ -809,6 +809,7 @@ export default function App() {
             tags={pfTags}
             visible={pfVisible}
             saving={pfSaving}
+            designation={profile && profile.designation}
             isExisting={!!(profile && profile.display_name)}
             email={user.email}
             avatarUrl={pfAvatarUrl}

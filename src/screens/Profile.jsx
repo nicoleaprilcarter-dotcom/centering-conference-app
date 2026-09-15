@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import Avatar from '../components/Avatar';
 import Flourish from '../components/Flourish';
+import DesignationBadge from '../components/DesignationBadge';
 
 export default function Profile({
   t,
@@ -10,6 +11,7 @@ export default function Profile({
   tags,
   visible,
   saving,
+  designation,
   isExisting,
   email,
   avatarUrl,
@@ -29,6 +31,11 @@ export default function Profile({
   return (
     <div className="screen-pad">
       <div style={{ font: '400 12.5px/1.6 Poppins', color: '#4A3348' }}>{t.profileIntro}</div>
+      {designation && (
+        <div style={{ marginTop: 10 }}>
+          <DesignationBadge designation={designation} t={t} />
+        </div>
+      )}
 
       <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 20 }}>
         <Flourish color="#FFDCEF" size={130} top={-40} right={-50} opacity={0.45} rotate={15} />
