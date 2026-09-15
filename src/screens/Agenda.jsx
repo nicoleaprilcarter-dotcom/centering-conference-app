@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { SESSIONS } from '../data/sessions';
 import { tagColors, colorForId } from '../lib/helpers';
-import { StarIcon, CheckCircleIcon } from '../components/icons';
+import { StarIcon, CheckCircleIcon, FileIcon } from '../components/icons';
 import Avatar from '../components/Avatar';
 import Flourish from '../components/Flourish';
 
-export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, sessionCheckins, onToggleSessionCheckIn, sessionHosts, onOpenPerson }) {
+export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, sessionCheckins, onToggleSessionCheckIn, sessionHosts, sessionFiles, onOpenPerson }) {
   const [view, setView] = useState('all');
   const visibleSessions = view === 'mine' ? SESSIONS.filter((s) => saved[s.id]) : SESSIONS;
 
@@ -59,6 +59,7 @@ export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, se
         const title = lang === 'es' ? s.titleEs : s.title;
         const tag = t[s.tagKey];
         const hosts = (sessionHosts && sessionHosts[s.id]) || [];
+        const files = (sessionFiles && sessionFiles[s.id]) || [];
         return (
           <div className="session-row" key={s.id}>
             <div className="session-time">
@@ -103,6 +104,32 @@ export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, se
                         </div>
                       );
                     })}
+                  </div>
+                )}
+                {files.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 9 }}>
+                    {files.map((f) => (
+                      <a
+                        key={f.id}
+                        href={f.fileUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}
+                      >
+                        {f.thumbnailUrl ? (
+                          <img
+                            src={f.thumbnailUrl}
+                            alt=""
+                            style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'cover', flex: 'none', border: '1px solid rgba(46,16,53,.1)' }}
+                          />
+                        ) : (
+                          <div style={{ width: 28, height: 28, borderRadius: 6, background: '#F3EFF1', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+                            <FileIcon />
+                          </div>
+                        )}
+                        <div style={{ font: '600 12px/1.3 Poppins', color: '#B01253', minWidth: 0 }}>{f.title}</div>
+                      </a>
+                    ))}
                   </div>
                 )}
               </div>

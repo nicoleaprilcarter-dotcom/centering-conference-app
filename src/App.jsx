@@ -64,6 +64,20 @@ function groupSessionHosts(rows) {
   return map;
 }
 
+function groupSessionFiles(rows) {
+  const map = {};
+  (rows || []).forEach((row) => {
+    if (!map[row.session_id]) map[row.session_id] = [];
+    map[row.session_id].push({
+      id: row.id,
+      title: row.title,
+      fileUrl: row.file_url,
+      thumbnailUrl: row.thumbnail_url,
+    });
+  });
+  return map;
+}
+
 export default function App() {
   const [config, setConfig] = useState(null); // { url, key, fromEnv }
   const [client, setClient] = useState(null);
@@ -109,6 +123,7 @@ export default function App() {
   const [speakers, setSpeakers] = useState([]);
   const [sponsors, setSponsors] = useState([]);
   const [sessionHosts, setSessionHosts] = useState({});
+  const [sessionFiles, setSessionFiles] = useState({});
   const [lastDmReadAt, setLastDmReadAt] = useState(readLastDmRead);
 
   const [sessionCheckins, setSessionCheckins] = useState({});
@@ -172,7 +187,7 @@ export default function App() {
   // ---------- after sign-in ----------
   const loadAll = useCallback(
     async (c, uid) => {
-      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh] = await Promise.all([
+      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh, sfl] = await Promise.all([
         c.from('saved_sessions').select('session_id').eq('user_id', uid),
         c.from('messages').select('*').eq('session_id', sid).order('created_at'),
         c.from('profiles').select('*').eq('visible', true),
@@ -189,6 +204,7 @@ export default function App() {
         c.from('session_feedback').select('*').eq('user_id', uid),
         c.from('sponsors').select('*').order('sort').order('created_at'),
         c.from('session_hosts').select('*, profile:profiles(id, display_name, avatar_url, pronouns, bio, interests, designation)').order('sort'),
+        c.from('session_files').select('*').order('sort'),
       ]);
       const savedMap = {};
       (sv.data || []).forEach((r) => {
@@ -205,6 +221,7 @@ export default function App() {
       setSpeakers(sp.data || []);
       setSponsors(sn.data || []);
       setSessionHosts(groupSessionHosts(sh.data));
+      setSessionFiles(groupSessionFiles(sfl.data));
       const checkinMap = {};
       (sc.data || []).forEach((r) => {
         checkinMap[r.session_id] = true;
@@ -273,6 +290,10 @@ export default function App() {
         const { data } = await client.from('session_hosts').select('*, profile:profiles(id, display_name, avatar_url, pronouns, bio, interests, designation)').order('sort');
         setSessionHosts(groupSessionHosts(data));
       }
+      if (what === 'sessionFiles') {
+        const { data } = await client.from('session_files').select('*').order('sort');
+        setSessionFiles(groupSessionFiles(data));
+      }
       if (what === 'waitingRoomMessages') {
         const { data } = await client.from('messages').select('*').eq('session_id', WAITING_ROOM_SESSION_ID).order('created_at');
         setWaitingRoomMsgs(data || []);
@@ -304,6 +325,7 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'speakers' }, () => reload('speakers'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sponsors' }, () => reload('sponsors'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_hosts' }, () => reload('sessionHosts'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'session_files' }, () => reload('sessionFiles'))
       .subscribe((status) => setLive(status === 'SUBSCRIBED'));
     channelRef.current = ch;
   }, [client, reload]);
@@ -765,6 +787,7 @@ export default function App() {
           sessionCheckins={sessionCheckins}
           onToggleSessionCheckIn={toggleSessionCheckIn}
           sessionHosts={sessionHosts}
+          sessionFiles={sessionFiles}
           onOpenPerson={openPersonProfile}
         />
       )}

@@ -584,6 +584,77 @@ create policy "moderators manage session hosts" on session_hosts
 
 
 -- ------------------------------------------------------------
+-- SESSION FILES
+-- Handouts, slide decks, and other files a speaker shares for one
+-- of the fixed schedule entries in src/data/sessions.js. session_id
+-- is that entry's id (e.g. 's6'), same as session_hosts above.
+--
+-- To add one: upload the file itself (PDF, PPTX, whatever) to the
+-- session-files bucket in Storage, copy its public URL into
+-- file_url. Optionally also upload a preview image (a screenshot of
+-- the flyer or the first slide) to the same bucket and paste that
+-- URL into thumbnail_url — if you skip it, the app just shows a
+-- generic file icon instead of a picture.
+-- ------------------------------------------------------------
+create table if not exists session_files (
+  id            bigint generated always as identity primary key,
+  session_id    text not null,
+  title         text not null,
+  file_url      text not null,
+  thumbnail_url text,
+  sort          int not null default 0,
+  created_at    timestamptz not null default now()
+);
+
+alter table session_files enable row level security;
+
+-- Everyone signed in can see and open shared files.
+drop policy if exists "read session files" on session_files;
+create policy "read session files" on session_files
+  for select to authenticated using (true);
+
+-- Only moderators can add/remove files.
+drop policy if exists "moderators manage session files" on session_files;
+create policy "moderators manage session files" on session_files
+  for all to authenticated
+  using (exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator))
+  with check (exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator));
+
+-- Session files/thumbnails: public bucket, only moderators can upload/replace/remove.
+insert into storage.buckets (id, name, public)
+values ('session-files', 'session-files', true)
+on conflict (id) do nothing;
+
+drop policy if exists "session file public read" on storage.objects;
+create policy "session file public read" on storage.objects
+  for select using (bucket_id = 'session-files');
+
+drop policy if exists "session file moderator write" on storage.objects;
+create policy "session file moderator write" on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'session-files'
+    and exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator)
+  );
+
+drop policy if exists "session file moderator update" on storage.objects;
+create policy "session file moderator update" on storage.objects
+  for update to authenticated
+  using (
+    bucket_id = 'session-files'
+    and exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator)
+  );
+
+drop policy if exists "session file moderator delete" on storage.objects;
+create policy "session file moderator delete" on storage.objects
+  for delete to authenticated
+  using (
+    bucket_id = 'session-files'
+    and exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator)
+  );
+
+
+-- ------------------------------------------------------------
 -- REALTIME
 -- Lets the app update without refreshing. Wrapped so this whole
 -- file is safe to run again later (a plain ALTER PUBLICATION
@@ -618,6 +689,9 @@ begin
   end if;
   if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'session_hosts') then
     alter publication supabase_realtime add table session_hosts;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'session_files') then
+    alter publication supabase_realtime add table session_files;
   end if;
 end $$;
 
