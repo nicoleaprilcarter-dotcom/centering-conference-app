@@ -91,6 +91,7 @@ export const TRANSLATIONS = {
     tagWorkshop: 'Workshop',
     tagFeatured: 'Featured',
     tagOpenAllDay: 'Open all day',
+    tagBreak: 'Break',
 
     // Session (chat / poll)
     groupChat: 'Group chat',
@@ -264,6 +265,7 @@ export const TRANSLATIONS = {
     tagWorkshop: 'Taller',
     tagFeatured: 'Destacado',
     tagOpenAllDay: 'Abierto todo el día',
+    tagBreak: 'Descanso',
 
     groupChat: 'Chat del grupo',
     livePoll: 'Encuesta en vivo',
