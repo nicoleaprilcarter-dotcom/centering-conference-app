@@ -1,4 +1,4 @@
-import { AgendaIcon, LiveIcon, WallIcon, ChatIcon, PeopleIcon, ProfileIcon } from './icons';
+import { AgendaIcon, LiveIcon, WallIcon, ChatIcon, PeopleIcon, ResourcesIcon, ProfileIcon } from './icons';
 
 export default function BottomNav({ screen, onNavigate, t, chatUnread }) {
   const TABS = [
@@ -7,6 +7,7 @@ export default function BottomNav({ screen, onNavigate, t, chatUnread }) {
     { key: 'wall', label: t.tabWall, Icon: WallIcon },
     { key: 'chat', label: t.tabChat, Icon: ChatIcon, dot: chatUnread },
     { key: 'people', label: t.tabPeople, Icon: PeopleIcon },
+    { key: 'resources', label: t.tabResources, Icon: ResourcesIcon },
     { key: 'profile', label: t.tabProfile, Icon: ProfileIcon },
   ];
 

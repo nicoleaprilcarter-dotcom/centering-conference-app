@@ -1,93 +1,16 @@
 import { useState } from 'react';
 import { SESSIONS } from '../data/sessions';
-import { tagColors } from '../lib/helpers';
-import { badgeCode } from '../lib/badge';
+import { tagColors, colorForId } from '../lib/helpers';
 import { StarIcon, CheckCircleIcon } from '../components/icons';
-import QrCode from '../components/QrCode';
+import Avatar from '../components/Avatar';
 import Flourish from '../components/Flourish';
 
-const VENUE_ADDRESS_ENCODED = encodeURIComponent('Dayton Hub, 31 S Main St, Dayton, OH 45402');
-
-export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, checkedInAt, onCheckIn, onUndoCheckIn, sessionCheckins, onToggleSessionCheckIn, userId }) {
+export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, sessionCheckins, onToggleSessionCheckIn, sessionHosts, onOpenPerson }) {
   const [view, setView] = useState('all');
   const visibleSessions = view === 'mine' ? SESSIONS.filter((s) => saved[s.id]) : SESSIONS;
 
   return (
     <div className="screen-pad" style={{ display: 'flex', flexDirection: 'column' }}>
-      <div
-        className="card"
-        style={{
-          marginBottom: 14,
-          background: checkedInAt ? '#FBF0D3' : '#FFF0F6',
-          border: 'none',
-          cursor: checkedInAt ? 'default' : 'pointer',
-        }}
-        onClick={checkedInAt ? undefined : onCheckIn}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-          <div>
-            <div style={{ font: '600 13.5px/1.3 Poppins', color: checkedInAt ? '#8A6A12' : '#B01253' }}>
-              {checkedInAt ? t.checkedInAt : t.checkInPromptTitle}
-            </div>
-            <div style={{ font: '400 11.5px/1.4 Poppins', color: '#7A6070', marginTop: 3 }}>
-              {checkedInAt
-                ? new Date(checkedInAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-                : t.checkInPromptBody}
-            </div>
-          </div>
-          {!checkedInAt && (
-            <div style={{ flex: 'none', padding: '9px 14px', borderRadius: 999, background: '#B01253', color: '#fff', font: '600 12px/1 Poppins' }}>
-              {t.checkInButton}
-            </div>
-          )}
-        </div>
-
-        {checkedInAt && (
-          <div style={{ marginTop: 16, textAlign: 'center' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
-              <QrCode value={badgeCode(userId)} size={128} />
-            </div>
-            <div style={{ font: '600 12.5px/1 Poppins', letterSpacing: '0.08em', color: '#8A6A12' }}>{badgeCode(userId)}</div>
-            <div style={{ font: '400 11.5px/1.5 Poppins', color: '#7A6070', marginTop: 8 }}>{t.badgeShow}</div>
-            <div
-              style={{ font: '500 12px/1 Poppins', color: '#B01253', marginTop: 12, cursor: 'pointer' }}
-              onClick={(e) => {
-                e.stopPropagation();
-                onUndoCheckIn();
-              }}
-            >
-              {t.undoCheckIn}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="card" style={{ marginBottom: 14, border: 'none', background: '#fff' }}>
-        <div style={{ font: '600 13.5px/1.3 Poppins', color: '#2E1035', marginBottom: 2 }}>{t.venueTitle}</div>
-        <div style={{ font: '400 12.5px/1.5 Poppins', color: '#7A6070', marginBottom: 10 }}>
-          {t.venueName} · {t.venueAddress}
-        </div>
-        <div style={{ borderRadius: 14, overflow: 'hidden' }}>
-          <iframe
-            title="Venue map"
-            src={`https://www.google.com/maps?q=${VENUE_ADDRESS_ENCODED}&output=embed`}
-            width="100%"
-            height="160"
-            style={{ border: 0, display: 'block' }}
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
-        </div>
-        <a
-          href={`https://www.google.com/maps/dir/?api=1&destination=${VENUE_ADDRESS_ENCODED}`}
-          target="_blank"
-          rel="noreferrer"
-          style={{ display: 'block', textAlign: 'center', font: '600 12px/1 Poppins', color: '#B01253', marginTop: 12, textDecoration: 'none' }}
-        >
-          {t.venueDirections}
-        </a>
-      </div>
-
       <div style={{ display: 'flex', background: '#F0E7EC', borderRadius: 999, padding: 4, marginBottom: 14 }}>
         <div
           onClick={() => setView('all')}
@@ -135,6 +58,7 @@ export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, ch
         const isCheckedIn = !!sessionCheckins[s.id];
         const title = lang === 'es' ? s.titleEs : s.title;
         const tag = t[s.tagKey];
+        const hosts = (sessionHosts && sessionHosts[s.id]) || [];
         return (
           <div className="session-row" key={s.id}>
             <div className="session-time">
@@ -150,6 +74,25 @@ export default function Agenda({ t, lang, saved, onOpenSession, onToggleStar, ch
                   {title}
                 </div>
                 <div className="session-sub">{s.room}</div>
+                {hosts.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 9 }}>
+                    {hosts.map((h) => (
+                      <div
+                        key={h.userId}
+                        onClick={() => onOpenPerson(h.userId)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer' }}
+                      >
+                        <Avatar url={h.avatarUrl} name={h.name} color={colorForId(h.userId)} size={24} fontSize={10} />
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ font: '600 12px/1.2 Poppins', color: '#2E1035' }}>{h.name}</div>
+                          {(lang === 'es' ? h.roleEs || h.roleEn : h.roleEn) && (
+                            <div style={{ font: '400 10.5px/1.2 Poppins', color: '#A08E9A' }}>{lang === 'es' ? h.roleEs || h.roleEn : h.roleEn}</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <div

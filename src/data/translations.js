@@ -8,6 +8,7 @@ export const TRANSLATIONS = {
     tabWall: 'Wall',
     tabChat: 'Chat',
     tabPeople: 'People',
+    tabResources: 'Resources',
     tabProfile: 'Me',
 
     allSessions: 'All sessions',
@@ -187,6 +188,7 @@ export const TRANSLATIONS = {
     tabWall: 'Muro',
     tabChat: 'Chat',
     tabPeople: 'Personas',
+    tabResources: 'Recursos',
     tabProfile: 'Yo',
 
     allSessions: 'Todas las sesiones',

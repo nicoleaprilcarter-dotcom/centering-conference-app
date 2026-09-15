@@ -11,6 +11,7 @@ import { TRANSLATIONS } from './data/translations';
 import Setup from './screens/Setup';
 import SignIn from './screens/SignIn';
 import Agenda from './screens/Agenda';
+import Resources from './screens/Resources';
 import Session from './screens/Session';
 import Wall from './screens/Wall';
 import People from './screens/People';
@@ -40,6 +41,23 @@ function readLastDmRead() {
   } catch {
     return '';
   }
+}
+
+function groupSessionHosts(rows) {
+  const map = {};
+  (rows || []).forEach((row) => {
+    const profile = row.profile;
+    if (!profile) return;
+    if (!map[row.session_id]) map[row.session_id] = [];
+    map[row.session_id].push({
+      userId: profile.id,
+      name: profile.display_name,
+      avatarUrl: profile.avatar_url,
+      roleEn: row.role_en,
+      roleEs: row.role_es,
+    });
+  });
+  return map;
 }
 
 export default function App() {
@@ -86,6 +104,7 @@ export default function App() {
   const [checkedInAt, setCheckedInAt] = useState(null);
   const [speakers, setSpeakers] = useState([]);
   const [sponsors, setSponsors] = useState([]);
+  const [sessionHosts, setSessionHosts] = useState({});
   const [lastDmReadAt, setLastDmReadAt] = useState(readLastDmRead);
 
   const [sessionCheckins, setSessionCheckins] = useState({});
@@ -149,7 +168,7 @@ export default function App() {
   // ---------- after sign-in ----------
   const loadAll = useCallback(
     async (c, uid) => {
-      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn] = await Promise.all([
+      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh] = await Promise.all([
         c.from('saved_sessions').select('session_id').eq('user_id', uid),
         c.from('messages').select('*').eq('session_id', sid).order('created_at'),
         c.from('profiles').select('*').eq('visible', true),
@@ -165,6 +184,7 @@ export default function App() {
         c.from('conference_feedback').select('*').eq('user_id', uid).maybeSingle(),
         c.from('session_feedback').select('*').eq('user_id', uid),
         c.from('sponsors').select('*').order('sort').order('created_at'),
+        c.from('session_hosts').select('*, profile:profiles(id, display_name, avatar_url)').order('sort'),
       ]);
       const savedMap = {};
       (sv.data || []).forEach((r) => {
@@ -180,6 +200,7 @@ export default function App() {
       setDmMsgs(dm.data || []);
       setSpeakers(sp.data || []);
       setSponsors(sn.data || []);
+      setSessionHosts(groupSessionHosts(sh.data));
       const checkinMap = {};
       (sc.data || []).forEach((r) => {
         checkinMap[r.session_id] = true;
@@ -244,6 +265,10 @@ export default function App() {
         const { data } = await client.from('sponsors').select('*').order('sort').order('created_at');
         setSponsors(data || []);
       }
+      if (what === 'sessionHosts') {
+        const { data } = await client.from('session_hosts').select('*, profile:profiles(id, display_name, avatar_url)').order('sort');
+        setSessionHosts(groupSessionHosts(data));
+      }
       if (what === 'waitingRoomMessages') {
         const { data } = await client.from('messages').select('*').eq('session_id', WAITING_ROOM_SESSION_ID).order('created_at');
         setWaitingRoomMsgs(data || []);
@@ -274,6 +299,7 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'direct_messages' }, () => reload('directMessages'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'speakers' }, () => reload('speakers'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sponsors' }, () => reload('sponsors'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'session_hosts' }, () => reload('sessionHosts'))
       .subscribe((status) => setLive(status === 'SUBSCRIBED'));
     channelRef.current = ch;
   }, [client, reload]);
@@ -715,13 +741,14 @@ export default function App() {
           saved={saved}
           onOpenSession={openSession}
           onToggleStar={toggleStar}
-          checkedInAt={checkedInAt}
-          onCheckIn={checkIn}
-          onUndoCheckIn={undoCheckIn}
           sessionCheckins={sessionCheckins}
           onToggleSessionCheckIn={toggleSessionCheckIn}
-          userId={user.id}
+          sessionHosts={sessionHosts}
+          onOpenPerson={openDirectThread}
         />
+      )}
+      {screen === 'resources' && (
+        <Resources t={t} checkedInAt={checkedInAt} onCheckIn={checkIn} onUndoCheckIn={undoCheckIn} userId={user.id} />
       )}
       {screen === 'session' && (
         <Session

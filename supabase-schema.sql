@@ -533,6 +533,41 @@ create policy "sponsor logo moderator delete" on storage.objects
 
 
 -- ------------------------------------------------------------
+-- SESSION HOSTS
+-- Assigns an attendee (who has signed into the app at least once,
+-- so they have a row in profiles) as a host/presenter of one of the
+-- fixed schedule entries in src/data/sessions.js. session_id is the
+-- session's id from that file (e.g. 's2', 's11'), not a database
+-- row — nothing to look up, just copy the id off the Agenda screen
+-- or the file. Their name/photo show on that session's card in the
+-- app and link to a direct message with them.
+-- ------------------------------------------------------------
+create table if not exists session_hosts (
+  id         bigint generated always as identity primary key,
+  session_id text not null,
+  user_id    uuid not null references profiles(id) on delete cascade,
+  role_en    text not null default '',
+  role_es    text not null default '',
+  sort       int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+alter table session_hosts enable row level security;
+
+-- Everyone signed in can see who's hosting what.
+drop policy if exists "read session hosts" on session_hosts;
+create policy "read session hosts" on session_hosts
+  for select to authenticated using (true);
+
+-- Only moderators can assign/remove hosts.
+drop policy if exists "moderators manage session hosts" on session_hosts;
+create policy "moderators manage session hosts" on session_hosts
+  for all to authenticated
+  using (exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator))
+  with check (exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator));
+
+
+-- ------------------------------------------------------------
 -- REALTIME
 -- Lets the app update without refreshing. Wrapped so this whole
 -- file is safe to run again later (a plain ALTER PUBLICATION
@@ -564,6 +599,9 @@ begin
   end if;
   if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'sponsors') then
     alter publication supabase_realtime add table sponsors;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'session_hosts') then
+    alter publication supabase_realtime add table session_hosts;
   end if;
 end $$;
 
