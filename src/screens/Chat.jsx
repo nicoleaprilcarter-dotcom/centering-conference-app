@@ -39,8 +39,8 @@ export default function Chat({
 
   const TABS = [
     { key: 'waitingRoom', label: t.chatWaitingRoom },
-    { key: 'lobby', label: t.chatEveryone },
     { key: 'triage', label: t.chatTriage },
+    { key: 'lobby', label: t.chatDischarge },
     { key: 'direct', label: t.chatDirect },
   ];
 
@@ -82,20 +82,23 @@ export default function Chat({
       )}
 
       {tab === 'lobby' && (
-        <ChatThread
-          youLabel={t.you}
-          userId={userId}
-          myName={myName}
-          myAvatarUrl={myAvatarUrl}
-          messages={lobbyMsgs}
-          nameFor={nameFor}
-          avatarFor={avatarFor}
-          draft={lobbyDraft}
-          setDraft={setLobbyDraft}
-          onSend={onSendLobby}
-          placeholder={t.lobbyPlaceholder}
-          emptyText={t.lobbyEmpty}
-        />
+        <>
+          <div style={{ padding: '14px 18px 0', font: '400 12.5px/1.55 Poppins', color: '#4A3348' }}>{t.dischargeIntro}</div>
+          <ChatThread
+            youLabel={t.you}
+            userId={userId}
+            myName={myName}
+            myAvatarUrl={myAvatarUrl}
+            messages={lobbyMsgs}
+            nameFor={nameFor}
+            avatarFor={avatarFor}
+            draft={lobbyDraft}
+            setDraft={setLobbyDraft}
+            onSend={onSendLobby}
+            placeholder={t.dischargePlaceholder}
+            emptyText={t.dischargeEmpty}
+          />
+        </>
       )}
 
       {tab === 'triage' && (

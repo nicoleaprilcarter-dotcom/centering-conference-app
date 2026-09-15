@@ -689,6 +689,7 @@ export default function App() {
       <Header
         name={pfName}
         avatarUrl={pfAvatarUrl}
+        hideAvatar={screen === 'profile'}
         live={live}
         liveLabel={t.live}
         offlineLabel={t.offline}

@@ -113,10 +113,11 @@ export const TRANSLATIONS = {
     pledgeMany: 'pledges today',
 
     // Chat (lobby / direct)
-    chatEveryone: 'Everyone',
+    chatDischarge: 'Discharge',
     chatDirect: 'Direct',
-    lobbyPlaceholder: 'Message everyone here',
-    lobbyEmpty: 'No messages yet. Say hello to the room.',
+    dischargeIntro: 'Before you head out — a narrative review of the day. What will you carry with you? What would you tell next year’s attendees?',
+    dischargePlaceholder: 'Share a reflection on the day',
+    dischargeEmpty: 'No reflections yet. Be the first to share.',
     directEmpty: 'No conversations yet. Tap "Message" on someone in the People tab to start one.',
     directMessagePlaceholder: 'Message',
 
@@ -266,10 +267,11 @@ export const TRANSLATIONS = {
     pledgeOne: 'compromiso hoy',
     pledgeMany: 'compromisos hoy',
 
-    chatEveryone: 'Todos',
+    chatDischarge: 'Alta',
     chatDirect: 'Directo',
-    lobbyPlaceholder: 'Escribe a todas las personas aquí',
-    lobbyEmpty: 'Aún no hay mensajes. Saluda a la sala.',
+    dischargeIntro: 'Antes de irte, una revisión narrativa del día. ¿Qué te llevas contigo? ¿Qué le dirías a quienes asistan el próximo año?',
+    dischargePlaceholder: 'Comparte una reflexión sobre el día',
+    dischargeEmpty: 'Aún no hay reflexiones. Sé la primera en compartir.',
     directEmpty: 'Aún no tienes conversaciones. Toca "Mensaje" en alguien en la pestaña Personas para empezar una.',
     directMessagePlaceholder: 'Mensaje para',
 
