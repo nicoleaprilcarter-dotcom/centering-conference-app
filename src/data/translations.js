@@ -128,7 +128,7 @@ export const TRANSLATIONS = {
     sponsors: 'Sponsors',
     attendees: 'Attendees',
     speakersEmpty: "Speakers haven't been announced yet. Check back soon.",
-    leadershipNote: 'Conference chair, board members, and staff.',
+    leadershipNote: 'Our founder, conference chair, board members, and staff.',
     leadershipEmpty: 'No one has been added here yet.',
     volunteersEmpty: 'No volunteers have been added yet.',
     sponsorsEmpty: 'No sponsors have been added yet.',
@@ -138,6 +138,7 @@ export const TRANSLATIONS = {
     attendee: 'Attendee',
 
     designationSpeaker: 'Speaker',
+    designationFounder: 'Founder',
     designationChair: 'Conference Chair',
     designationBoard: 'Board Member',
     designationStaff: 'Staff',
@@ -296,7 +297,7 @@ export const TRANSLATIONS = {
     sponsors: 'Patrocinadores',
     attendees: 'Asistentes',
     speakersEmpty: 'Las ponentes aún no se han anunciado. Vuelve pronto.',
-    leadershipNote: 'Presidencia de la conferencia, junta directiva y personal.',
+    leadershipNote: 'Nuestra fundadora, presidencia de la conferencia, junta directiva y personal.',
     leadershipEmpty: 'Todavía no se ha agregado a nadie aquí.',
     volunteersEmpty: 'Todavía no se han agregado voluntarias.',
     sponsorsEmpty: 'Todavía no se han agregado patrocinadores.',
@@ -306,6 +307,7 @@ export const TRANSLATIONS = {
     attendee: 'Asistente',
 
     designationSpeaker: 'Ponente',
+    designationFounder: 'Fundadora',
     designationChair: 'Presidencia de la conferencia',
     designationBoard: 'Junta directiva',
     designationStaff: 'Personal',

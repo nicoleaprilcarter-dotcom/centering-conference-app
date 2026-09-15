@@ -323,7 +323,7 @@ alter table profiles add column if not exists language text not null default 'en
 -- Sponsors). Null/anything else just shows as a regular attendee.
 -- Set it in the Table Editor, profiles table, designation column,
 -- using exactly one of:
---   speaker | chair | board | staff | volunteer | sponsor | moderator
+--   speaker | founder | chair | board | staff | volunteer | sponsor | moderator
 -- ------------------------------------------------------------
 alter table profiles add column if not exists designation text;
 

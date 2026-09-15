@@ -10,6 +10,7 @@ const TAG_COLOR_MAP = {
   pumpkin: ['#FBD9BC', '#A63D06'], // pumpkin orange — featured
   plum: ['#F1E0E6', '#6B1029'], // deep burgundy — welcome / plenary
   teal: ['#DFF1EF', '#12615D'], // teal — moderator
+  gold: ['#FBF0D3', '#8A6A12'], // gold — founder
   soft: ['#F3EFF1', '#7A6070'], // neutral
 };
 
@@ -20,6 +21,7 @@ export function tagColors(kind) {
 // Which color family each People-directory designation borrows.
 const DESIGNATION_KIND = {
   speaker: 'pumpkin',
+  founder: 'gold',
   chair: 'plum',
   board: 'plum',
   staff: 'plum',

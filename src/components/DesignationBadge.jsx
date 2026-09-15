@@ -2,6 +2,7 @@ import { designationColors, normalizeDesignation } from '../lib/helpers';
 
 const DESIGNATION_KEY = {
   speaker: 'designationSpeaker',
+  founder: 'designationFounder',
   chair: 'designationChair',
   board: 'designationBoard',
   staff: 'designationStaff',

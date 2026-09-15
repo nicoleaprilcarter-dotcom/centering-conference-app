@@ -60,7 +60,7 @@ function PersonList({ list, emptyText, userId, lang, t, onMessage }) {
 export default function People({ t, lang, userId, people, speakers, onMessage }) {
   const [tab, setTab] = useState('speakers');
   const visiblePeople = people.filter((p) => p.display_name);
-  const leadership = visiblePeople.filter((p) => ['chair', 'board', 'staff'].includes(normalizeDesignation(p.designation)));
+  const leadership = visiblePeople.filter((p) => ['founder', 'chair', 'board', 'staff'].includes(normalizeDesignation(p.designation)));
   const volunteers = visiblePeople.filter((p) => normalizeDesignation(p.designation) === 'volunteer');
   const sponsors = visiblePeople.filter((p) => normalizeDesignation(p.designation) === 'sponsor');
 
