@@ -9,7 +9,7 @@ const TAG_COLOR_MAP = {
   mustard: ['#FBEAB0', '#7A5205'], // mustard yellow — workshops
   pumpkin: ['#FBD9BC', '#A63D06'], // pumpkin orange — featured
   plum: ['#F1E0E6', '#6B1029'], // deep burgundy — welcome / plenary
-  teal: ['#DFF1EF', '#12615D'], // teal — moderator
+  ink: ['#F3EFF1', '#2E1035'], // black — moderator
   gold: ['#FBF0D3', '#8A6A12'], // gold — founder
   soft: ['#F3EFF1', '#7A6070'], // neutral
 };
@@ -27,7 +27,7 @@ const DESIGNATION_KIND = {
   staff: 'plum',
   volunteer: 'mustard',
   sponsor: 'pink',
-  moderator: 'teal',
+  moderator: 'ink',
 };
 
 export function designationColors(designation) {

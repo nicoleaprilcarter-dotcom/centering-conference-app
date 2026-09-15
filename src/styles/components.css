@@ -522,7 +522,7 @@
 /* ---------- wall ---------- */
 .wall-title {
   font: 400 22px/1.2 'Yellowtail', cursive;
-  color: var(--teal);
+  color: var(--hotpink-deep);
 }
 
 .wall-intro {
