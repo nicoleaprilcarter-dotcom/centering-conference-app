@@ -465,6 +465,74 @@ create policy "speaker photo moderator delete" on storage.objects
 
 
 -- ------------------------------------------------------------
+-- SPONSORS
+-- For sponsoring organizations/people who won't sign into the
+-- app themselves (a company, a team, a realtor, etc). Managed by
+-- HUES staff — add a row and a logo whenever a sponsor is
+-- confirmed. Nothing here needs the app rebuilt. (An attendee who
+-- IS in the app can instead just get designation = 'sponsor' on
+-- their own profile row — see the DIRECTORY DESIGNATION section
+-- above — and they'll show up here too.)
+-- ------------------------------------------------------------
+create table if not exists sponsors (
+  id         bigint generated always as identity primary key,
+  name       text not null,
+  note_en    text not null default '',
+  note_es    text not null default '',
+  logo_url   text,
+  sort       int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+alter table sponsors enable row level security;
+
+-- Everyone signed in can read the sponsor list.
+drop policy if exists "read sponsors" on sponsors;
+create policy "read sponsors" on sponsors
+  for select to authenticated using (true);
+
+-- Only moderators can add, edit, or remove sponsors.
+drop policy if exists "moderators manage sponsors" on sponsors;
+create policy "moderators manage sponsors" on sponsors
+  for all to authenticated
+  using (exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator))
+  with check (exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator));
+
+-- Sponsor logos: public bucket, only moderators can upload/replace/remove.
+insert into storage.buckets (id, name, public)
+values ('sponsor-logos', 'sponsor-logos', true)
+on conflict (id) do nothing;
+
+drop policy if exists "sponsor logo public read" on storage.objects;
+create policy "sponsor logo public read" on storage.objects
+  for select using (bucket_id = 'sponsor-logos');
+
+drop policy if exists "sponsor logo moderator write" on storage.objects;
+create policy "sponsor logo moderator write" on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'sponsor-logos'
+    and exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator)
+  );
+
+drop policy if exists "sponsor logo moderator update" on storage.objects;
+create policy "sponsor logo moderator update" on storage.objects
+  for update to authenticated
+  using (
+    bucket_id = 'sponsor-logos'
+    and exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator)
+  );
+
+drop policy if exists "sponsor logo moderator delete" on storage.objects;
+create policy "sponsor logo moderator delete" on storage.objects
+  for delete to authenticated
+  using (
+    bucket_id = 'sponsor-logos'
+    and exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator)
+  );
+
+
+-- ------------------------------------------------------------
 -- REALTIME
 -- Lets the app update without refreshing. Wrapped so this whole
 -- file is safe to run again later (a plain ALTER PUBLICATION
@@ -493,6 +561,9 @@ begin
   end if;
   if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'speakers') then
     alter publication supabase_realtime add table speakers;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'sponsors') then
+    alter publication supabase_realtime add table sponsors;
   end if;
 end $$;
 

@@ -57,12 +57,12 @@ function PersonList({ list, emptyText, userId, lang, t, onMessage }) {
   );
 }
 
-export default function People({ t, lang, userId, people, speakers, onMessage }) {
+export default function People({ t, lang, userId, people, speakers, sponsors = [], onMessage }) {
   const [tab, setTab] = useState('speakers');
   const visiblePeople = people.filter((p) => p.display_name);
   const leadership = visiblePeople.filter((p) => ['founder', 'chair', 'board', 'staff'].includes(normalizeDesignation(p.designation)));
   const volunteers = visiblePeople.filter((p) => normalizeDesignation(p.designation) === 'volunteer');
-  const sponsors = visiblePeople.filter((p) => normalizeDesignation(p.designation) === 'sponsor');
+  const sponsorAttendees = visiblePeople.filter((p) => normalizeDesignation(p.designation) === 'sponsor');
 
   const TABS = [
     { key: 'speakers', label: t.speakers },
@@ -129,7 +129,31 @@ export default function People({ t, lang, userId, people, speakers, onMessage })
       )}
 
       {tab === 'sponsors' && (
-        <PersonList list={sponsors} emptyText={t.sponsorsEmpty} userId={userId} lang={lang} t={t} onMessage={onMessage} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+          {sponsors.map((sp) => (
+            <div className="person-card" key={`org-${sp.id}`}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <Avatar url={sp.logo_url} name={sp.name} color={colorForId(sp.id)} size={52} fontSize={17} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="person-name">{sp.name}</div>
+                  {(lang === 'es' ? sp.note_es || sp.note_en : sp.note_en) && (
+                    <div className="person-bio">{lang === 'es' ? sp.note_es || sp.note_en : sp.note_en}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+          {sponsorAttendees.map((p) => (
+            <PersonCard key={p.id} p={p} userId={userId} lang={lang} t={t} onMessage={onMessage} />
+          ))}
+          {sponsors.length === 0 && sponsorAttendees.length === 0 && (
+            <div className="empty-state">
+              <Flourish color="#FBD9BC" size={160} top={-40} right={-40} opacity={0.5} />
+              <Flourish color="#FFDCEF" size={130} bottom={-30} left={-30} opacity={0.5} rotate={-25} />
+              <div className="empty-note">{t.sponsorsEmpty}</div>
+            </div>
+          )}
+        </div>
       )}
 
       {tab === 'attendees' && (

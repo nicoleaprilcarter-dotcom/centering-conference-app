@@ -85,6 +85,7 @@ export default function App() {
   const [lang, setLang] = useState(readStoredLang);
   const [checkedInAt, setCheckedInAt] = useState(null);
   const [speakers, setSpeakers] = useState([]);
+  const [sponsors, setSponsors] = useState([]);
   const [lastDmReadAt, setLastDmReadAt] = useState(readLastDmRead);
 
   const [sessionCheckins, setSessionCheckins] = useState({});
@@ -148,7 +149,7 @@ export default function App() {
   // ---------- after sign-in ----------
   const loadAll = useCallback(
     async (c, uid) => {
-      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf] = await Promise.all([
+      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn] = await Promise.all([
         c.from('saved_sessions').select('session_id').eq('user_id', uid),
         c.from('messages').select('*').eq('session_id', sid).order('created_at'),
         c.from('profiles').select('*').eq('visible', true),
@@ -163,6 +164,7 @@ export default function App() {
         c.from('messages').select('*').eq('session_id', TRIAGE_SESSION_ID).order('created_at'),
         c.from('conference_feedback').select('*').eq('user_id', uid).maybeSingle(),
         c.from('session_feedback').select('*').eq('user_id', uid),
+        c.from('sponsors').select('*').order('sort').order('created_at'),
       ]);
       const savedMap = {};
       (sv.data || []).forEach((r) => {
@@ -177,6 +179,7 @@ export default function App() {
       setLobbyMsgs(lb.data || []);
       setDmMsgs(dm.data || []);
       setSpeakers(sp.data || []);
+      setSponsors(sn.data || []);
       const checkinMap = {};
       (sc.data || []).forEach((r) => {
         checkinMap[r.session_id] = true;
@@ -237,6 +240,10 @@ export default function App() {
         const { data } = await client.from('speakers').select('*').order('sort').order('created_at');
         setSpeakers(data || []);
       }
+      if (what === 'sponsors') {
+        const { data } = await client.from('sponsors').select('*').order('sort').order('created_at');
+        setSponsors(data || []);
+      }
       if (what === 'waitingRoomMessages') {
         const { data } = await client.from('messages').select('*').eq('session_id', WAITING_ROOM_SESSION_ID).order('created_at');
         setWaitingRoomMsgs(data || []);
@@ -266,6 +273,7 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => reload('people'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'direct_messages' }, () => reload('directMessages'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'speakers' }, () => reload('speakers'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sponsors' }, () => reload('sponsors'))
       .subscribe((status) => setLive(status === 'SUBSCRIBED'));
     channelRef.current = ch;
   }, [client, reload]);
@@ -782,7 +790,7 @@ export default function App() {
           />
         ))}
       {screen === 'people' && (
-        <People t={t} lang={lang} userId={user.id} people={people} speakers={speakers} onMessage={openDirectThread} />
+        <People t={t} lang={lang} userId={user.id} people={people} speakers={speakers} sponsors={sponsors} onMessage={openDirectThread} />
       )}
       {screen === 'profile' &&
         (showCheckout ? (
