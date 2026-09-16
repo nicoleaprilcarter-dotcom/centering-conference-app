@@ -1,9 +1,10 @@
 import { badgeCode } from '../lib/badge';
 import QrCode from '../components/QrCode';
+import AdminMaterials from '../components/AdminMaterials';
 
 const VENUE_ADDRESS_ENCODED = encodeURIComponent('Dayton Hub, 31 S Main St, Dayton, OH 45402');
 
-export default function Resources({ t, checkedInAt, onCheckIn, onUndoCheckIn, userId }) {
+export default function Resources({ t, lang, checkedInAt, onCheckIn, onUndoCheckIn, userId, isModerator, sessionFiles, onUploadFile, onDeleteFile }) {
   return (
     <div className="screen-pad" style={{ display: 'flex', flexDirection: 'column' }}>
       <div
@@ -79,6 +80,10 @@ export default function Resources({ t, checkedInAt, onCheckIn, onUndoCheckIn, us
           {t.venueDirections}
         </a>
       </div>
+
+      {isModerator && (
+        <AdminMaterials t={t} lang={lang} sessionFiles={sessionFiles} onUploadFile={onUploadFile} onDeleteFile={onDeleteFile} />
+      )}
     </div>
   );
 }
