@@ -131,7 +131,12 @@ export default function People({ t, lang, userId, people, speakers, sponsors = [
       {tab === 'sponsors' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
           {sponsors.map((sp) => (
-            <div className="person-card" key={`org-${sp.id}`}>
+            <div
+              className="person-card"
+              key={`org-${sp.id}`}
+              onClick={sp.website_url ? () => window.open(sp.website_url, '_blank', 'noopener,noreferrer') : undefined}
+              style={sp.website_url ? { cursor: 'pointer' } : undefined}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <Avatar url={sp.logo_url} name={sp.name} color={colorForId(sp.id)} size={72} fontSize={22} />
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -139,6 +144,7 @@ export default function People({ t, lang, userId, people, speakers, sponsors = [
                   {(lang === 'es' ? sp.note_es || sp.note_en : sp.note_en) && (
                     <div className="person-bio">{lang === 'es' ? sp.note_es || sp.note_en : sp.note_en}</div>
                   )}
+                  {sp.website_url && <div style={{ font: '600 11.5px/1.3 Poppins', color: '#B01253', marginTop: 3 }}>{t.visitWebsite}</div>}
                 </div>
               </div>
             </div>

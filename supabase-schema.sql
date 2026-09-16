@@ -480,9 +480,12 @@ create table if not exists sponsors (
   note_en    text not null default '',
   note_es    text not null default '',
   logo_url   text,
+  website_url text,
   sort       int not null default 0,
   created_at timestamptz not null default now()
 );
+
+alter table sponsors add column if not exists website_url text;
 
 alter table sponsors enable row level security;
 
