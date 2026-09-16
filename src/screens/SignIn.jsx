@@ -1,8 +1,16 @@
 import { useState } from 'react';
 import Flourish from '../components/Flourish';
 
+function emailFromUrl() {
+  try {
+    return new URLSearchParams(window.location.search).get('email') || '';
+  } catch {
+    return '';
+  }
+}
+
 export default function SignIn({ t, onSendLink, sending, linkSent, error, onChangeDatabase }) {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(emailFromUrl);
   const bodyLines = t.signInBody.split('\n');
 
   return (
