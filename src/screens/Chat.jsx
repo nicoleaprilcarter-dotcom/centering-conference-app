@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import ChatThread from '../components/ChatThread';
 import Avatar from '../components/Avatar';
+import AskHues from '../components/AskHues';
 import { colorForId } from '../lib/helpers';
 
 export default function Chat({
@@ -23,6 +24,9 @@ export default function Chat({
   onSendTriage,
   dmThreads,
   onOpenThread,
+  aiChatMsgs,
+  aiChatSending,
+  onSendAiChat,
 }) {
   const [tab, setTab] = useState('waitingRoom');
 
@@ -42,6 +46,7 @@ export default function Chat({
     { key: 'triage', label: t.chatTriage },
     { key: 'lobby', label: t.chatDischarge },
     { key: 'direct', label: t.chatDirect },
+    { key: 'askHues', label: t.chatAskHues },
   ];
 
   return (
@@ -119,6 +124,10 @@ export default function Chat({
             emptyText={t.triageEmpty}
           />
         </>
+      )}
+
+      {tab === 'askHues' && (
+        <AskHues t={t} myName={myName} myAvatarUrl={myAvatarUrl} msgs={aiChatMsgs} sending={aiChatSending} onSend={onSendAiChat} />
       )}
 
       {tab === 'direct' && (

@@ -1,11 +1,49 @@
 import { useState } from 'react';
 import { colorForId } from '../lib/helpers';
 import { POLL_OPTIONS, POLL_PROMPT } from '../data/sessions';
-import { SendIcon } from '../components/icons';
+import { SendIcon, SparkleIcon } from '../components/icons';
 import Avatar from '../components/Avatar';
 
-export default function Session({ t, lang, userId, myName, myAvatarUrl, messages, votes, words, people, draft, setDraft, onSend, onVote, word, setWord, onAddWord }) {
+export default function Session({
+  t,
+  lang,
+  userId,
+  myName,
+  myAvatarUrl,
+  messages,
+  votes,
+  words,
+  people,
+  draft,
+  setDraft,
+  onSend,
+  onVote,
+  word,
+  setWord,
+  onAddWord,
+  questions = [],
+  questionVotes = [],
+  onAskQuestion,
+  onToggleQuestionVote,
+  onAnswerQuestion,
+  isModerator,
+  recap,
+  onGenerateRecap,
+}) {
   const [tab, setTab] = useState('chat');
+  const [qDraft, setQDraft] = useState('');
+  const [answerDrafts, setAnswerDrafts] = useState({});
+  const [generatingRecap, setGeneratingRecap] = useState(false);
+
+  const voteCount = (qId) => questionVotes.filter((v) => v.question_id === qId).length;
+  const myVoteOn = (qId) => questionVotes.some((v) => v.question_id === qId && v.user_id === userId);
+  const sortedQuestions = [...questions].sort((a, b) => voteCount(b.id) - voteCount(a.id) || (a.created_at < b.created_at ? -1 : 1));
+
+  const handleGenerateRecap = async () => {
+    setGeneratingRecap(true);
+    await onGenerateRecap();
+    setGeneratingRecap(false);
+  };
 
   const nameFor = (uid) => {
     if (uid === userId) return t.you;
@@ -31,11 +69,37 @@ export default function Session({ t, lang, userId, myName, myAvatarUrl, messages
           >
             {t.livePoll}
           </div>
+          <div
+            className="tab-item"
+            style={{ color: tab === 'qa' ? '#2E1035' : '#A08E9A', borderColor: tab === 'qa' ? '#D81B60' : 'transparent' }}
+            onClick={() => setTab('qa')}
+          >
+            {t.sessionQa}
+          </div>
         </div>
       </div>
 
       {tab === 'chat' ? (
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 480 }}>
+          {(recap || isModerator) && (
+            <div style={{ margin: '12px 18px 0', padding: 12, borderRadius: 14, background: '#F3EFF1' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, font: '700 11px/1 Poppins', color: '#B01253', textTransform: 'uppercase', letterSpacing: '.04em' }}>
+                <SparkleIcon /> {t.sessionRecapTitle}
+              </div>
+              {recap ? (
+                <div style={{ font: '400 12.5px/1.55 Poppins', color: '#2E1035', marginTop: 6 }}>
+                  {lang === 'es' ? recap.summary_es || recap.summary_en : recap.summary_en}
+                </div>
+              ) : (
+                <div style={{ font: '400 12px/1.5 Poppins', color: '#7A6070', marginTop: 6 }}>{t.sessionRecapEmpty}</div>
+              )}
+              {isModerator && (
+                <div className="text-link-btn" style={{ margin: '8px 0 0', padding: 0 }} onClick={handleGenerateRecap}>
+                  {generatingRecap ? t.sessionRecapGenerating : recap ? t.sessionRecapRegenerate : t.sessionRecapGenerate}
+                </div>
+              )}
+            </div>
+          )}
           <div className="chat-list">
             {messages.map((m) => {
               const mine = m.user_id === userId;
@@ -73,6 +137,98 @@ export default function Session({ t, lang, userId, myName, myAvatarUrl, messages
             <div className="send-btn" onClick={onSend}>
               <SendIcon />
             </div>
+          </div>
+        </div>
+      ) : tab === 'qa' ? (
+        <div className="screen-pad">
+          <div className="add-row" style={{ marginBottom: 14 }}>
+            <input
+              className="add-input"
+              type="text"
+              placeholder={t.askQuestionPlaceholder}
+              value={qDraft}
+              onChange={(e) => setQDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && qDraft.trim()) {
+                  onAskQuestion(qDraft);
+                  setQDraft('');
+                }
+              }}
+            />
+            <div
+              className="add-btn"
+              onClick={() => {
+                if (!qDraft.trim()) return;
+                onAskQuestion(qDraft);
+                setQDraft('');
+              }}
+            >
+              {t.add}
+            </div>
+          </div>
+          {sortedQuestions.length === 0 && <div className="empty-note">{t.noQuestions}</div>}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {sortedQuestions.map((q) => {
+              const mine = myVoteOn(q.id);
+              return (
+                <div key={q.id} style={{ background: '#fff', border: '1px solid rgba(46,16,53,.08)', borderRadius: 14, padding: 12 }}>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <div
+                      onClick={() => onToggleQuestionVote(q.id)}
+                      style={{
+                        flex: 'none',
+                        width: 40,
+                        height: 40,
+                        borderRadius: 10,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        background: mine ? '#FFE0F0' : '#F3EFF1',
+                        color: mine ? '#C6106B' : '#7A6070',
+                        font: '700 13px/1 Poppins',
+                      }}
+                      title={t.upvote}
+                    >
+                      <span style={{ fontSize: 16, lineHeight: 1 }}>▲</span>
+                      {voteCount(q.id)}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ font: '500 13px/1.4 Poppins', color: '#2E1035' }}>{q.body}</div>
+                      {q.answered && q.answer && (
+                        <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 10, background: '#FBEAB0' }}>
+                          <div style={{ font: '700 10.5px/1 Poppins', color: '#7A5205', marginBottom: 3 }}>{t.answeredLabel}</div>
+                          <div style={{ font: '400 12.5px/1.45 Poppins', color: '#2E1035' }}>{q.answer}</div>
+                        </div>
+                      )}
+                      {isModerator && !q.answered && (
+                        <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                          <input
+                            className="field-input dark"
+                            style={{ flex: 1, padding: '7px 10px', font: '400 12px/1.3 Poppins' }}
+                            type="text"
+                            placeholder={t.answerPlaceholder}
+                            value={answerDrafts[q.id] || ''}
+                            onChange={(e) => setAnswerDrafts((d) => ({ ...d, [q.id]: e.target.value }))}
+                          />
+                          <div
+                            className="add-btn"
+                            style={{ flex: 'none' }}
+                            onClick={() => {
+                              onAnswerQuestion(q.id, (answerDrafts[q.id] || '').trim());
+                              setAnswerDrafts((d) => ({ ...d, [q.id]: '' }));
+                            }}
+                          >
+                            {t.answerSubmit}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       ) : (

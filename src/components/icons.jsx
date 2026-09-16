@@ -92,6 +92,23 @@ export function ResourcesIcon({ color }) {
   );
 }
 
+export function SparkleIcon({ color = '#D81B60' }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill={color} stroke="none">
+      <path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z" />
+    </svg>
+  );
+}
+
+export function NoteIcon({ color = '#A08E9A' }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 4h11l3 3v13H5V4z" />
+      <path d="M9 10h7M9 14h7M9 18h4" />
+    </svg>
+  );
+}
+
 export function ProfileIcon({ color }) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">

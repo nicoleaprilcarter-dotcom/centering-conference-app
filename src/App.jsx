@@ -7,6 +7,7 @@ import {
 } from './lib/supabaseClient';
 import { POLL_QUESTION_ID } from './data/sessions';
 import { TRANSLATIONS } from './data/translations';
+import { askAssistant } from './lib/ai';
 
 import Setup from './screens/Setup';
 import SignIn from './screens/SignIn';
@@ -124,6 +125,15 @@ export default function App() {
   const [sponsors, setSponsors] = useState([]);
   const [sessionHosts, setSessionHosts] = useState({});
   const [sessionFiles, setSessionFiles] = useState({});
+  const [sessionNotes, setSessionNotes] = useState({});
+  const [sessionQuestions, setSessionQuestions] = useState([]);
+  const [sessionQuestionVotes, setSessionQuestionVotes] = useState([]);
+  const [sessionRecaps, setSessionRecaps] = useState({});
+  const [aiChatMsgs, setAiChatMsgs] = useState([]);
+  const [aiChatSending, setAiChatSending] = useState(false);
+  const [aiRecommendation, setAiRecommendation] = useState(null);
+  const [aiRecLoading, setAiRecLoading] = useState(false);
+  const [aiRecError, setAiRecError] = useState('');
   const [lastDmReadAt, setLastDmReadAt] = useState(readLastDmRead);
 
   const [sessionCheckins, setSessionCheckins] = useState({});
@@ -187,7 +197,7 @@ export default function App() {
   // ---------- after sign-in ----------
   const loadAll = useCallback(
     async (c, uid) => {
-      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh, sfl] = await Promise.all([
+      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh, sfl, sno, sq, sqv, src] = await Promise.all([
         c.from('saved_sessions').select('session_id').eq('user_id', uid),
         c.from('messages').select('*').eq('session_id', sid).order('created_at'),
         c.from('profiles').select('*').eq('visible', true),
@@ -205,6 +215,10 @@ export default function App() {
         c.from('sponsors').select('*').order('sort').order('created_at'),
         c.from('session_hosts').select('*, profile:profiles(id, display_name, avatar_url, pronouns, bio, interests, designation)').order('sort'),
         c.from('session_files').select('*').order('sort'),
+        c.from('session_notes').select('*').eq('user_id', uid),
+        c.from('session_questions').select('*').eq('session_id', sid).order('created_at'),
+        c.from('session_question_votes').select('*'),
+        c.from('session_recaps').select('*'),
       ]);
       const savedMap = {};
       (sv.data || []).forEach((r) => {
@@ -222,6 +236,18 @@ export default function App() {
       setSponsors(sn.data || []);
       setSessionHosts(groupSessionHosts(sh.data));
       setSessionFiles(groupSessionFiles(sfl.data));
+      const notesMap = {};
+      (sno.data || []).forEach((r) => {
+        notesMap[r.session_id] = r.note;
+      });
+      setSessionNotes(notesMap);
+      setSessionQuestions(sq.data || []);
+      setSessionQuestionVotes(sqv.data || []);
+      const recapMap = {};
+      (src.data || []).forEach((r) => {
+        recapMap[r.session_id] = r;
+      });
+      setSessionRecaps(recapMap);
       const checkinMap = {};
       (sc.data || []).forEach((r) => {
         checkinMap[r.session_id] = true;
@@ -294,6 +320,30 @@ export default function App() {
         const { data } = await client.from('session_files').select('*').order('sort');
         setSessionFiles(groupSessionFiles(data));
       }
+      if (what === 'sessionNotes' && user) {
+        const { data } = await client.from('session_notes').select('*').eq('user_id', user.id);
+        const notesMap = {};
+        (data || []).forEach((r) => {
+          notesMap[r.session_id] = r.note;
+        });
+        setSessionNotes(notesMap);
+      }
+      if (what === 'sessionQuestions') {
+        const { data } = await client.from('session_questions').select('*').eq('session_id', sid).order('created_at');
+        setSessionQuestions(data || []);
+      }
+      if (what === 'sessionQuestionVotes') {
+        const { data } = await client.from('session_question_votes').select('*');
+        setSessionQuestionVotes(data || []);
+      }
+      if (what === 'sessionRecaps') {
+        const { data } = await client.from('session_recaps').select('*');
+        const recapMap = {};
+        (data || []).forEach((r) => {
+          recapMap[r.session_id] = r;
+        });
+        setSessionRecaps(recapMap);
+      }
       if (what === 'waitingRoomMessages') {
         const { data } = await client.from('messages').select('*').eq('session_id', WAITING_ROOM_SESSION_ID).order('created_at');
         setWaitingRoomMsgs(data || []);
@@ -326,6 +376,10 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sponsors' }, () => reload('sponsors'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_hosts' }, () => reload('sessionHosts'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_files' }, () => reload('sessionFiles'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'session_notes' }, () => reload('sessionNotes'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'session_questions' }, () => reload('sessionQuestions'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'session_question_votes' }, () => reload('sessionQuestionVotes'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'session_recaps' }, () => reload('sessionRecaps'))
       .subscribe((status) => setLive(status === 'SUBSCRIBED'));
     channelRef.current = ch;
   }, [client, reload]);
@@ -707,6 +761,82 @@ export default function App() {
     }
   };
 
+  const saveNote = async (sessionId, note) => {
+    setSessionNotes((s) => ({ ...s, [sessionId]: note }));
+    const { error: err } = await client
+      .from('session_notes')
+      .upsert({ session_id: sessionId, user_id: user.id, note, updated_at: new Date().toISOString() }, { onConflict: 'session_id,user_id' });
+    if (err) setError('Note not saved. ' + err.message);
+  };
+
+  const askQuestion = async (sessionId, body) => {
+    const v = body.trim();
+    if (!v) return;
+    const { error: err } = await client.from('session_questions').insert({ session_id: sessionId, user_id: user.id, body: v.slice(0, 500) });
+    if (err) setError('Question not sent. ' + err.message);
+    reload('sessionQuestions');
+  };
+
+  const toggleQuestionVote = async (questionId) => {
+    const already = sessionQuestionVotes.some((v) => v.question_id === questionId && v.user_id === user.id);
+    const { error: err } = already
+      ? await client.from('session_question_votes').delete().eq('question_id', questionId).eq('user_id', user.id)
+      : await client.from('session_question_votes').insert({ question_id: questionId, user_id: user.id });
+    if (err) setError('Vote not saved. ' + err.message);
+    reload('sessionQuestionVotes');
+  };
+
+  const answerQuestion = async (questionId, answerText) => {
+    const { error: err } = await client.from('session_questions').update({ answer: answerText, answered: true }).eq('id', questionId);
+    if (err) setError('Answer not saved. ' + err.message);
+    reload('sessionQuestions');
+  };
+
+  const generateRecap = async (sessionId, sessionTitle, transcriptMsgs) => {
+    const transcript = transcriptMsgs.map((m) => `${m.user_id === user.id ? pfName : 'Attendee'}: ${m.body}`).join('\n');
+    try {
+      const result = await askAssistant(client, { mode: 'recap', sessionTitle, transcript });
+      const { error: err } = await client.from('session_recaps').upsert({
+        session_id: sessionId,
+        summary_en: result.summary_en,
+        summary_es: result.summary_es,
+        generated_at: new Date().toISOString(),
+      });
+      if (err) setError('Recap generated but not saved. ' + err.message);
+      reload('sessionRecaps');
+    } catch (e) {
+      setError('Could not generate recap. ' + e.message);
+    }
+  };
+
+  const sendAiChat = async (message) => {
+    const history = aiChatMsgs.map((m) => ({ role: m.role, content: m.content }));
+    setAiChatMsgs((m) => [...m, { role: 'user', content: message }]);
+    setAiChatSending(true);
+    try {
+      const result = await askAssistant(client, { mode: 'chat', message, history, lang });
+      setAiChatMsgs((m) => [...m, { role: 'assistant', content: result.reply }]);
+    } catch (e) {
+      setAiChatMsgs((m) => [...m, { role: 'assistant', content: e.message }]);
+    }
+    setAiChatSending(false);
+  };
+
+  const fetchRecommendation = async () => {
+    setAiRecLoading(true);
+    setAiRecError('');
+    try {
+      const interests = Object.keys(pfTags)
+        .filter((k) => pfTags[k])
+        .map((k) => TRANSLATIONS.en.interestTags[k]);
+      const result = await askAssistant(client, { mode: 'recommend', interests, bio: pfBio, lang });
+      setAiRecommendation(result);
+    } catch (e) {
+      setAiRecError(e.message);
+    }
+    setAiRecLoading(false);
+  };
+
   // ---------- render ----------
   if (loading) {
     return (
@@ -781,6 +911,7 @@ export default function App() {
         <Agenda
           t={t}
           lang={lang}
+          name={pfName}
           saved={saved}
           onOpenSession={openSession}
           onToggleStar={toggleStar}
@@ -789,6 +920,14 @@ export default function App() {
           sessionHosts={sessionHosts}
           sessionFiles={sessionFiles}
           onOpenPerson={openPersonProfile}
+          sessionNotes={sessionNotes}
+          onSaveNote={saveNote}
+          sessionRecaps={sessionRecaps}
+          checkedInAt={checkedInAt}
+          aiRecommendation={aiRecommendation}
+          aiRecLoading={aiRecLoading}
+          aiRecError={aiRecError}
+          onFetchRecommendation={fetchRecommendation}
         />
       )}
       {screen === 'resources' && (
@@ -812,6 +951,14 @@ export default function App() {
           word={word}
           setWord={setWord}
           onAddWord={addWord}
+          questions={sessionQuestions}
+          questionVotes={sessionQuestionVotes}
+          onAskQuestion={(body) => askQuestion(sid, body)}
+          onToggleQuestionVote={toggleQuestionVote}
+          onAnswerQuestion={answerQuestion}
+          isModerator={!!(profile && profile.is_moderator)}
+          recap={sessionRecaps[sid]}
+          onGenerateRecap={() => generateRecap(sid, 'Signature Fireside Chat', msgs)}
         />
       )}
       {screen === 'wall' && (
@@ -858,6 +1005,9 @@ export default function App() {
             onSendTriage={sendTriage}
             dmThreads={dmThreads}
             onOpenThread={openDirectThread}
+            aiChatMsgs={aiChatMsgs}
+            aiChatSending={aiChatSending}
+            onSendAiChat={sendAiChat}
           />
         ))}
       {screen === 'people' && (
