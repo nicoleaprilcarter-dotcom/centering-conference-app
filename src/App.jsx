@@ -829,21 +829,29 @@ export default function App() {
     }
     const ext = (file.name.split('.').pop() || 'file').toLowerCase();
     const path = `${sessionId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    const { error: upErr } = await client.storage.from('session-files').upload(path, file, { cacheControl: '3600' });
-    if (upErr) {
-      setError('File not uploaded. ' + upErr.message);
-      return;
+    const timeout = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('Upload timed out. Check your connection and try again.')), ms));
+    try {
+      const { error: upErr } = await Promise.race([
+        client.storage.from('session-files').upload(path, file, { cacheControl: '3600' }),
+        timeout(45000),
+      ]);
+      if (upErr) {
+        setError('File not uploaded. ' + upErr.message);
+        return;
+      }
+      const { data } = client.storage.from('session-files').getPublicUrl(path);
+      const isImage = file.type.startsWith('image/');
+      const { error: insErr } = await client.from('session_files').insert({
+        session_id: sessionId,
+        title: title.trim() || file.name,
+        file_url: data.publicUrl,
+        thumbnail_url: isImage ? data.publicUrl : null,
+      });
+      if (insErr) setError('File uploaded but not saved. ' + insErr.message);
+      reload('sessionFiles');
+    } catch (e) {
+      setError(e.message || 'File not uploaded. Something went wrong.');
     }
-    const { data } = client.storage.from('session-files').getPublicUrl(path);
-    const isImage = file.type.startsWith('image/');
-    const { error: insErr } = await client.from('session_files').insert({
-      session_id: sessionId,
-      title: title.trim() || file.name,
-      file_url: data.publicUrl,
-      thumbnail_url: isImage ? data.publicUrl : null,
-    });
-    if (insErr) setError('File uploaded but not saved. ' + insErr.message);
-    reload('sessionFiles');
   };
 
   const deleteSessionFile = async (fileId) => {

@@ -12,9 +12,12 @@ export default function AdminMaterials({ t, lang, sessionFiles, onUploadFile, on
 
   const handleFile = async (file) => {
     setUploading(true);
-    await onUploadFile(sessionId, title, file);
-    setUploading(false);
-    setTitle('');
+    try {
+      await onUploadFile(sessionId, title, file);
+      setTitle('');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
