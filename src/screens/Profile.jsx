@@ -2,6 +2,15 @@ import { useRef } from 'react';
 import Avatar from '../components/Avatar';
 import Flourish from '../components/Flourish';
 import DesignationBadge from '../components/DesignationBadge';
+import { tagColors } from '../lib/helpers';
+
+// Every other tag gets a signature color from the palette; the rest
+// stay plain outlines, so the grid reads as colorful without every
+// pill competing for attention.
+const INTEREST_PALETTE = ['pink', 'mustard', 'pumpkin', 'plum', 'gold'];
+function interestKind(i) {
+  return i % 2 === 0 ? INTEREST_PALETTE[(i / 2) % INTEREST_PALETTE.length] : null;
+}
 
 export default function Profile({
   t,
@@ -112,17 +121,24 @@ export default function Profile({
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         {t.interestTags.map((label, i) => {
           const on = !!tags[i];
+          const kind = interestKind(i);
+          const [bg, fg] = kind ? tagColors(kind) : ['#fff', '#2E1035'];
           return (
             <div
               className="tag-chip"
               key={label}
               style={{
-                background: on ? '#2E1035' : '#fff',
-                color: on ? '#fff' : '#2E1035',
-                borderColor: on ? '#2E1035' : 'rgba(46,16,53,.14)',
+                background: bg,
+                color: fg,
+                borderColor: on ? '#2E1035' : kind ? 'transparent' : 'rgba(46,16,53,.14)',
+                borderWidth: on ? 2 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
               }}
               onClick={() => toggleTag(i)}
             >
+              {on && <span>✓</span>}
               {label}
             </div>
           );
