@@ -31,6 +31,7 @@ export const TRANSLATIONS = {
 
     notePlaceholder: 'Jot a private note for yourself…',
     myNotes: 'My notes',
+    materialsComingSoon: 'Materials coming soon',
 
     titleAgenda: 'Friday, November 6',
     titleSession: 'Fireside Chat',
@@ -248,6 +249,7 @@ export const TRANSLATIONS = {
 
     notePlaceholder: 'Escribe una nota privada para ti…',
     myNotes: 'Mis notas',
+    materialsComingSoon: 'Materiales próximamente',
 
     titleAgenda: 'Viernes 6 de noviembre',
     titleSession: 'Charla íntima',

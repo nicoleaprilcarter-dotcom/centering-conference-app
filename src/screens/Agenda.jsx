@@ -7,6 +7,11 @@ import Flourish from '../components/Flourish';
 
 // Session times are written like "8:30" or "1:35" with no AM/PM — the
 // conference runs 8:30a-3:40p, so hours 1-7 are always PM and 8-11 AM.
+// Only sessions with actual content (not arrival/breaks/transitions) get
+// a "materials coming soon" placeholder when no flyer/worksheet/slides
+// have been uploaded yet.
+const MATERIALS_TAG_KEYS = ['tagPlenary', 'tagFeatured', 'tagWorkshop'];
+
 function timeToMinutes(tStr) {
   const [hStr, mStr] = tStr.split(':');
   let h = parseInt(hStr, 10);
@@ -261,6 +266,9 @@ export default function Agenda({
                       </a>
                     ))}
                   </div>
+                )}
+                {files.length === 0 && MATERIALS_TAG_KEYS.includes(s.tagKey) && (
+                  <div style={{ marginTop: 9, font: '400 11.5px/1.3 Poppins', color: '#A08E9A', fontStyle: 'italic' }}>{t.materialsComingSoon}</div>
                 )}
                 {openNotesFor === s.id && (
                   <div style={{ marginTop: 10 }}>
