@@ -757,6 +757,34 @@ create policy "moderators manage recaps" on session_recaps
   using (exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator))
   with check (exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator));
 
+-- ------------------------------------------------------------
+-- SESSION DETAILS
+-- The full-description content for each session's detail page
+-- (tapping a session on Agenda). Optional per session — a
+-- moderator fills these in from the Session Detail screen itself,
+-- no SQL needed. Empty until someone writes one.
+-- ------------------------------------------------------------
+create table if not exists session_details (
+  session_id       text primary key,
+  description_en   text not null default '',
+  description_es   text not null default '',
+  accessibility_en text not null default '',
+  accessibility_es text not null default '',
+  updated_at       timestamptz not null default now()
+);
+
+alter table session_details enable row level security;
+
+drop policy if exists "read session details" on session_details;
+create policy "read session details" on session_details
+  for select to authenticated using (true);
+
+drop policy if exists "moderators manage session details" on session_details;
+create policy "moderators manage session details" on session_details
+  for all to authenticated
+  using (exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator))
+  with check (exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator));
+
 
 -- ------------------------------------------------------------
 -- REALTIME
@@ -808,6 +836,9 @@ begin
   end if;
   if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'session_recaps') then
     alter publication supabase_realtime add table session_recaps;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'session_details') then
+    alter publication supabase_realtime add table session_details;
   end if;
 end $$;
 

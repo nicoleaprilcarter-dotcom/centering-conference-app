@@ -5,13 +5,14 @@ import {
   clearStoredConfig,
   createSupabaseClient,
 } from './lib/supabaseClient';
-import { POLL_QUESTION_ID } from './data/sessions';
+import { POLL_QUESTION_ID, SESSIONS } from './data/sessions';
 import { TRANSLATIONS } from './data/translations';
 import { askAssistant } from './lib/ai';
 
 import Setup from './screens/Setup';
 import SignIn from './screens/SignIn';
 import Agenda from './screens/Agenda';
+import SessionDetail from './screens/SessionDetail';
 import Resources from './screens/Resources';
 import Session from './screens/Session';
 import Wall from './screens/Wall';
@@ -129,6 +130,8 @@ export default function App() {
   const [sessionQuestions, setSessionQuestions] = useState([]);
   const [sessionQuestionVotes, setSessionQuestionVotes] = useState([]);
   const [sessionRecaps, setSessionRecaps] = useState({});
+  const [sessionDetails, setSessionDetails] = useState({});
+  const [viewingSessionId, setViewingSessionId] = useState(null);
   const [aiChatMsgs, setAiChatMsgs] = useState([]);
   const [aiChatSending, setAiChatSending] = useState(false);
   const [aiRecommendation, setAiRecommendation] = useState(null);
@@ -197,7 +200,7 @@ export default function App() {
   // ---------- after sign-in ----------
   const loadAll = useCallback(
     async (c, uid) => {
-      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh, sfl, sno, sq, sqv, src] = await Promise.all([
+      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh, sfl, sno, sq, sqv, src, sdt] = await Promise.all([
         c.from('saved_sessions').select('session_id').eq('user_id', uid),
         c.from('messages').select('*').eq('session_id', sid).order('created_at'),
         c.from('profiles').select('*').eq('visible', true),
@@ -219,6 +222,7 @@ export default function App() {
         c.from('session_questions').select('*').eq('session_id', sid).order('created_at'),
         c.from('session_question_votes').select('*'),
         c.from('session_recaps').select('*'),
+        c.from('session_details').select('*'),
       ]);
       const savedMap = {};
       (sv.data || []).forEach((r) => {
@@ -248,6 +252,11 @@ export default function App() {
         recapMap[r.session_id] = r;
       });
       setSessionRecaps(recapMap);
+      const detailMap = {};
+      (sdt.data || []).forEach((r) => {
+        detailMap[r.session_id] = r;
+      });
+      setSessionDetails(detailMap);
       const checkinMap = {};
       (sc.data || []).forEach((r) => {
         checkinMap[r.session_id] = true;
@@ -344,6 +353,14 @@ export default function App() {
         });
         setSessionRecaps(recapMap);
       }
+      if (what === 'sessionDetails') {
+        const { data } = await client.from('session_details').select('*');
+        const detailMap = {};
+        (data || []).forEach((r) => {
+          detailMap[r.session_id] = r;
+        });
+        setSessionDetails(detailMap);
+      }
       if (what === 'waitingRoomMessages') {
         const { data } = await client.from('messages').select('*').eq('session_id', WAITING_ROOM_SESSION_ID).order('created_at');
         setWaitingRoomMsgs(data || []);
@@ -380,6 +397,7 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_questions' }, () => reload('sessionQuestions'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_question_votes' }, () => reload('sessionQuestionVotes'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_recaps' }, () => reload('sessionRecaps'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'session_details' }, () => reload('sessionDetails'))
       .subscribe((status) => setLive(status === 'SUBSCRIBED'));
     channelRef.current = ch;
   }, [client, reload]);
@@ -476,7 +494,6 @@ export default function App() {
     }
   };
 
-  const openSession = () => setScreen('session');
 
   const sendMessage = async () => {
     const v = draft.trim();
@@ -916,7 +933,18 @@ export default function App() {
     setActiveDmUserId(null);
     setShowCheckout(false);
     setViewingPerson(null);
+    setViewingSessionId(null);
     setScreen(key);
+  };
+
+  const saveSessionDetail = async (sessionId, fields) => {
+    const { error: err } = await client.from('session_details').upsert({
+      session_id: sessionId,
+      ...fields,
+      updated_at: new Date().toISOString(),
+    });
+    if (err) setError('Details not saved. ' + err.message);
+    reload('sessionDetails');
   };
 
   return (
@@ -943,6 +971,35 @@ export default function App() {
           onBack={() => setViewingPerson(null)}
           onMessage={viewingPerson.userId ? () => openDirectThread(viewingPerson.userId) : null}
         />
+      ) : viewingSessionId ? (
+        <SessionDetail
+          t={t}
+          lang={lang}
+          session={SESSIONS.find((s) => s.id === viewingSessionId)}
+          isLive={(() => {
+            const s = SESSIONS.find((x) => x.id === viewingSessionId);
+            if (!s) return false;
+            const [hStr, mStr] = s.t.split(':');
+            let h = parseInt(hStr, 10);
+            if (h < 8 && h !== 12) h += 12;
+            const start = h * 60 + parseInt(mStr, 10);
+            const duration = parseInt(s.d, 10) || 0;
+            const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+            return nowMin >= start && nowMin < start + duration;
+          })()}
+          hosts={sessionHosts[viewingSessionId] || []}
+          files={sessionFiles[viewingSessionId] || []}
+          detail={sessionDetails[viewingSessionId]}
+          recap={sessionRecaps[viewingSessionId]}
+          isModerator={!!(profile && profile.is_moderator)}
+          onBack={() => setViewingSessionId(null)}
+          onOpenPerson={openPersonProfile}
+          onJoinLive={() => {
+            setViewingSessionId(null);
+            setScreen('session');
+          }}
+          onSaveDetail={saveSessionDetail}
+        />
       ) : (
         <>
       {screen === 'agenda' && (
@@ -951,7 +1008,7 @@ export default function App() {
           lang={lang}
           name={pfName}
           saved={saved}
-          onOpenSession={openSession}
+          onOpenSession={(id) => setViewingSessionId(id)}
           onToggleStar={toggleStar}
           sessionCheckins={sessionCheckins}
           onToggleSessionCheckIn={toggleSessionCheckIn}
