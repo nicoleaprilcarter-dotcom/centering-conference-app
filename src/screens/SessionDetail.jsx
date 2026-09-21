@@ -160,10 +160,13 @@ export default function SessionDetail({
                   style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
                 >
                   <Avatar url={h.avatarUrl} name={h.name} color={colorForId(h.userId || h.name)} size={36} fontSize={13} />
-                  <div style={{ minWidth: 0 }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ font: '600 13px/1.2 Poppins', color: '#2E1035' }}>{h.name}</div>
                     {role && <div style={{ font: '400 11.5px/1.2 Poppins', color: '#A08E9A' }}>{role}</div>}
                   </div>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C0AEBA" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ flex: 'none' }}>
+                    <path d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
               );
             })}

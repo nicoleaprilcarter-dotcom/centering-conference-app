@@ -26,7 +26,7 @@ function timeToMinutes(tStr) {
   return h * 60 + m;
 }
 
-function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checkedInAt, aiRecommendation, aiRecLoading, aiRecError, onFetchRecommendation }) {
+function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checkedInAt, aiRecommendation, aiRecLoading, aiRecError, onFetchRecommendation, view, onFilter }) {
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
   const upNext = SESSIONS.find((s) => timeToMinutes(s.t) >= nowMin);
   const savedCount = Object.values(saved).filter(Boolean).length;
@@ -52,9 +52,24 @@ function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checke
           <div style={{ font: '400 11.5px/1.4 Poppins', color: '#E3D3DF' }}>
             {checkedInAt ? t.dashboardCheckedIn : t.dashboardNotCheckedIn}
           </div>
-          <div style={{ font: '400 11.5px/1.4 Poppins', color: '#E3D3DF' }}>{savedCount} {t.dashboardSaved}</div>
-          <div style={{ font: '400 11.5px/1.4 Poppins', color: '#E3D3DF' }}>{checkinCount} {t.dashboardSessionsAttended}</div>
-          <div style={{ font: '400 11.5px/1.4 Poppins', color: '#E3D3DF' }}>{notesCount} {t.dashboardNotes}</div>
+          <div
+            onClick={() => onFilter('mine')}
+            style={{ font: '400 11.5px/1.4 Poppins', color: view === 'mine' ? '#FFDCEF' : '#E3D3DF', cursor: 'pointer', textDecoration: view === 'mine' ? 'underline' : 'none' }}
+          >
+            {savedCount} {t.dashboardSaved}
+          </div>
+          <div
+            onClick={() => onFilter('attended')}
+            style={{ font: '400 11.5px/1.4 Poppins', color: view === 'attended' ? '#FFDCEF' : '#E3D3DF', cursor: 'pointer', textDecoration: view === 'attended' ? 'underline' : 'none' }}
+          >
+            {checkinCount} {t.dashboardSessionsAttended}
+          </div>
+          <div
+            onClick={() => onFilter('notes')}
+            style={{ font: '400 11.5px/1.4 Poppins', color: view === 'notes' ? '#FFDCEF' : '#E3D3DF', cursor: 'pointer', textDecoration: view === 'notes' ? 'underline' : 'none' }}
+          >
+            {notesCount} {t.dashboardNotes}
+          </div>
         </div>
 
         <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,.14)' }}>
@@ -116,7 +131,15 @@ export default function Agenda({
   const [view, setView] = useState('all');
   const [openNotesFor, setOpenNotesFor] = useState(null);
   const [noteDraft, setNoteDraft] = useState('');
-  const visibleSessions = view === 'mine' ? SESSIONS.filter((s) => saved[s.id]) : SESSIONS;
+  const visibleSessions =
+    view === 'mine'
+      ? SESSIONS.filter((s) => saved[s.id])
+      : view === 'attended'
+        ? SESSIONS.filter((s) => sessionCheckins[s.id])
+        : view === 'notes'
+          ? SESSIONS.filter((s) => sessionNotes[s.id] && sessionNotes[s.id].trim())
+          : SESSIONS;
+  const emptyMessage = view === 'attended' ? t.attendedFilterEmpty : view === 'notes' ? t.notesFilterEmpty : t.myScheduleEmpty;
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
 
   const openNotes = (sessionId) => {
@@ -142,6 +165,8 @@ export default function Agenda({
         aiRecLoading={aiRecLoading}
         aiRecError={aiRecError}
         onFetchRecommendation={onFetchRecommendation}
+        view={view}
+        onFilter={(v) => setView((cur) => (cur === v ? 'all' : v))}
       />
       <div style={{ display: 'flex', background: '#F0E7EC', borderRadius: 999, padding: 4, marginBottom: 14 }}>
         <div
@@ -188,11 +213,11 @@ export default function Agenda({
         </span>
       </div>
 
-      {view === 'mine' && visibleSessions.length === 0 && (
+      {view !== 'all' && visibleSessions.length === 0 && (
         <div className="empty-state">
           <Flourish color="#FFDCEF" size={160} top={-40} right={-40} opacity={0.5} />
           <Flourish color="#FBEAB0" size={130} bottom={-30} left={-30} opacity={0.5} rotate={30} />
-          <div className="empty-note">{t.myScheduleEmpty}</div>
+          <div className="empty-note">{emptyMessage}</div>
         </div>
       )}
 
@@ -258,10 +283,13 @@ export default function Agenda({
                           style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer' }}
                         >
                           <Avatar url={h.avatarUrl} name={h.name} color={colorForId(h.userId || h.name)} size={24} fontSize={10} />
-                          <div style={{ minWidth: 0 }}>
+                          <div style={{ minWidth: 0, flex: 1 }}>
                             <div style={{ font: '600 12px/1.2 Poppins', color: '#2E1035' }}>{h.name}</div>
                             {role && <div style={{ font: '400 10.5px/1.2 Poppins', color: '#A08E9A' }}>{role}</div>}
                           </div>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C0AEBA" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ flex: 'none' }}>
+                            <path d="M9 5l7 7-7 7" />
+                          </svg>
                         </div>
                       );
                     })}
