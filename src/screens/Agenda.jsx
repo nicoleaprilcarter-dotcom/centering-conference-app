@@ -10,7 +10,7 @@ import Flourish from '../components/Flourish';
 // Only sessions with actual content (not arrival/breaks/transitions) get
 // a "materials coming soon" placeholder when no flyer/worksheet/slides
 // have been uploaded yet.
-const MATERIALS_TAG_KEYS = ['tagPlenary', 'tagFeatured', 'tagWorkshop'];
+const MATERIALS_TAG_KEYS = ['tagPlenary', 'tagFeatured', 'tagWorkshop', 'tagTheme1', 'tagTheme2', 'tagTheme3', 'tagTheme4'];
 
 function isSessionLiveNow(s, nowMin) {
   const start = timeToMinutes(s.t);

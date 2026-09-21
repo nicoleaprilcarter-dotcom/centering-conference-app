@@ -31,19 +31,19 @@ const SCHEDULE_TEXT = `
 [s8] 9:45 (90 min) — Signature Fireside Chat — Upper Deck
 [s4] 11:15 (15 min) — Reflection + Bio Break — Common Areas
 [s5] 11:30 (30 min) — Community Connection, Vendors & Headshots — Gem City/Common Areas
-[s6a] 11:45 (50 min) — Expressing Wholeness: Rest. Heal. Reclaim. — Amber room
-[s6b] 11:45 (50 min) — Expressing Possibility: Imagine more. Choose well. Live fully. — Sapphire room
-[s6c] 11:45 (50 min) — Expressing Power: Change the conditions. Claim dignity. Build sustainable futures. — Jade room
-[s6d] 11:45 (50 min) — Expressing Community: Share stories. Build support. Turn awareness into action. — Upper Deck
+[s6a] 11:45 (50 min) — Theme 1: Expressing Wholeness (rest, healing, reclamation) — Amber room
+[s6b] 11:45 (50 min) — Theme 2: Expressing Possibility (imagining more, choosing wellness, living fully) — Sapphire room
+[s6c] 11:45 (50 min) — Theme 3: Expressing Power (changing health conditions, claiming dignity, sustainable futures) — Jade room
+[s6d] 11:45 (50 min) — Theme 4: Expressing Community (sharing stories, building support, turning awareness into action) — Upper Deck
 [s7] 12:35 (60 min) — Community Lunch + Marketplace — Upper Deck/Common Areas
-[s9a] 1:35 (50 min) — Expressing Wholeness: Rest. Heal. Reclaim. — Amber room
-[s9b] 1:35 (50 min) — Expressing Possibility: Imagine more. Choose well. Live fully. — Sapphire room
-[s9c] 1:35 (50 min) — Expressing Power: Change the conditions. Claim dignity. Build sustainable futures. — Jade room
-[s9d] 1:35 (50 min) — Expressing Community: Share stories. Build support. Turn awareness into action. — Upper Deck
-[s10a] 2:40 (50 min) — Expressing Wholeness: Rest. Heal. Reclaim. — Amber room
-[s10b] 2:40 (50 min) — Expressing Possibility: Imagine more. Choose well. Live fully. — Sapphire room
-[s10c] 2:40 (50 min) — Expressing Power: Change the conditions. Claim dignity. Build sustainable futures. — Jade room
-[s10d] 2:40 (50 min) — Expressing Community: Share stories. Build support. Turn awareness into action. — Upper Deck
+[s9a] 1:35 (50 min) — Theme 1: Expressing Wholeness (rest, healing, reclamation) — Amber room
+[s9b] 1:35 (50 min) — Theme 2: Expressing Possibility (imagining more, choosing wellness, living fully) — Sapphire room
+[s9c] 1:35 (50 min) — Theme 3: Expressing Power (changing health conditions, claiming dignity, sustainable futures) — Jade room
+[s9d] 1:35 (50 min) — Theme 4: Expressing Community (sharing stories, building support, turning awareness into action) — Upper Deck
+[s10a] 2:40 (50 min) — Theme 1: Expressing Wholeness (rest, healing, reclamation) — Amber room
+[s10b] 2:40 (50 min) — Theme 2: Expressing Possibility (imagining more, choosing wellness, living fully) — Sapphire room
+[s10c] 2:40 (50 min) — Theme 3: Expressing Power (changing health conditions, claiming dignity, sustainable futures) — Jade room
+[s10d] 2:40 (50 min) — Theme 4: Expressing Community (sharing stories, building support, turning awareness into action) — Upper Deck
 [s11] 3:40 (20 min) — Closing Ceremony — Presenter Q&A — Upper Deck
 `.trim();
 
