@@ -28,7 +28,11 @@ function timeToMinutes(tStr) {
 
 function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checkedInAt, aiRecommendation, aiRecLoading, aiRecError, onFetchRecommendation, view, onFilter }) {
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
-  const upNext = SESSIONS.find((s) => timeToMinutes(s.t) >= nowMin);
+  const liveSession = SESSIONS.find((s) => isSessionLiveNow(s, nowMin));
+  const upNext = liveSession
+    ? SESSIONS.find((s) => timeToMinutes(s.t) > timeToMinutes(liveSession.t))
+    : SESSIONS.find((s) => timeToMinutes(s.t) >= nowMin);
+  const endingInMin = liveSession ? timeToMinutes(liveSession.t) + (parseInt(liveSession.d, 10) || 0) - nowMin : null;
   const savedCount = Object.values(saved).filter(Boolean).length;
   const notesCount = Object.values(sessionNotes).filter((n) => n && n.trim()).length;
   const checkinCount = Object.keys(sessionCheckins).length;
@@ -38,7 +42,21 @@ function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checke
       <Flourish color="#FFDCEF" size={140} top={-40} right={-40} opacity={0.18} rotate={15} />
       <div style={{ position: 'relative', zIndex: 1 }}>
         <div style={{ font: '700 18px/1.3 Poppins', color: '#fff' }}>{t.dashboardGreeting}{name ? `, ${name.split(' ')[0]}` : ''}</div>
-        {upNext ? (
+        {liveSession ? (
+          <div style={{ marginTop: 10, padding: 12, borderRadius: 14, background: 'rgba(255,45,149,.16)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, font: '700 10.5px/1 Poppins', color: '#FF2D95', textTransform: 'uppercase', letterSpacing: '.04em' }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF2D95', display: 'inline-block' }} />
+              {t.liveNow}
+            </div>
+            <div style={{ font: '600 14px/1.4 Poppins', color: '#fff', marginTop: 4 }}>
+              {lang === 'es' ? liveSession.titleEs : liveSession.title}
+            </div>
+            <div style={{ font: '400 11.5px/1.4 Poppins', color: '#E3D3DF', marginTop: 4 }}>
+              {t.dashboardEndingIn} {endingInMin} min
+              {upNext && ` · ${t.dashboardNextUp}: ${lang === 'es' ? upNext.titleEs : upNext.title}`}
+            </div>
+          </div>
+        ) : upNext ? (
           <div style={{ marginTop: 10, padding: 12, borderRadius: 14, background: 'rgba(255,255,255,.08)' }}>
             <div style={{ font: '600 10.5px/1 Poppins', color: '#FBD9BC', textTransform: 'uppercase', letterSpacing: '.04em' }}>{t.dashboardUpNext}</div>
             <div style={{ font: '600 14px/1.4 Poppins', color: '#fff', marginTop: 4 }}>

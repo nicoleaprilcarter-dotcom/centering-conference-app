@@ -122,15 +122,15 @@ export default function Profile({
         {t.interestTags.map((label, i) => {
           const on = !!tags[i];
           const kind = interestKind(i);
-          const [bg, fg] = kind ? tagColors(kind) : ['#fff', '#2E1035'];
+          const [selectedBg, selectedFg] = kind ? tagColors(kind) : ['#2E1035', '#fff'];
           return (
             <div
               className="tag-chip"
               key={label}
               style={{
-                background: bg,
-                color: fg,
-                borderColor: on ? '#2E1035' : kind ? 'transparent' : 'rgba(46,16,53,.14)',
+                background: on ? selectedBg : '#fff',
+                color: on ? selectedFg : '#4A3348',
+                borderColor: on ? selectedBg : 'rgba(46,16,53,.18)',
                 borderWidth: on ? 2 : 1,
                 display: 'flex',
                 alignItems: 'center',
