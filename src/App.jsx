@@ -959,6 +959,8 @@ export default function App() {
         langToggle={t.langToggle}
         onToggleLang={toggleLang}
         onAvatarClick={() => navigate('profile')}
+        showBack={screen !== 'agenda' || !!viewingPerson || !!viewingSessionId}
+        onBack={() => navigate('agenda')}
       />
       <ErrorBanner message={error} onDismiss={() => setError('')} />
 
