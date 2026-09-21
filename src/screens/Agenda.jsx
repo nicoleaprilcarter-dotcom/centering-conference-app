@@ -12,6 +12,12 @@ import Flourish from '../components/Flourish';
 // have been uploaded yet.
 const MATERIALS_TAG_KEYS = ['tagPlenary', 'tagFeatured', 'tagWorkshop'];
 
+function isSessionLiveNow(s, nowMin) {
+  const start = timeToMinutes(s.t);
+  const duration = parseInt(s.d, 10) || 0;
+  return nowMin >= start && nowMin < start + duration;
+}
+
 function timeToMinutes(tStr) {
   const [hStr, mStr] = tStr.split(':');
   let h = parseInt(hStr, 10);
@@ -111,6 +117,7 @@ export default function Agenda({
   const [openNotesFor, setOpenNotesFor] = useState(null);
   const [noteDraft, setNoteDraft] = useState('');
   const visibleSessions = view === 'mine' ? SESSIONS.filter((s) => saved[s.id]) : SESSIONS;
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
 
   const openNotes = (sessionId) => {
     if (openNotesFor === sessionId) {
@@ -169,6 +176,18 @@ export default function Agenda({
         </div>
       </div>
 
+      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', margin: '2px 0 14px', font: '400 11px/1.3 Poppins', color: '#7A6070' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <StarIcon filled color="#D81B60" /> {t.iconLegendSave}
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <CheckCircleIcon filled color="#A63D06" /> {t.iconLegendAttended}
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <NoteIcon color="#7A5205" /> {t.iconLegendNotes}
+        </span>
+      </div>
+
       {view === 'mine' && visibleSessions.length === 0 && (
         <div className="empty-state">
           <Flourish color="#FFDCEF" size={160} top={-40} right={-40} opacity={0.5} />
@@ -185,6 +204,7 @@ export default function Agenda({
         const tag = t[s.tagKey];
         const hosts = (sessionHosts && sessionHosts[s.id]) || [];
         const files = (sessionFiles && sessionFiles[s.id]) || [];
+        const isLive = isSessionLiveNow(s, nowMin);
         return (
           <div className="session-row" key={s.id}>
             <div className="session-time">
@@ -196,6 +216,12 @@ export default function Agenda({
                 <span className="tag-pill" style={{ background: tagBg, color: tagFg }}>
                   {tag}
                 </span>
+                {isLive && (
+                  <span className="tag-pill" style={{ background: '#FF2D95', color: '#fff', marginLeft: 6, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff', display: 'inline-block' }} />
+                    {t.liveNow}
+                  </span>
+                )}
                 <div className="session-title" onClick={() => onOpenSession(s.id)}>
                   {title}
                 </div>

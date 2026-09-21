@@ -2,6 +2,7 @@ import { useState } from 'react';
 import ChatThread from '../components/ChatThread';
 import Avatar from '../components/Avatar';
 import AskHues from '../components/AskHues';
+import CommunityGuidelines from '../components/CommunityGuidelines';
 import { colorForId } from '../lib/helpers';
 
 export default function Chat({
@@ -64,6 +65,10 @@ export default function Chat({
             </div>
           ))}
         </div>
+      </div>
+
+      <div style={{ padding: '10px 18px 0' }}>
+        <CommunityGuidelines t={t} />
       </div>
 
       {tab === 'waitingRoom' && (

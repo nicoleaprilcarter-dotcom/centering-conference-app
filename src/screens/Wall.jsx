@@ -1,3 +1,5 @@
+import CommunityGuidelines from '../components/CommunityGuidelines';
+
 const BG_ROTATION = ['#E9F4F3', '#FFF0DC', '#FFE2ED', '#FBF0D3'];
 
 export default function Wall({ t, userId, pledges, draft, setDraft, onPost }) {
@@ -5,6 +7,9 @@ export default function Wall({ t, userId, pledges, draft, setDraft, onPost }) {
     <div className="screen-pad">
       <div className="wall-title">{t.wallTitle}</div>
       <div className="wall-intro">{t.wallIntro}</div>
+      <div style={{ margin: '4px 0 10px' }}>
+        <CommunityGuidelines t={t} />
+      </div>
       <div className="wall-composer">
         <textarea
           className="wall-textarea"
