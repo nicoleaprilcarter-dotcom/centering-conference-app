@@ -31,16 +31,19 @@ const SCHEDULE_TEXT = `
 [s8] 9:45 (90 min) — Signature Fireside Chat — Upper Deck
 [s4] 11:15 (15 min) — Reflection + Bio Break — Common Areas
 [s5] 11:30 (30 min) — Community Connection, Vendors & Headshots — Gem City/Common Areas
-[s6a] 11:45 (50 min) — Gem Sessions Block 1 — Amber room
-[s6b] 11:45 (50 min) — Gem Sessions Block 1 — Sapphire room
-[s6c] 11:45 (50 min) — Gem Sessions Block 1 — Jade room
+[s6a] 11:45 (50 min) — Expressing Wholeness: Rest. Heal. Reclaim. — Amber room
+[s6b] 11:45 (50 min) — Expressing Possibility: Imagine more. Choose well. Live fully. — Sapphire room
+[s6c] 11:45 (50 min) — Expressing Power: Change the conditions. Claim dignity. Build sustainable futures. — Jade room
+[s6d] 11:45 (50 min) — Expressing Community: Share stories. Build support. Turn awareness into action. — Upper Deck
 [s7] 12:35 (60 min) — Community Lunch + Marketplace — Upper Deck/Common Areas
-[s9a] 1:35 (50 min) — Gem Sessions Block 2 — Amber room
-[s9b] 1:35 (50 min) — Gem Sessions Block 2 — Sapphire room
-[s9c] 1:35 (50 min) — Gem Sessions Block 2 — Jade room
-[s10a] 2:40 (50 min) — Gem Sessions Block 3 — Amber room
-[s10b] 2:40 (50 min) — Gem Sessions Block 3 — Sapphire room
-[s10c] 2:40 (50 min) — Gem Sessions Block 3 — Jade room
+[s9a] 1:35 (50 min) — Expressing Wholeness: Rest. Heal. Reclaim. — Amber room
+[s9b] 1:35 (50 min) — Expressing Possibility: Imagine more. Choose well. Live fully. — Sapphire room
+[s9c] 1:35 (50 min) — Expressing Power: Change the conditions. Claim dignity. Build sustainable futures. — Jade room
+[s9d] 1:35 (50 min) — Expressing Community: Share stories. Build support. Turn awareness into action. — Upper Deck
+[s10a] 2:40 (50 min) — Expressing Wholeness: Rest. Heal. Reclaim. — Amber room
+[s10b] 2:40 (50 min) — Expressing Possibility: Imagine more. Choose well. Live fully. — Sapphire room
+[s10c] 2:40 (50 min) — Expressing Power: Change the conditions. Claim dignity. Build sustainable futures. — Jade room
+[s10d] 2:40 (50 min) — Expressing Community: Share stories. Build support. Turn awareness into action. — Upper Deck
 [s11] 3:40 (20 min) — Closing Ceremony — Presenter Q&A — Upper Deck
 `.trim();
 
