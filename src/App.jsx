@@ -961,6 +961,7 @@ export default function App() {
         onAvatarClick={() => navigate('profile')}
         showBack={screen !== 'agenda' || !!viewingPerson || !!viewingSessionId}
         onBack={() => navigate('agenda')}
+        compact={screen !== 'agenda' || !!viewingPerson || !!viewingSessionId}
       />
       <ErrorBanner message={error} onDismiss={() => setError('')} />
 

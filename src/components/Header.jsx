@@ -1,9 +1,11 @@
 import Avatar from './Avatar';
 
-export default function Header({ name, hideAvatar, live, liveLabel, offlineLabel, langToggle, onToggleLang, onAvatarClick, showBack, onBack }) {
+export default function Header({ name, hideAvatar, live, liveLabel, offlineLabel, langToggle, onToggleLang, onAvatarClick, showBack, onBack, compact }) {
   return (
-    <div className="app-header">
-      <img className="header-banner-img" src="/images/header-banner.jpg" alt="Centering Women of Color — Friday, November 6, 2026 — Expressions of Health" />
+    <div className={`app-header${compact ? ' app-header--compact' : ''}`}>
+      {!compact && (
+        <img className="header-banner-img" src="/images/header-banner.jpg" alt="Centering Women of Color — Friday, November 6, 2026 — Expressions of Health" />
+      )}
       <div className="header-overlay">
         {showBack && (
           <div

@@ -131,6 +131,17 @@
   height: calc(120px + env(safe-area-inset-top, 0px));
   overflow: hidden;
   background: var(--hotpink-deep);
+  transition: height 0.15s ease;
+}
+
+.app-header--compact {
+  height: calc(56px + env(safe-area-inset-top, 0px));
+  background: var(--burgundy);
+}
+
+.app-header--compact .header-overlay {
+  align-items: center;
+  padding: 0 14px;
 }
 
 .header-banner-img {
