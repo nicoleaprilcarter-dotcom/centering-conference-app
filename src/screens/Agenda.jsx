@@ -9,6 +9,7 @@ import Flourish from '../components/Flourish';
 // a "materials coming soon" placeholder when no flyer/worksheet/slides
 // have been uploaded yet.
 const MATERIALS_TAG_KEYS = ['tagPlenary', 'tagFeatured', 'tagWorkshop', 'tagTheme1', 'tagTheme2', 'tagTheme3', 'tagTheme4'];
+const TRACK_FILTERS = ['tagPlenary', 'tagFeatured', 'tagTheme1', 'tagTheme2', 'tagTheme3', 'tagTheme4'];
 
 function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checkedInAt, aiRecommendation, aiRecLoading, aiRecError, onFetchRecommendation, view, onFilter }) {
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
@@ -133,7 +134,12 @@ export default function Agenda({
   const [view, setView] = useState('all');
   const [openNotesFor, setOpenNotesFor] = useState(null);
   const [noteDraft, setNoteDraft] = useState('');
-  const visibleSessions =
+  const [search, setSearch] = useState('');
+  const [trackFilter, setTrackFilter] = useState('all');
+  const [liveOnly, setLiveOnly] = useState(false);
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+
+  let visibleSessions =
     view === 'mine'
       ? SESSIONS.filter((s) => saved[s.id])
       : view === 'attended'
@@ -142,7 +148,20 @@ export default function Agenda({
           ? SESSIONS.filter((s) => sessionNotes[s.id] && sessionNotes[s.id].trim())
           : SESSIONS;
   const emptyMessage = view === 'attended' ? t.attendedFilterEmpty : view === 'notes' ? t.notesFilterEmpty : t.myScheduleEmpty;
-  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+
+  if (trackFilter !== 'all') visibleSessions = visibleSessions.filter((s) => s.tagKey === trackFilter);
+  if (liveOnly) visibleSessions = visibleSessions.filter((s) => isSessionLiveNow(s, nowMin));
+  const searchActive = search.trim().length > 0;
+  if (searchActive) {
+    const q = search.trim().toLowerCase();
+    visibleSessions = visibleSessions.filter((s) => {
+      const title = ((lang === 'es' ? s.titleEs : s.title) || '').toLowerCase();
+      const hostNames = (sessionHosts[s.id] || []).map((h) => h.name).join(' ').toLowerCase();
+      const room = (s.room || '').toLowerCase();
+      return title.includes(q) || hostNames.includes(q) || room.includes(q);
+    });
+  }
+  const filtersActive = searchActive || trackFilter !== 'all' || liveOnly;
 
   const openNotes = (sessionId) => {
     if (openNotesFor === sessionId) {
@@ -203,6 +222,73 @@ export default function Agenda({
         </div>
       </div>
 
+      <input
+        className="field-input dark"
+        type="text"
+        placeholder={t.searchSessionsPlaceholder}
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{ marginBottom: 10 }}
+      />
+
+      <div style={{ display: 'flex', gap: 7, overflowX: 'auto', marginBottom: 14, paddingBottom: 2 }}>
+        <span
+          onClick={() => setLiveOnly((v) => !v)}
+          style={{
+            flex: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 5,
+            padding: '7px 12px',
+            borderRadius: 999,
+            font: '600 11.5px/1 Poppins',
+            cursor: 'pointer',
+            background: liveOnly ? '#FF2D95' : '#F3EFF1',
+            color: liveOnly ? '#fff' : '#7A6070',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: liveOnly ? '#fff' : '#FF2D95', display: 'inline-block' }} />
+          {t.filterLiveNow}
+        </span>
+        <span
+          onClick={() => setTrackFilter('all')}
+          style={{
+            flex: 'none',
+            padding: '7px 12px',
+            borderRadius: 999,
+            font: '600 11.5px/1 Poppins',
+            cursor: 'pointer',
+            background: trackFilter === 'all' ? '#2E1035' : '#F3EFF1',
+            color: trackFilter === 'all' ? '#fff' : '#7A6070',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {t.filterAllTracks}
+        </span>
+        {TRACK_FILTERS.map((key) => {
+          const active = trackFilter === key;
+          return (
+            <span
+              key={key}
+              onClick={() => setTrackFilter(active ? 'all' : key)}
+              style={{
+                flex: 'none',
+                padding: '7px 12px',
+                borderRadius: 999,
+                font: '600 11.5px/1 Poppins',
+                cursor: 'pointer',
+                background: active ? '#2E1035' : '#F3EFF1',
+                color: active ? '#fff' : '#7A6070',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {t[key]}
+            </span>
+          );
+        })}
+      </div>
+
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', margin: '2px 0 14px', font: '400 11px/1.3 Poppins', color: '#7A6070' }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           <StarIcon filled color="#D81B60" /> {t.iconLegendSave}
@@ -215,11 +301,24 @@ export default function Agenda({
         </span>
       </div>
 
-      {view !== 'all' && visibleSessions.length === 0 && (
+      {visibleSessions.length === 0 && (filtersActive || view !== 'all') && (
         <div className="empty-state">
           <Flourish color="#FFDCEF" size={160} top={-40} right={-40} opacity={0.5} />
           <Flourish color="#FBEAB0" size={130} bottom={-30} left={-30} opacity={0.5} rotate={30} />
-          <div className="empty-note">{emptyMessage}</div>
+          <div className="empty-note">{filtersActive ? t.noSearchResults : emptyMessage}</div>
+          {filtersActive && (
+            <div
+              className="text-link-btn"
+              style={{ marginTop: 10 }}
+              onClick={() => {
+                setSearch('');
+                setTrackFilter('all');
+                setLiveOnly(false);
+              }}
+            >
+              {t.clearFilters}
+            </div>
+          )}
         </div>
       )}
 

@@ -16,6 +16,11 @@ export const TRANSLATIONS = {
     myScheduleEmpty: 'Nothing starred yet. Tap the star on a session to add it here.',
     attendedFilterEmpty: "You haven't checked in to any sessions yet.",
     notesFilterEmpty: "You haven't added any notes yet. Tap the notes icon on a session to add one.",
+    searchSessionsPlaceholder: 'Search sessions, speakers, or rooms',
+    filterAllTracks: 'All',
+    filterLiveNow: 'Live now',
+    noSearchResults: 'No sessions match your search or filters.',
+    clearFilters: 'Clear filters',
 
     dashboardGreeting: 'Welcome',
     dashboardUpNext: 'Up next',
@@ -297,6 +302,11 @@ export const TRANSLATIONS = {
     myScheduleEmpty: 'Aún no marcaste ninguna. Toca la estrella en una sesión para agregarla aquí.',
     attendedFilterEmpty: 'Todavía no te has registrado en ninguna sesión.',
     notesFilterEmpty: 'Todavía no agregaste notas. Toca el ícono de notas en una sesión para agregar una.',
+    searchSessionsPlaceholder: 'Busca sesiones, ponentes o salas',
+    filterAllTracks: 'Todas',
+    filterLiveNow: 'En vivo ahora',
+    noSearchResults: 'Ninguna sesión coincide con tu búsqueda o filtros.',
+    clearFilters: 'Borrar filtros',
 
     dashboardGreeting: 'Bienvenida',
     dashboardUpNext: 'Sigue',
