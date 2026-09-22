@@ -8,7 +8,7 @@ import {
 import { POLL_QUESTION_ID, SESSIONS } from './data/sessions';
 import { TRANSLATIONS } from './data/translations';
 import { askAssistant } from './lib/ai';
-import { isSessionLiveNow } from './lib/helpers';
+import { isSessionLiveNow, timeToMinutes } from './lib/helpers';
 
 import Setup from './screens/Setup';
 import SignIn from './screens/SignIn';
