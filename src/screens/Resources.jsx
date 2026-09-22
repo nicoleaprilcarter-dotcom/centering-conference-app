@@ -2,8 +2,10 @@ import { badgeCode } from '../lib/badge';
 import QrCode from '../components/QrCode';
 import AdminMaterials from '../components/AdminMaterials';
 import ModeratorReports from '../components/ModeratorReports';
+import CollapsibleSection from '../components/CollapsibleSection';
 
 const VENUE_ADDRESS_ENCODED = encodeURIComponent('Dayton Hub, 31 S Main St, Dayton, OH 45402');
+const HELP_DESK_PHONE = '937-540-4313';
 
 export default function Resources({
   t,
@@ -70,11 +72,25 @@ export default function Resources({
         )}
       </div>
 
+      <div
+        className="card"
+        style={{ marginBottom: 14, border: 'none', background: '#2E1035', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}
+      >
+        <div style={{ font: '600 12.5px/1.3 Poppins', color: '#fff' }}>{t.venueHelpPrompt}</div>
+        <a
+          href={`tel:${HELP_DESK_PHONE}`}
+          style={{ flex: 'none', padding: '9px 14px', borderRadius: 999, background: '#FF2D95', color: '#fff', font: '600 12px/1 Poppins', textDecoration: 'none' }}
+        >
+          {t.venueHelpButton}
+        </a>
+      </div>
+
       <div className="card" style={{ marginBottom: 14, border: 'none', background: '#fff' }}>
         <div style={{ font: '600 13.5px/1.3 Poppins', color: '#2E1035', marginBottom: 2 }}>{t.venueTitle}</div>
-        <div style={{ font: '400 12.5px/1.5 Poppins', color: '#7A6070', marginBottom: 10 }}>
+        <div style={{ font: '400 12.5px/1.5 Poppins', color: '#7A6070' }}>
           {t.venueName} · {t.venueAddress}
         </div>
+        <div style={{ font: '400 12.5px/1.5 Poppins', color: '#7A6070', marginBottom: 10 }}>{t.venueCheckinHours}</div>
         <div style={{ borderRadius: 14, overflow: 'hidden' }}>
           <iframe
             title="Venue map"
@@ -90,10 +106,15 @@ export default function Resources({
           href={`https://www.google.com/maps/dir/?api=1&destination=${VENUE_ADDRESS_ENCODED}`}
           target="_blank"
           rel="noreferrer"
-          style={{ display: 'block', textAlign: 'center', font: '600 12px/1 Poppins', color: '#B01253', marginTop: 12, textDecoration: 'none' }}
+          style={{ display: 'block', textAlign: 'center', font: '600 12px/1 Poppins', color: '#B01253', margin: '12px 0 16px', textDecoration: 'none' }}
         >
           {t.venueDirections}
         </a>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <CollapsibleSection label={t.venueGettingHereLink}>{t.venueGettingHereBody}</CollapsibleSection>
+          <CollapsibleSection label={t.venueAccessibilityLink}>{t.venueAccessibilityBody}</CollapsibleSection>
+        </div>
       </div>
 
       {isModerator && (

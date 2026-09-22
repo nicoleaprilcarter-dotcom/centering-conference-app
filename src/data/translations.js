@@ -110,6 +110,15 @@ export const TRANSLATIONS = {
     venueName: 'Dayton Hub',
     venueAddress: '31 S Main St, Dayton, OH 45402',
     venueDirections: 'Get directions',
+    venueCheckinHours: 'Registration & check-in: 3rd Floor Hall, 8:30am–2:00pm.',
+    venueHelpPrompt: 'Need help right now?',
+    venueHelpButton: 'Call the help desk',
+    venueGettingHereLink: 'Parking, rideshare & transit',
+    venueGettingHereBody:
+      'Parking: The Hub doesn\'t have its own lot, but garages are just steps away.\n• Reibold Garage — 25 W. 5th St., 1–2 min walk. From $2/hr, $8 daily max.\n• City of Dayton Municipal Garage — 123 W. 3rd St., 4 min walk, open 24 hours.\n• Fifth Third Center Garage — 16 S. Ludlow St.\n• Metered street parking on Main St. and 4th St. (time-limited).\n\nRideshare: Ask your driver to drop you at S. Main St. in front of the Dayton Arcade entrance, or around the corner on W. 4th St.\n\nPublic transit: Wright Stop Plaza Transit Center is a 3-minute walk at 4 S. Main St. — nearly every downtown RTA bus route stops there. Standard fare is $2.40; boarding uses a digital pass or Tapp Pay card.',
+    venueAccessibilityLink: 'Accessibility & amenities',
+    venueAccessibilityBody:
+      'Entrance: The Main Street entrance (31 S. Main St.) is flat and wheelchair accessible.\n\nElevators: Near the main security/reception desk. Some upper floors need a badge — front desk staff will let you through.\n\nRestrooms: ADA-accessible restrooms on every floor.\n\nQuiet spaces: Private focus booths throughout the building, plus the Hideaway room on the Underground level.\n\nLactation room: Available. Ask at the front desk for access.\n\nFood: All food is labeled, with vegetarian, vegan, and gluten-free options available.',
 
     // Chat channels
     chatWaitingRoom: 'Waiting Room',
@@ -405,6 +414,15 @@ export const TRANSLATIONS = {
     venueName: 'Dayton Hub',
     venueAddress: '31 S Main St, Dayton, OH 45402',
     venueDirections: 'Cómo llegar',
+    venueCheckinHours: 'Registro: Salón del 3.º piso, de 8:30 a. m. a 2:00 p. m.',
+    venueHelpPrompt: '¿Necesitas ayuda ahora mismo?',
+    venueHelpButton: 'Llamar al mostrador de ayuda',
+    venueGettingHereLink: 'Estacionamiento, transporte y tránsito',
+    venueGettingHereBody:
+      'Estacionamiento: El Hub no tiene su propio estacionamiento, pero hay garajes a pasos de distancia.\n• Reibold Garage — 25 W. 5th St., 1–2 min caminando. Desde $2/hora, máximo $8 al día.\n• City of Dayton Municipal Garage — 123 W. 3rd St., 4 min caminando, abierto las 24 horas.\n• Fifth Third Center Garage — 16 S. Ludlow St.\n• Estacionamiento con parquímetro en Main St. y 4th St. (con límite de tiempo).\n\nUber/Lyft: Pide que te dejen en S. Main St., frente a la entrada del Dayton Arcade, o a la vuelta en W. 4th St.\n\nTransporte público: El Wright Stop Plaza Transit Center está a 3 minutos caminando, en 4 S. Main St. — casi todas las rutas de autobús del centro pasan por ahí. La tarifa estándar es $2.40; el abordaje se hace con pase digital o tarjeta Tapp Pay.',
+    venueAccessibilityLink: 'Accesibilidad y comodidades',
+    venueAccessibilityBody:
+      'Entrada: La entrada de Main Street (31 S. Main St.) es plana y accesible para sillas de ruedas.\n\nElevadores: Cerca del mostrador principal de seguridad/recepción. Algunos pisos superiores requieren credencial — el personal de recepción te puede ayudar a pasar.\n\nBaños: Baños accesibles (ADA) en cada piso.\n\nEspacios tranquilos: Cabinas privadas de enfoque en todo el edificio, además del salón Hideaway en el nivel Underground.\n\nSala de lactancia: Disponible. Pregunta en recepción para acceder.\n\nComida: Toda la comida está etiquetada, con opciones vegetarianas, veganas y sin gluten disponibles.',
 
     chatWaitingRoom: 'Sala de espera',
     chatTriage: 'Triaje',
