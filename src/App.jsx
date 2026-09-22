@@ -185,6 +185,15 @@ export default function App() {
 
   // ---------- bootstrap ----------
   useEffect(() => {
+    // Supabase redirects back with #error=... in the URL hash when a
+    // magic link has expired or was already used, instead of throwing
+    // anywhere we'd normally catch it.
+    if (window.location.hash.includes('error=')) {
+      const params = new URLSearchParams(window.location.hash.slice(1));
+      const description = params.get('error_description');
+      setError(description ? description.replace(/\+/g, ' ') + ' Enter your email below for a new link.' : 'That sign-in link no longer works. Enter your email below for a new one.');
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
     const cfg = resolveConfig();
     if (cfg) {
       setConfig(cfg);
