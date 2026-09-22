@@ -1,30 +1,14 @@
 import { useState } from 'react';
 import { SESSIONS } from '../data/sessions';
-import { tagColors, colorForId } from '../lib/helpers';
+import { tagColors, colorForId, timeToMinutes, isSessionLiveNow } from '../lib/helpers';
 import { StarIcon, CheckCircleIcon, FileIcon, NoteIcon, SparkleIcon } from '../components/icons';
 import Avatar from '../components/Avatar';
 import Flourish from '../components/Flourish';
 
-// Session times are written like "8:30" or "1:35" with no AM/PM — the
-// conference runs 8:30a-3:40p, so hours 1-7 are always PM and 8-11 AM.
 // Only sessions with actual content (not arrival/breaks/transitions) get
 // a "materials coming soon" placeholder when no flyer/worksheet/slides
 // have been uploaded yet.
 const MATERIALS_TAG_KEYS = ['tagPlenary', 'tagFeatured', 'tagWorkshop', 'tagTheme1', 'tagTheme2', 'tagTheme3', 'tagTheme4'];
-
-function isSessionLiveNow(s, nowMin) {
-  const start = timeToMinutes(s.t);
-  const duration = parseInt(s.d, 10) || 0;
-  return nowMin >= start && nowMin < start + duration;
-}
-
-function timeToMinutes(tStr) {
-  const [hStr, mStr] = tStr.split(':');
-  let h = parseInt(hStr, 10);
-  const m = parseInt(mStr, 10);
-  if (h < 8 && h !== 12) h += 12;
-  return h * 60 + m;
-}
 
 function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checkedInAt, aiRecommendation, aiRecLoading, aiRecError, onFetchRecommendation, view, onFilter }) {
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
@@ -303,7 +287,7 @@ export default function Agenda({
                           <Avatar url={h.avatarUrl} name={h.name} color={colorForId(h.userId || h.name)} size={24} fontSize={10} />
                           <div style={{ minWidth: 0, flex: 1 }}>
                             <div style={{ font: '600 12px/1.2 Poppins', color: '#2E1035' }}>{h.name}</div>
-                            {role && <div style={{ font: '400 10.5px/1.2 Poppins', color: '#A08E9A' }}>{role}</div>}
+                            {role && <div style={{ font: '400 10.5px/1.2 Poppins', color: '#7E6A76' }}>{role}</div>}
                           </div>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C0AEBA" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ flex: 'none' }}>
                             <path d="M9 5l7 7-7 7" />
@@ -340,7 +324,7 @@ export default function Agenda({
                   </div>
                 )}
                 {files.length === 0 && MATERIALS_TAG_KEYS.includes(s.tagKey) && (
-                  <div style={{ marginTop: 9, font: '400 11.5px/1.3 Poppins', color: '#A08E9A', fontStyle: 'italic' }}>{t.materialsComingSoon}</div>
+                  <div style={{ marginTop: 9, font: '400 11.5px/1.3 Poppins', color: '#7E6A76', fontStyle: 'italic' }}>{t.materialsComingSoon}</div>
                 )}
                 {openNotesFor === s.id && (
                   <div style={{ marginTop: 10 }}>
@@ -362,24 +346,33 @@ export default function Agenda({
                   style={{ background: isSaved ? '#FFE2ED' : '#F3EFF1' }}
                   onClick={() => onToggleStar(s.id)}
                   title={t.saveIt}
+                  role="button"
+                  aria-label={t.saveIt}
+                  aria-pressed={isSaved}
                 >
-                  <StarIcon filled={isSaved} color={isSaved ? '#D81B60' : '#A08E9A'} />
+                  <StarIcon filled={isSaved} color={isSaved ? '#D81B60' : '#7E6A76'} />
                 </div>
                 <div
                   className="star-btn"
                   style={{ background: isCheckedIn ? '#FBD9BC' : '#F3EFF1' }}
                   onClick={() => onToggleSessionCheckIn(s.id)}
                   title={isCheckedIn ? t.sessionCheckedIn : t.sessionCheckIn}
+                  role="button"
+                  aria-label={isCheckedIn ? t.sessionCheckedIn : t.sessionCheckIn}
+                  aria-pressed={isCheckedIn}
                 >
-                  <CheckCircleIcon filled={isCheckedIn} color={isCheckedIn ? '#A63D06' : '#A08E9A'} />
+                  <CheckCircleIcon filled={isCheckedIn} color={isCheckedIn ? '#A63D06' : '#7E6A76'} />
                 </div>
                 <div
                   className="star-btn"
                   style={{ background: sessionNotes[s.id] ? '#FBEAB0' : '#F3EFF1' }}
                   onClick={() => openNotes(s.id)}
                   title={t.myNotes}
+                  role="button"
+                  aria-label={t.myNotes}
+                  aria-pressed={!!sessionNotes[s.id]}
                 >
-                  <NoteIcon color={sessionNotes[s.id] ? '#7A5205' : '#A08E9A'} />
+                  <NoteIcon color={sessionNotes[s.id] ? '#7A5205' : '#7E6A76'} />
                 </div>
               </div>
             </div>

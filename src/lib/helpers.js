@@ -61,3 +61,19 @@ export function colorForId(id) {
     });
   return COLORS[n % COLORS.length];
 }
+
+// Session times are written like "8:30" or "1:35" with no AM/PM — the
+// conference runs 8:30a-3:40p, so hours 1-7 are always PM and 8-11 AM.
+export function timeToMinutes(tStr) {
+  const [hStr, mStr] = tStr.split(':');
+  let h = parseInt(hStr, 10);
+  const m = parseInt(mStr, 10);
+  if (h < 8 && h !== 12) h += 12;
+  return h * 60 + m;
+}
+
+export function isSessionLiveNow(s, nowMin) {
+  const start = timeToMinutes(s.t);
+  const duration = parseInt(s.d, 10) || 0;
+  return nowMin >= start && nowMin < start + duration;
+}

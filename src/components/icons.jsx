@@ -1,4 +1,4 @@
-export function StarIcon({ filled, color = '#A08E9A' }) {
+export function StarIcon({ filled, color = '#7E6A76' }) {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinejoin="round" fill={filled ? color : 'none'} stroke={color}>
       <path d="M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 17l-5.3 2.8 1.1-5.9L3.5 9.8l5.9-.8z" />
@@ -6,7 +6,7 @@ export function StarIcon({ filled, color = '#A08E9A' }) {
   );
 }
 
-export function CheckCircleIcon({ filled, color = '#A08E9A' }) {
+export function CheckCircleIcon({ filled, color = '#7E6A76' }) {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill={filled ? color : 'none'} stroke={color}>
       <circle cx="12" cy="12" r="9" fill={filled ? color : 'none'} />
@@ -74,7 +74,7 @@ export function ChatIcon({ color }) {
   );
 }
 
-export function FileIcon({ color = '#A08E9A' }) {
+export function FileIcon({ color = '#7E6A76' }) {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
       <path d="M7 3.5h7l4 4V19a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 016 19V5A1.5 1.5 0 017 3.5z" />
@@ -100,7 +100,7 @@ export function SparkleIcon({ color = '#D81B60' }) {
   );
 }
 
-export function NoteIcon({ color = '#A08E9A' }) {
+export function NoteIcon({ color = '#7E6A76' }) {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
       <path d="M5 4h11l3 3v13H5V4z" />

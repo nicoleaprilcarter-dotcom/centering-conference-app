@@ -79,7 +79,7 @@ export default function People({ t, lang, userId, people, speakers, sponsors = [
           <div
             key={key}
             className="tab-item"
-            style={{ flex: 'none', whiteSpace: 'nowrap', color: tab === key ? '#2E1035' : '#A08E9A', borderColor: tab === key ? '#D81B60' : 'transparent' }}
+            style={{ flex: 'none', whiteSpace: 'nowrap', color: tab === key ? '#2E1035' : '#7E6A76', borderColor: tab === key ? '#D81B60' : 'transparent' }}
             onClick={() => setTab(key)}
           >
             {label}

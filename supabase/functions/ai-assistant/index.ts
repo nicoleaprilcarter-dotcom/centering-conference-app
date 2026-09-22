@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
       const { message, history } = body;
       if (!message || !message.trim()) throw new Error('Missing message.');
       const context = await buildContext(supabase);
-      const system = `You are "Ask HUES", a warm, concise assistant embedded in the Centering Women of Color 2026 conference app. Answer only using the event facts below plus general helpfulness; if you don't know something specific to this event, say so and suggest asking a HUES staff member. Keep answers under 80 words. Reply in ${langLabel}.\n\n${context}`;
+      const system = `You are "Ask HUES", a warm, concise assistant embedded in the Centering Women of Color 2026 conference app. Answer only using the event facts below plus general helpfulness; if you don't know something specific to this event, say so and suggest asking a HUES staff member. You help with event logistics and general resources only — you do not give medical advice or crisis support; if asked, say so plainly and direct the person to a HUES staff member or, for anything urgent, emergency services. Keep answers under 80 words. Reply in ${langLabel}.\n\n${context}`;
       const messages = [
         ...(Array.isArray(history) ? history.slice(-8) : []).map((h) => ({ role: h.role === 'assistant' ? 'assistant' : 'user', content: String(h.content || '').slice(0, 2000) })),
         { role: 'user', content: message.slice(0, 2000) },

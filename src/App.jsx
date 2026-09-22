@@ -8,6 +8,7 @@ import {
 import { POLL_QUESTION_ID, SESSIONS } from './data/sessions';
 import { TRANSLATIONS } from './data/translations';
 import { askAssistant } from './lib/ai';
+import { isSessionLiveNow } from './lib/helpers';
 
 import Setup from './screens/Setup';
 import SignIn from './screens/SignIn';
@@ -99,7 +100,6 @@ export default function App() {
   const [votes, setVotes] = useState([]);
   const [words, setWords] = useState([]);
   const [pledges, setPledges] = useState([]);
-  const [live, setLive] = useState(false);
 
   const [draft, setDraft] = useState('');
   const [word, setWord] = useState('');
@@ -398,7 +398,7 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_question_votes' }, () => reload('sessionQuestionVotes'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_recaps' }, () => reload('sessionRecaps'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_details' }, () => reload('sessionDetails'))
-      .subscribe((status) => setLive(status === 'SUBSCRIBED'));
+      .subscribe();
     channelRef.current = ch;
   }, [client, reload]);
 
@@ -947,13 +947,16 @@ export default function App() {
     reload('sessionDetails');
   };
 
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+  const currentLiveSession = SESSIONS.find((s) => isSessionLiveNow(s, nowMin));
+
   return (
     <div className="app-shell">
       <Header
         name={pfName}
         avatarUrl={pfAvatarUrl}
         hideAvatar={screen === 'profile'}
-        live={live}
+        live={!!currentLiveSession}
         liveLabel={t.live}
         offlineLabel={t.offline}
         langToggle={t.langToggle}
@@ -979,17 +982,7 @@ export default function App() {
           t={t}
           lang={lang}
           session={SESSIONS.find((s) => s.id === viewingSessionId)}
-          isLive={(() => {
-            const s = SESSIONS.find((x) => x.id === viewingSessionId);
-            if (!s) return false;
-            const [hStr, mStr] = s.t.split(':');
-            let h = parseInt(hStr, 10);
-            if (h < 8 && h !== 12) h += 12;
-            const start = h * 60 + parseInt(mStr, 10);
-            const duration = parseInt(s.d, 10) || 0;
-            const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
-            return nowMin >= start && nowMin < start + duration;
-          })()}
+          isLive={viewingSessionId === (currentLiveSession && currentLiveSession.id)}
           hosts={sessionHosts[viewingSessionId] || []}
           files={sessionFiles[viewingSessionId] || []}
           detail={sessionDetails[viewingSessionId]}

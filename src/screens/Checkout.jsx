@@ -50,7 +50,7 @@ export default function Checkout({
         <div className="section-label" style={{ marginTop: 26 }}>
           {t.rateSessionsTitle}
         </div>
-        <div style={{ font: '400 11.5px/1.5 Poppins', color: '#A08E9A', marginBottom: 14 }}>{t.rateSessionsSub}</div>
+        <div style={{ font: '400 11.5px/1.5 Poppins', color: '#7E6A76', marginBottom: 14 }}>{t.rateSessionsSub}</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {SESSIONS.map((s) => (
             <div key={s.id} className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>

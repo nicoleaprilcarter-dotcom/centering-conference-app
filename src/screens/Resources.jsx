@@ -43,7 +43,7 @@ export default function Resources({ t, lang, checkedInAt, onCheckIn, onUndoCheck
             <div style={{ font: '600 12.5px/1 Poppins', letterSpacing: '0.08em', color: '#8A6A12' }}>{badgeCode(userId)}</div>
             <div style={{ font: '400 11.5px/1.5 Poppins', color: '#7A6070', marginTop: 8 }}>{t.badgeShow}</div>
             <div
-              style={{ font: '400 11px/1 Poppins', color: '#A08E9A', marginTop: 16 }}
+              style={{ font: '400 11px/1 Poppins', color: '#7E6A76', marginTop: 16 }}
               onClick={(e) => {
                 e.stopPropagation();
                 if (window.confirm(t.undoCheckInConfirm)) onUndoCheckIn();

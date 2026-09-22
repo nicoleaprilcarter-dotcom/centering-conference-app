@@ -57,21 +57,21 @@ export default function Session({
         <div className="tab-row">
           <div
             className="tab-item"
-            style={{ color: tab === 'chat' ? '#2E1035' : '#A08E9A', borderColor: tab === 'chat' ? '#D81B60' : 'transparent' }}
+            style={{ color: tab === 'chat' ? '#2E1035' : '#7E6A76', borderColor: tab === 'chat' ? '#D81B60' : 'transparent' }}
             onClick={() => setTab('chat')}
           >
             {t.groupChat}
           </div>
           <div
             className="tab-item"
-            style={{ color: tab === 'poll' ? '#2E1035' : '#A08E9A', borderColor: tab === 'poll' ? '#D81B60' : 'transparent' }}
+            style={{ color: tab === 'poll' ? '#2E1035' : '#7E6A76', borderColor: tab === 'poll' ? '#D81B60' : 'transparent' }}
             onClick={() => setTab('poll')}
           >
             {t.livePoll}
           </div>
           <div
             className="tab-item"
-            style={{ color: tab === 'qa' ? '#2E1035' : '#A08E9A', borderColor: tab === 'qa' ? '#D81B60' : 'transparent' }}
+            style={{ color: tab === 'qa' ? '#2E1035' : '#7E6A76', borderColor: tab === 'qa' ? '#D81B60' : 'transparent' }}
             onClick={() => setTab('qa')}
           >
             {t.sessionQa}

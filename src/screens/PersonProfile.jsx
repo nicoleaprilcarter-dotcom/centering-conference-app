@@ -26,7 +26,7 @@ export default function PersonProfile({ t, lang, person, onBack, onMessage }) {
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ font: '700 17px/1.25 Poppins', color: '#2E1035' }}>{name}</div>
             {pronouns && <div style={{ font: '400 12.5px/1.3 Poppins', color: '#7A6070', marginTop: 2 }}>{pronouns}</div>}
-            {role && <div style={{ font: '500 12.5px/1.3 Poppins', color: '#A08E9A', marginTop: 2 }}>{role}</div>}
+            {role && <div style={{ font: '500 12.5px/1.3 Poppins', color: '#7E6A76', marginTop: 2 }}>{role}</div>}
           </div>
         </div>
 

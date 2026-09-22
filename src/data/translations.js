@@ -80,8 +80,8 @@ export const TRANSLATIONS = {
     subPeople: 'Opted into the directory',
     subProfile: 'Saved to your account',
 
-    live: 'Live',
-    offline: 'Offline',
+    live: 'Live now',
+    offline: 'No session live',
     you: 'You',
 
     // Check-in
@@ -107,7 +107,7 @@ export const TRANSLATIONS = {
     waitingRoomIntro: 'Introduce yourself! Share your name, where you’re from, and what brought you here today.',
     waitingRoomPlaceholder: 'Say hello and introduce yourself',
     waitingRoomEmpty: 'No introductions yet. Be the first to say hello.',
-    triageIntro: 'A quick temperature check throughout the day — how are you doing right now? Physically, emotionally, however you want to share.',
+    triageIntro: 'A quick temperature check throughout the day — how are you doing right now? Physically, emotionally, however you want to share. Visible to all attendees, not private. For one-on-one support, find a HUES staff member or use Ask HUES.',
     triagePlaceholder: 'How are you doing right now?',
     triageEmpty: 'No check-ins yet. Share how you\'re feeling below, even one word helps.',
 
@@ -185,7 +185,7 @@ export const TRANSLATIONS = {
     chatDischarge: 'Discharge',
     chatDirect: 'Direct',
     chatAskHues: 'Ask HUES',
-    askHuesIntro: "Ask about the schedule, venue, speakers, or anything about today. This is an AI assistant, so double-check anything important with a HUES staff member.",
+    askHuesIntro: "Ask about the schedule, venue, speakers, or anything about today. Ask HUES can help with event information and general resources — it does not provide medical advice or crisis support, and it's an AI assistant, so double-check anything important with a HUES staff member.",
     askHuesEmpty: 'Ask me anything about the conference.',
     askHuesName: 'Ask HUES',
     askHuesThinking: 'Thinking…',
@@ -336,7 +336,7 @@ export const TRANSLATIONS = {
     subProfile: 'Guardado en tu cuenta',
 
     live: 'En vivo',
-    offline: 'Sin conexión',
+    offline: 'Sin sesión en vivo',
     you: 'Tú',
 
     checkInPromptTitle: 'Todavía no te has registrado',
@@ -360,7 +360,7 @@ export const TRANSLATIONS = {
     waitingRoomIntro: '¡Preséntate! Comparte tu nombre, de dónde eres y qué te trae por aquí hoy.',
     waitingRoomPlaceholder: 'Saluda y preséntate',
     waitingRoomEmpty: 'Todavía no hay presentaciones. Sé la primera en saludar.',
-    triageIntro: 'Un chequeo rápido a lo largo del día — ¿cómo estás en este momento? Física, emocionalmente, como tú quieras compartirlo.',
+    triageIntro: 'Un chequeo rápido a lo largo del día — ¿cómo estás en este momento? Física, emocionalmente, como tú quieras compartirlo. Es visible para todas las asistentes, no es privado. Para apoyo individual, busca al personal de HUES o usa Pregúntale a HUES.',
     triagePlaceholder: '¿Cómo estás en este momento?',
     triageEmpty: 'Aún no hay registros. Comparte cómo te sientes abajo, hasta una palabra ayuda.',
 
@@ -432,7 +432,7 @@ export const TRANSLATIONS = {
     chatDischarge: 'Alta',
     chatDirect: 'Directo',
     chatAskHues: 'Pregúntale a HUES',
-    askHuesIntro: 'Pregunta sobre el horario, el lugar, las ponentes o cualquier cosa de hoy. Este es un asistente de IA, así que confirma cualquier cosa importante con el personal de HUES.',
+    askHuesIntro: 'Pregunta sobre el horario, el lugar, las ponentes o cualquier cosa de hoy. Pregúntale a HUES puede ayudarte con información del evento y recursos generales — no ofrece consejo médico ni apoyo en crisis, y es un asistente de IA, así que confirma cualquier cosa importante con el personal de HUES.',
     askHuesEmpty: 'Pregúntame lo que quieras sobre la conferencia.',
     askHuesName: 'Pregúntale a HUES',
     askHuesThinking: 'Pensando…',
