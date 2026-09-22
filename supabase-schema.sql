@@ -87,18 +87,35 @@ create table if not exists messages (
   user_id    uuid not null references auth.users on delete cascade,
   body       text not null check (char_length(body) between 1 and 1000),
   hidden     boolean not null default false,
+  visibility text not null default 'public',
   created_at timestamptz not null default now()
 );
 
 create index if not exists messages_session_idx on messages (session_id, created_at);
 
+alter table messages add column if not exists visibility text not null default 'public';
+alter table messages drop constraint if exists messages_visibility_check;
+alter table messages add constraint messages_visibility_check check (visibility in ('public', 'anonymous', 'private', 'staff'));
+
 alter table messages enable row level security;
 
--- Everyone signed in reads messages that have not been hidden.
+-- Everyone signed in reads public/anonymous messages that have not been
+-- hidden ('anonymous' is still shown to everyone, but the app displays
+-- it without the author's name). A 'private' message is visible only
+-- to its author; a 'staff' message is visible to its author and
+-- moderators. Used by the Triage check-in, where someone may want a
+-- reflection to stay off the shared feed.
 drop policy if exists "read visible messages" on messages;
 create policy "read visible messages" on messages
   for select to authenticated
-  using (hidden = false);
+  using (
+    hidden = false
+    and (
+      visibility in ('public', 'anonymous')
+      or user_id = auth.uid()
+      or (visibility = 'staff' and exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator))
+    )
+  );
 
 -- You post as yourself, and only as yourself.
 drop policy if exists "post own message" on messages;
@@ -114,6 +131,12 @@ create policy "moderate messages" on messages
     user_id = auth.uid()
     or exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator)
   );
+
+-- Authors can permanently delete their own message.
+drop policy if exists "delete own message" on messages;
+create policy "delete own message" on messages
+  for delete to authenticated
+  using (user_id = auth.uid());
 
 
 -- ------------------------------------------------------------
@@ -231,6 +254,12 @@ create policy "moderate pledges" on pledges
     or exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator)
   );
 
+-- Authors can permanently delete their own pledge.
+drop policy if exists "delete own pledge" on pledges;
+create policy "delete own pledge" on pledges
+  for delete to authenticated
+  using (user_id = auth.uid());
+
 
 -- ------------------------------------------------------------
 -- PROFILE PHOTOS
@@ -299,6 +328,12 @@ drop policy if exists "send own direct message" on direct_messages;
 create policy "send own direct message" on direct_messages
   for insert to authenticated
   with check (sender_id = auth.uid());
+
+-- Senders can permanently delete their own message.
+drop policy if exists "delete own direct message" on direct_messages;
+create policy "delete own direct message" on direct_messages
+  for delete to authenticated
+  using (sender_id = auth.uid());
 
 
 -- ------------------------------------------------------------
@@ -709,9 +744,10 @@ drop policy if exists "read questions" on session_questions;
 create policy "read questions" on session_questions
   for select to authenticated using (true);
 
+-- user_id may be null: an attendee can choose to ask anonymously.
 drop policy if exists "ask questions" on session_questions;
 create policy "ask questions" on session_questions
-  for insert to authenticated with check (user_id = auth.uid());
+  for insert to authenticated with check (user_id = auth.uid() or user_id is null);
 
 drop policy if exists "moderators manage questions" on session_questions;
 create policy "moderators manage questions" on session_questions

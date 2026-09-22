@@ -555,6 +555,11 @@ export default function App() {
     reload('votes');
   };
 
+  const skipVote = async () => {
+    await client.from('poll_votes').delete().eq('question_id', POLL_QUESTION_ID).eq('user_id', user.id);
+    reload('votes');
+  };
+
   const addWord = async () => {
     const v = word.trim();
     if (!v) return;
@@ -677,6 +682,12 @@ export default function App() {
     reload('directMessages');
   };
 
+  const deleteDirect = async (messageId) => {
+    const { error: err } = await client.from('direct_messages').delete().eq('id', messageId);
+    if (err) setError('Could not delete. ' + err.message);
+    reload('directMessages');
+  };
+
   const dmThreads = (() => {
     const byOther = {};
     dmMsgs.forEach((m) => {
@@ -790,16 +801,31 @@ export default function App() {
     reload('waitingRoomMessages');
   };
 
-  const sendTriage = async () => {
+  const sendTriage = async (visibility) => {
     const v = triageDraft.trim();
     if (!v) return;
     setTriageDraft('');
-    const { error: err } = await client.from('messages').insert({ session_id: TRIAGE_SESSION_ID, user_id: user.id, body: v });
+    const { error: err } = await client.from('messages').insert({ session_id: TRIAGE_SESSION_ID, user_id: user.id, body: v, visibility: visibility || 'public' });
     if (err) {
       setTriageDraft(v);
       setError('Message not sent. ' + err.message);
     }
     reload('triageMessages');
+  };
+
+  const deleteMessage = async (messageId) => {
+    const { error: err } = await client.from('messages').delete().eq('id', messageId);
+    if (err) setError('Could not delete. ' + err.message);
+    reload('messages');
+    reload('lobbyMessages');
+    reload('waitingRoomMessages');
+    reload('triageMessages');
+  };
+
+  const deletePledge = async (pledgeId) => {
+    const { error: err } = await client.from('pledges').delete().eq('id', pledgeId);
+    if (err) setError('Could not delete. ' + err.message);
+    reload('pledges');
   };
 
   const reportContent = async (targetType, targetId, targetOwnerId, reason, details) => {
@@ -876,10 +902,12 @@ export default function App() {
     if (err) setError('Note not saved. ' + err.message);
   };
 
-  const askQuestion = async (sessionId, body) => {
+  const askQuestion = async (sessionId, body, anonymous) => {
     const v = body.trim();
     if (!v) return;
-    const { error: err } = await client.from('session_questions').insert({ session_id: sessionId, user_id: user.id, body: v.slice(0, 500) });
+    const { error: err } = await client
+      .from('session_questions')
+      .insert({ session_id: sessionId, user_id: anonymous ? null : user.id, body: v.slice(0, 500) });
     if (err) setError('Question not sent. ' + err.message);
     reload('sessionQuestions');
   };
@@ -1156,12 +1184,13 @@ export default function App() {
           setDraft={setDraft}
           onSend={sendMessage}
           onVote={vote}
+          onSkipVote={skipVote}
           word={word}
           setWord={setWord}
           onAddWord={addWord}
           questions={sessionQuestions}
           questionVotes={sessionQuestionVotes}
-          onAskQuestion={(body) => askQuestion(sid, body)}
+          onAskQuestion={(body, anonymous) => askQuestion(sid, body, anonymous)}
           onToggleQuestionVote={toggleQuestionVote}
           onAnswerQuestion={answerQuestion}
           isModerator={!!(profile && profile.is_moderator)}
@@ -1169,10 +1198,11 @@ export default function App() {
           onGenerateRecap={() => generateRecap(sid, 'Signature Fireside Chat', msgs)}
           onReport={reportContent}
           onBlock={blockUser}
+          onDelete={deleteMessage}
         />
       )}
       {screen === 'wall' && (
-        <Wall t={t} userId={user.id} pledges={visiblePledges} draft={pledgeDraft} setDraft={setPledgeDraft} onPost={postPledge} onReport={reportContent} onBlock={blockUser} />
+        <Wall t={t} userId={user.id} pledges={visiblePledges} draft={pledgeDraft} setDraft={setPledgeDraft} onPost={postPledge} onReport={reportContent} onBlock={blockUser} onDelete={deletePledge} />
       )}
       {screen === 'chat' &&
         (inDmThread ? (
@@ -1195,6 +1225,7 @@ export default function App() {
             onBack={() => setActiveDmUserId(null)}
             onReport={reportContent}
             onBlock={blockUser}
+            onDelete={deleteDirect}
           />
         ) : (
           <Chat
@@ -1222,6 +1253,7 @@ export default function App() {
             onSendAiChat={sendAiChat}
             onReport={reportContent}
             onBlock={blockUser}
+            onDelete={deleteMessage}
           />
         ))}
       {screen === 'people' && (

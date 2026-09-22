@@ -2,7 +2,7 @@ import ChatThread from '../components/ChatThread';
 import Avatar from '../components/Avatar';
 import { colorForId } from '../lib/helpers';
 
-export default function DirectThread({ t, userId, myName, myAvatarUrl, otherId, otherName, otherAvatarUrl, messages, draft, setDraft, onSend, onBack, onReport, onBlock }) {
+export default function DirectThread({ t, userId, myName, myAvatarUrl, otherId, otherName, otherAvatarUrl, messages, draft, setDraft, onSend, onBack, onReport, onBlock, onDelete }) {
   return (
     <div className="screen">
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px 0' }}>
@@ -34,6 +34,7 @@ export default function DirectThread({ t, userId, myName, myAvatarUrl, otherId, 
         emptyText={t.noMessages}
         onReport={onReport}
         onBlock={onBlock ? () => { onBlock(otherId); onBack(); } : null}
+        onDelete={onDelete}
       />
     </div>
   );

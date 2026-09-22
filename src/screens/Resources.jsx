@@ -117,6 +117,8 @@ export default function Resources({
         </div>
       </div>
 
+      <div style={{ font: '400 11px/1.5 Poppins', color: '#7E6A76', marginBottom: 14 }}>{t.appDisclaimer}</div>
+
       {isModerator && (
         <>
           <AdminMaterials t={t} lang={lang} sessionFiles={sessionFiles} onUploadFile={onUploadFile} onDeleteFile={onDeleteFile} />

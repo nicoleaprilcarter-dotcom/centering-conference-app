@@ -30,8 +30,12 @@ export default function Chat({
   onSendAiChat,
   onReport,
   onBlock,
+  onDelete,
 }) {
   const [tab, setTab] = useState('waitingRoom');
+  const [triageVisibility, setTriageVisibility] = useState('public');
+  const VISIBILITY_OPTIONS = ['public', 'anonymous', 'staff', 'private'];
+  const visibilityLabelKey = { public: 'visibilityEveryone', anonymous: 'visibilityAnonymous', staff: 'visibilityStaffOnly', private: 'visibilityJustMe' };
 
   const personFor = (id) => people.find((p) => p.id === id);
   const nameFor = (id) => {
@@ -92,6 +96,7 @@ export default function Chat({
             emptyText={t.waitingRoomEmpty}
             onReport={onReport}
             onBlock={onBlock}
+            onDelete={onDelete}
           />
         </>
       )}
@@ -115,6 +120,7 @@ export default function Chat({
             emptyText={t.dischargeEmpty}
             onReport={onReport}
             onBlock={onBlock}
+            onDelete={onDelete}
           />
         </>
       )}
@@ -122,6 +128,32 @@ export default function Chat({
       {tab === 'triage' && (
         <>
           <div style={{ padding: '14px 18px 0', font: '400 12.5px/1.55 Poppins', color: '#4A3348' }}>{t.triageIntro}</div>
+          <div style={{ padding: '10px 18px 0' }}>
+            <div style={{ font: '600 10.5px/1 Poppins', color: '#7A6070', marginBottom: 6 }}>{t.triageWhoSeesThis}</div>
+            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', margin: '0 -18px', padding: '0 18px 2px' }}>
+              {VISIBILITY_OPTIONS.map((v) => {
+                const active = triageVisibility === v;
+                return (
+                  <span
+                    key={v}
+                    onClick={() => setTriageVisibility(v)}
+                    style={{
+                      flex: 'none',
+                      padding: '6px 11px',
+                      borderRadius: 999,
+                      font: '600 11px/1 Poppins',
+                      cursor: 'pointer',
+                      background: active ? '#2E1035' : '#F3EFF1',
+                      color: active ? '#fff' : '#7A6070',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {t[visibilityLabelKey[v]]}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
           <ChatThread
             t={t}
             youLabel={t.you}
@@ -133,11 +165,13 @@ export default function Chat({
             avatarFor={avatarFor}
             draft={triageDraft}
             setDraft={setTriageDraft}
-            onSend={onSendTriage}
+            onSend={() => onSendTriage(triageVisibility)}
             placeholder={t.triagePlaceholder}
             emptyText={t.triageEmpty}
             onReport={onReport}
             onBlock={onBlock}
+            onDelete={onDelete}
+            showVisibility
           />
         </>
       )}

@@ -8,6 +8,12 @@ import ReportMenu from './ReportMenu';
 // group chat, and 1:1 direct message threads. `messages` items need
 // `id`, `user_id` (or `sender_id`), `body`, and the caller resolves a
 // display name + avatar for each via `nameFor` / `avatarFor`.
+const VISIBILITY_LABEL_KEY = {
+  private: 'visibilityJustMe',
+  staff: 'visibilityStaffOnly',
+  anonymous: 'visibilityAnonymous',
+};
+
 export default function ChatThread({
   t,
   youLabel = 'You',
@@ -25,6 +31,8 @@ export default function ChatThread({
   emptyText = 'No messages yet. Say hello.',
   onReport,
   onBlock,
+  onDelete,
+  showVisibility,
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 420 }}>
@@ -32,10 +40,12 @@ export default function ChatThread({
         {messages.map((m) => {
           const otherId = m[idField];
           const mine = otherId === userId;
-          const who = mine ? youLabel : nameFor(otherId);
-          const avatarUrl = mine ? myAvatarUrl : avatarFor(otherId);
+          const isAnon = m.visibility === 'anonymous' && !mine;
+          const who = mine ? youLabel : isAnon ? t.visibilityAnonymous : nameFor(otherId);
+          const avatarUrl = mine ? myAvatarUrl : isAnon ? null : avatarFor(otherId);
           const avatarName = mine ? myName : who;
-          const color = mine ? '#2E1035' : colorForId(otherId);
+          const color = mine ? '#2E1035' : isAnon ? '#7A6070' : colorForId(otherId);
+          const visKey = VISIBILITY_LABEL_KEY[m.visibility];
           return (
             <div
               className="chat-row"
@@ -49,6 +59,19 @@ export default function ChatThread({
                   <div className="chat-bubble" style={{ background: mine ? '#2E1035' : '#fff', color: mine ? '#fff' : '#2E1035' }}>
                     {m.body}
                   </div>
+                  {showVisibility && visKey && (
+                    <div style={{ font: '500 10px/1.3 Poppins', color: '#A08E9A', marginTop: 3 }}>{t[visKey]}</div>
+                  )}
+                  {mine && onDelete && (
+                    <div
+                      style={{ font: '500 10.5px/1 Poppins', color: '#A08E9A', cursor: 'pointer', marginTop: 4, textAlign: 'right' }}
+                      onClick={() => {
+                        if (window.confirm(t.deleteConfirm)) onDelete(m.id);
+                      }}
+                    >
+                      {t.deleteAction}
+                    </div>
+                  )}
                 </div>
                 {!mine && t && onReport && (
                   <ReportMenu

@@ -3,7 +3,7 @@ import ReportMenu from '../components/ReportMenu';
 
 const BG_ROTATION = ['#E9F4F3', '#FFF0DC', '#FFE2ED', '#FBF0D3'];
 
-export default function Wall({ t, userId, pledges, draft, setDraft, onPost, onReport, onBlock }) {
+export default function Wall({ t, userId, pledges, draft, setDraft, onPost, onReport, onBlock, onDelete }) {
   return (
     <div className="screen-pad">
       <div className="wall-title">{t.wallTitle}</div>
@@ -32,6 +32,16 @@ export default function Wall({ t, userId, pledges, draft, setDraft, onPost, onRe
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="pledge-text">{p.body}</div>
               <div className="pledge-who">{p.user_id === userId ? t.you : t.attendee}</div>
+              {p.user_id === userId && onDelete && (
+                <div
+                  style={{ font: '500 10.5px/1 Poppins', color: '#7A6070', cursor: 'pointer', marginTop: 6 }}
+                  onClick={() => {
+                    if (window.confirm(t.deleteConfirm)) onDelete(p.id);
+                  }}
+                >
+                  {t.deleteAction}
+                </div>
+              )}
             </div>
             {p.user_id !== userId && onReport && (
               <ReportMenu

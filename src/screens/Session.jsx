@@ -19,6 +19,7 @@ export default function Session({
   setDraft,
   onSend,
   onVote,
+  onSkipVote,
   word,
   setWord,
   onAddWord,
@@ -32,10 +33,13 @@ export default function Session({
   onGenerateRecap,
   onReport,
   onBlock,
+  onDelete,
 }) {
   const [tab, setTab] = useState('chat');
   const [qDraft, setQDraft] = useState('');
+  const [qAnonymous, setQAnonymous] = useState(false);
   const [answerDrafts, setAnswerDrafts] = useState({});
+  const [wordListView, setWordListView] = useState(false);
   const [generatingRecap, setGeneratingRecap] = useState(false);
 
   const voteCount = (qId) => questionVotes.filter((v) => v.question_id === qId).length;
@@ -123,6 +127,16 @@ export default function Session({
                       <div className="chat-bubble" style={{ background: mine ? '#2E1035' : '#fff', color: mine ? '#fff' : '#2E1035' }}>
                         {m.body}
                       </div>
+                      {mine && onDelete && (
+                        <div
+                          style={{ font: '500 10.5px/1 Poppins', color: '#A08E9A', cursor: 'pointer', marginTop: 4, textAlign: 'right' }}
+                          onClick={() => {
+                            if (window.confirm(t.deleteConfirm)) onDelete(m.id);
+                          }}
+                        >
+                          {t.deleteAction}
+                        </div>
+                      )}
                     </div>
                     {!mine && onReport && (
                       <ReportMenu
@@ -154,7 +168,7 @@ export default function Session({
         </div>
       ) : tab === 'qa' ? (
         <div className="screen-pad">
-          <div className="add-row" style={{ marginBottom: 14 }}>
+          <div className="add-row">
             <input
               className="add-input"
               type="text"
@@ -163,7 +177,7 @@ export default function Session({
               onChange={(e) => setQDraft(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && qDraft.trim()) {
-                  onAskQuestion(qDraft);
+                  onAskQuestion(qDraft, qAnonymous);
                   setQDraft('');
                 }
               }}
@@ -172,12 +186,36 @@ export default function Session({
               className="add-btn"
               onClick={() => {
                 if (!qDraft.trim()) return;
-                onAskQuestion(qDraft);
+                onAskQuestion(qDraft, qAnonymous);
                 setQDraft('');
               }}
             >
               {t.add}
             </div>
+          </div>
+          <div
+            onClick={() => setQAnonymous((v) => !v)}
+            style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', margin: '8px 0 14px' }}
+          >
+            <div
+              style={{
+                width: 17,
+                height: 17,
+                borderRadius: 5,
+                border: qAnonymous ? 'none' : '1.5px solid rgba(46,16,53,.25)',
+                background: qAnonymous ? '#B01253' : 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {qAnonymous && (
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
+              )}
+            </div>
+            <span style={{ font: '500 12px/1.3 Poppins', color: '#4A3348' }}>{t.askAnonymouslyLabel}</span>
           </div>
           {sortedQuestions.length === 0 && <div className="empty-note">{t.noQuestions}</div>}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -247,7 +285,8 @@ export default function Session({
       ) : (
         <div className="screen-pad">
           <div style={{ font: '600 16px/1.4 Poppins' }}>{POLL_PROMPT[lang] || POLL_PROMPT.en}</div>
-          <div style={{ font: '400 11.5px/1.4 Poppins', color: '#7A6070', margin: '6px 0 14px' }}>
+          <div style={{ font: '400 11px/1.4 Poppins', color: '#7E6A76', margin: '4px 0 2px' }}>{t.pollAnonymousNote}</div>
+          <div style={{ font: '400 11.5px/1.4 Poppins', color: '#7A6070', margin: '2px 0 14px' }}>
             {votes.length} {votes.length === 1 ? t.pollResponsesOne : t.pollResponsesMany}
           </div>
           {POLL_OPTIONS.map(([oid, labelEn, labelEs]) => {
@@ -272,24 +311,50 @@ export default function Session({
               </div>
             );
           })}
-          <div className="section-label">{t.wordCloudTitle}</div>
-          <div className="word-cloud">
-            {(() => {
-              const counts = {};
-              words.forEach((w) => {
-                const k = w.word.toLowerCase();
-                counts[k] = (counts[k] || 0) + 1;
-              });
-              const keys = Object.keys(counts);
-              if (keys.length === 0) return <div className="word-cloud-empty">{t.wordCloudEmpty}</div>;
-              const colors = ['#C6106B', '#7A5205', '#A63D06', '#6B1029', '#8A6A12', '#2E1035'];
-              return keys.map((w, i) => (
-                <span key={w} style={{ fontFamily: 'Poppins', fontWeight: 600, lineHeight: 1, fontSize: 13 + Math.min(counts[w], 12) * 2.6, color: colors[i % colors.length] }}>
-                  {w}
-                </span>
-              ));
-            })()}
+          {onSkipVote && (
+            <div className="text-link-btn" style={{ padding: 0, margin: '6px 0 0' }} onClick={onSkipVote}>
+              {t.pollSkip}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 18 }}>
+            <div className="section-label" style={{ margin: 0 }}>
+              {t.wordCloudTitle}
+            </div>
+            <div className="text-link-btn" style={{ padding: 0, font: '600 11px/1 Poppins' }} onClick={() => setWordListView((v) => !v)}>
+              {wordListView ? t.wordCloudViewCloud : t.wordCloudViewList}
+            </div>
           </div>
+          {(() => {
+            const counts = {};
+            words.forEach((w) => {
+              const k = w.word.toLowerCase();
+              counts[k] = (counts[k] || 0) + 1;
+            });
+            const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+            if (entries.length === 0) return <div className="word-cloud-empty">{t.wordCloudEmpty}</div>;
+            if (wordListView) {
+              return (
+                <ul style={{ margin: '10px 0 0', padding: '0 0 0 20px', font: '400 13px/1.8 Poppins', color: '#2E1035' }}>
+                  {entries.map(([w, n]) => (
+                    <li key={w}>
+                      {w} ({n})
+                    </li>
+                  ))}
+                </ul>
+              );
+            }
+            const colors = ['#C6106B', '#7A5205', '#A63D06', '#6B1029', '#8A6A12', '#2E1035'];
+            return (
+              <div className="word-cloud">
+                {entries.map(([w, n], i) => (
+                  <span key={w} style={{ fontFamily: 'Poppins', fontWeight: 600, lineHeight: 1, fontSize: 13 + Math.min(n, 12) * 2.6, color: colors[i % colors.length] }}>
+                    {w}
+                  </span>
+                ))}
+              </div>
+            );
+          })()}
           <div className="add-row">
             <input
               className="add-input"
