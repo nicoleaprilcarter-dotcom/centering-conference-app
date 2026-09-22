@@ -252,7 +252,16 @@ export default function Agenda({
         style={{ marginBottom: 10 }}
       />
 
-      <div style={{ display: 'flex', gap: 7, overflowX: 'auto', marginBottom: 14, paddingBottom: 2 }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: 7,
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          margin: '0 -18px 14px',
+          padding: '0 18px 2px',
+        }}
+      >
         <span
           onClick={() => setLiveOnly((v) => !v)}
           style={{
