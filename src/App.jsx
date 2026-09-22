@@ -25,6 +25,7 @@ import Profile from './screens/Profile';
 import Checkout from './screens/Checkout';
 import PersonProfile from './screens/PersonProfile';
 import Header from './components/Header';
+import OnboardingIntro from './components/OnboardingIntro';
 import BottomNav from './components/BottomNav';
 import ErrorBanner from './components/ErrorBanner';
 
@@ -37,6 +38,14 @@ function readStoredLang() {
     return localStorage.getItem('cwoc_lang') || 'en';
   } catch {
     return 'en';
+  }
+}
+
+function readOnboarded() {
+  try {
+    return localStorage.getItem('cwoc_onboarded') === '1';
+  } catch {
+    return false;
   }
 }
 
@@ -122,6 +131,16 @@ export default function App() {
   const [activeDmUserId, setActiveDmUserId] = useState(null);
 
   const [lang, setLang] = useState(readStoredLang);
+  const [showOnboarding, setShowOnboarding] = useState(() => !readOnboarded());
+
+  const dismissOnboarding = () => {
+    setShowOnboarding(false);
+    try {
+      localStorage.setItem('cwoc_onboarded', '1');
+    } catch {
+      // ignore
+    }
+  };
   const [checkedInAt, setCheckedInAt] = useState(null);
   const [speakers, setSpeakers] = useState([]);
   const [sponsors, setSponsors] = useState([]);
@@ -1024,6 +1043,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      {showOnboarding && <OnboardingIntro t={t} onDismiss={dismissOnboarding} />}
       <Header
         name={pfName}
         avatarUrl={pfAvatarUrl}
