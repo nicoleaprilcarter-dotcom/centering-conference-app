@@ -787,6 +787,70 @@ create policy "moderators manage session details" on session_details
 
 
 -- ------------------------------------------------------------
+-- BLOCKS
+-- An attendee can block another; blocked people's messages,
+-- profile, and pledges are filtered out client-side. Nothing
+-- special happens on the blocked person's side — they aren't
+-- notified.
+-- ------------------------------------------------------------
+create table if not exists blocks (
+  id         bigint generated always as identity primary key,
+  blocker_id uuid not null references auth.users on delete cascade,
+  blocked_id uuid not null references auth.users on delete cascade,
+  created_at timestamptz not null default now(),
+  unique (blocker_id, blocked_id)
+);
+
+alter table blocks enable row level security;
+
+drop policy if exists "manage own blocks" on blocks;
+create policy "manage own blocks" on blocks
+  for all to authenticated
+  using (blocker_id = auth.uid())
+  with check (blocker_id = auth.uid());
+
+
+-- ------------------------------------------------------------
+-- REPORTS
+-- An attendee flags a message, profile, or pledge for the HUES
+-- team to review. Reporters can see their own reports; only
+-- moderators can see and resolve the full queue.
+-- ------------------------------------------------------------
+create table if not exists reports (
+  id           bigint generated always as identity primary key,
+  reporter_id  uuid not null references auth.users on delete cascade,
+  target_type  text not null check (target_type in ('message', 'profile', 'pledge')),
+  target_id    text not null,
+  target_owner uuid references auth.users on delete set null,
+  reason       text not null,
+  details      text not null default '',
+  status       text not null default 'open' check (status in ('open', 'reviewed', 'dismissed')),
+  created_at   timestamptz not null default now()
+);
+
+alter table reports enable row level security;
+
+drop policy if exists "read own or moderate reports" on reports;
+create policy "read own or moderate reports" on reports
+  for select to authenticated
+  using (
+    reporter_id = auth.uid()
+    or exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator)
+  );
+
+drop policy if exists "file own report" on reports;
+create policy "file own report" on reports
+  for insert to authenticated
+  with check (reporter_id = auth.uid());
+
+drop policy if exists "moderators resolve reports" on reports;
+create policy "moderators resolve reports" on reports
+  for update to authenticated
+  using (exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator))
+  with check (exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator));
+
+
+-- ------------------------------------------------------------
 -- REALTIME
 -- Lets the app update without refreshing. Wrapped so this whole
 -- file is safe to run again later (a plain ALTER PUBLICATION
@@ -839,6 +903,9 @@ begin
   end if;
   if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'session_details') then
     alter publication supabase_realtime add table session_details;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'reports') then
+    alter publication supabase_realtime add table reports;
   end if;
 end $$;
 

@@ -34,6 +34,8 @@ export default function Profile({
   onSave,
   onSignOut,
   onOpenCheckout,
+  blockedPeople = [],
+  onUnblock,
 }) {
   const fileInputRef = useRef(null);
 
@@ -166,6 +168,24 @@ export default function Profile({
           <path d="M9 5l7 7-7 7" />
         </svg>
       </div>
+
+      {blockedPeople.length > 0 && (
+        <>
+          <div className="field-title" style={{ margin: '20px 0 9px' }}>
+            {t.blockedListTitle}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 6 }}>
+            {blockedPeople.map((p) => (
+              <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <div style={{ font: '500 12.5px/1.3 Poppins', color: '#2E1035' }}>{p.name}</div>
+                <div style={{ font: '600 11.5px/1 Poppins', color: '#B01253', cursor: 'pointer' }} onClick={() => onUnblock(p.id)}>
+                  {t.unblockAction}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       <div className="text-link-btn" onClick={onSignOut}>
         {t.signOut}

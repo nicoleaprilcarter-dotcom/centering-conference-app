@@ -4,8 +4,9 @@ import { translateTagLabel } from '../data/translations';
 import Avatar from '../components/Avatar';
 import Flourish from '../components/Flourish';
 import DesignationBadge from '../components/DesignationBadge';
+import ReportMenu from '../components/ReportMenu';
 
-function PersonCard({ p, userId, lang, t, onMessage }) {
+function PersonCard({ p, userId, lang, t, onMessage, onReport, onBlock }) {
   return (
     <div className="person-card" key={p.id}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -25,6 +26,13 @@ function PersonCard({ p, userId, lang, t, onMessage }) {
             {t.message}
           </div>
         )}
+        {p.id !== userId && onReport && (
+          <ReportMenu
+            t={t}
+            onReport={(reason, details) => onReport('profile', p.id, p.id, reason, details)}
+            onBlock={onBlock ? () => onBlock(p.id) : null}
+          />
+        )}
       </div>
       {(p.designation || (p.interests || []).length > 0) && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 11 }}>
@@ -40,11 +48,11 @@ function PersonCard({ p, userId, lang, t, onMessage }) {
   );
 }
 
-function PersonList({ list, emptyText, userId, lang, t, onMessage }) {
+function PersonList({ list, emptyText, userId, lang, t, onMessage, onReport, onBlock }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
       {list.map((p) => (
-        <PersonCard key={p.id} p={p} userId={userId} lang={lang} t={t} onMessage={onMessage} />
+        <PersonCard key={p.id} p={p} userId={userId} lang={lang} t={t} onMessage={onMessage} onReport={onReport} onBlock={onBlock} />
       ))}
       {list.length === 0 && (
         <div className="empty-state">
@@ -57,7 +65,7 @@ function PersonList({ list, emptyText, userId, lang, t, onMessage }) {
   );
 }
 
-export default function People({ t, lang, userId, people, speakers, sponsors = [], onMessage }) {
+export default function People({ t, lang, userId, people, speakers, sponsors = [], onMessage, onReport, onBlock }) {
   const [tab, setTab] = useState('speakers');
   const visiblePeople = people.filter((p) => p.display_name);
   const leadership = visiblePeople.filter((p) => ['founder', 'chair', 'board', 'staff'].includes(normalizeDesignation(p.designation)));
@@ -120,12 +128,12 @@ export default function People({ t, lang, userId, people, speakers, sponsors = [
           <div className="empty-note" style={{ padding: 0, textAlign: 'left', marginBottom: 12 }}>
             {t.leadershipNote}
           </div>
-          <PersonList list={leadership} emptyText={t.leadershipEmpty} userId={userId} lang={lang} t={t} onMessage={onMessage} />
+          <PersonList list={leadership} emptyText={t.leadershipEmpty} userId={userId} lang={lang} t={t} onMessage={onMessage} onReport={onReport} onBlock={onBlock} />
         </>
       )}
 
       {tab === 'volunteers' && (
-        <PersonList list={volunteers} emptyText={t.volunteersEmpty} userId={userId} lang={lang} t={t} onMessage={onMessage} />
+        <PersonList list={volunteers} emptyText={t.volunteersEmpty} userId={userId} lang={lang} t={t} onMessage={onMessage} onReport={onReport} onBlock={onBlock} />
       )}
 
       {tab === 'sponsors' && (
@@ -150,7 +158,7 @@ export default function People({ t, lang, userId, people, speakers, sponsors = [
             </div>
           ))}
           {sponsorAttendees.map((p) => (
-            <PersonCard key={p.id} p={p} userId={userId} lang={lang} t={t} onMessage={onMessage} />
+            <PersonCard key={p.id} p={p} userId={userId} lang={lang} t={t} onMessage={onMessage} onReport={onReport} onBlock={onBlock} />
           ))}
           {sponsors.length === 0 && sponsorAttendees.length === 0 && (
             <div className="empty-state">
@@ -167,7 +175,7 @@ export default function People({ t, lang, userId, people, speakers, sponsors = [
           <div className="empty-note" style={{ padding: 0, textAlign: 'left', marginBottom: 12 }}>
             {t.attendeesNote}
           </div>
-          <PersonList list={visiblePeople} emptyText={t.attendeesEmpty} userId={userId} lang={lang} t={t} onMessage={onMessage} />
+          <PersonList list={visiblePeople} emptyText={t.attendeesEmpty} userId={userId} lang={lang} t={t} onMessage={onMessage} onReport={onReport} onBlock={onBlock} />
         </>
       )}
     </div>

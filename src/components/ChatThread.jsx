@@ -2,12 +2,30 @@ import { colorForId } from '../lib/helpers';
 import { SendIcon } from './icons';
 import Avatar from './Avatar';
 import Flourish from './Flourish';
+import ReportMenu from './ReportMenu';
 
 // Shared list-of-bubbles + composer, used by the lobby room, session
 // group chat, and 1:1 direct message threads. `messages` items need
 // `id`, `user_id` (or `sender_id`), `body`, and the caller resolves a
 // display name + avatar for each via `nameFor` / `avatarFor`.
-export default function ChatThread({ youLabel = 'You', userId, myName, myAvatarUrl, messages, idField = 'user_id', nameFor, avatarFor, draft, setDraft, onSend, placeholder = 'Message the group', emptyText = 'No messages yet. Say hello.' }) {
+export default function ChatThread({
+  t,
+  youLabel = 'You',
+  userId,
+  myName,
+  myAvatarUrl,
+  messages,
+  idField = 'user_id',
+  nameFor,
+  avatarFor,
+  draft,
+  setDraft,
+  onSend,
+  placeholder = 'Message the group',
+  emptyText = 'No messages yet. Say hello.',
+  onReport,
+  onBlock,
+}) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 420 }}>
       <div className="chat-list">
@@ -25,11 +43,21 @@ export default function ChatThread({ youLabel = 'You', userId, myName, myAvatarU
               style={{ alignSelf: mine ? 'flex-end' : 'flex-start', flexDirection: mine ? 'row-reverse' : 'row' }}
             >
               <Avatar url={avatarUrl} name={avatarName} color={color} size={40} fontSize={14} />
-              <div>
-                <div className="chat-who">{who}</div>
-                <div className="chat-bubble" style={{ background: mine ? '#2E1035' : '#fff', color: mine ? '#fff' : '#2E1035' }}>
-                  {m.body}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                <div>
+                  <div className="chat-who">{who}</div>
+                  <div className="chat-bubble" style={{ background: mine ? '#2E1035' : '#fff', color: mine ? '#fff' : '#2E1035' }}>
+                    {m.body}
+                  </div>
                 </div>
+                {!mine && t && onReport && (
+                  <ReportMenu
+                    t={t}
+                    align="left"
+                    onReport={(reason, details) => onReport('message', m.id, otherId, reason, details)}
+                    onBlock={onBlock ? () => onBlock(otherId) : null}
+                  />
+                )}
               </div>
             </div>
           );

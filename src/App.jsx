@@ -152,6 +152,9 @@ export default function App() {
   const [feedbackSaved, setFeedbackSaved] = useState(false);
   const [sessionRatings, setSessionRatings] = useState({});
 
+  const [blocks, setBlocks] = useState([]);
+  const [reports, setReports] = useState([]);
+
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
   const channelRef = useRef(null);
@@ -200,7 +203,7 @@ export default function App() {
   // ---------- after sign-in ----------
   const loadAll = useCallback(
     async (c, uid) => {
-      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh, sfl, sno, sq, sqv, src, sdt] = await Promise.all([
+      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh, sfl, sno, sq, sqv, src, sdt, blk, rpt] = await Promise.all([
         c.from('saved_sessions').select('session_id').eq('user_id', uid),
         c.from('messages').select('*').eq('session_id', sid).order('created_at'),
         c.from('profiles').select('*').eq('visible', true),
@@ -223,6 +226,8 @@ export default function App() {
         c.from('session_question_votes').select('*'),
         c.from('session_recaps').select('*'),
         c.from('session_details').select('*'),
+        c.from('blocks').select('*').eq('blocker_id', uid),
+        c.from('reports').select('*').order('created_at', { ascending: false }),
       ]);
       const savedMap = {};
       (sv.data || []).forEach((r) => {
@@ -274,6 +279,8 @@ export default function App() {
         ratingMap[r.session_id] = r.rating;
       });
       setSessionRatings(ratingMap);
+      setBlocks(blk.data || []);
+      setReports(rpt.data || []);
     },
     [sid],
   );
@@ -369,6 +376,14 @@ export default function App() {
         const { data } = await client.from('messages').select('*').eq('session_id', TRIAGE_SESSION_ID).order('created_at');
         setTriageMsgs(data || []);
       }
+      if (what === 'blocks' && user) {
+        const { data } = await client.from('blocks').select('*').eq('blocker_id', user.id);
+        setBlocks(data || []);
+      }
+      if (what === 'reports') {
+        const { data } = await client.from('reports').select('*').order('created_at', { ascending: false });
+        setReports(data || []);
+      }
     },
     [client, sid, user],
   );
@@ -398,6 +413,7 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_question_votes' }, () => reload('sessionQuestionVotes'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_recaps' }, () => reload('sessionRecaps'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_details' }, () => reload('sessionDetails'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reports' }, () => reload('reports'))
       .subscribe();
     channelRef.current = ch;
   }, [client, reload]);
@@ -657,6 +673,18 @@ export default function App() {
       .sort((a, b) => (a.lastAt < b.lastAt ? 1 : -1));
   })();
 
+  const blockedIdSet = new Set(blocks.map((b) => b.blocked_id));
+  const visiblePeople = people.filter((p) => !blockedIdSet.has(p.id));
+  const visiblePledges = pledges.filter((p) => !blockedIdSet.has(p.user_id));
+  const visibleMsgs = msgs.filter((m) => !blockedIdSet.has(m.user_id));
+  const visibleLobbyMsgs = lobbyMsgs.filter((m) => !blockedIdSet.has(m.user_id));
+  const visibleWaitingRoomMsgs = waitingRoomMsgs.filter((m) => !blockedIdSet.has(m.user_id));
+  const visibleTriageMsgs = triageMsgs.filter((m) => !blockedIdSet.has(m.user_id));
+  const visibleDmThreads = dmThreads.filter((th) => !blockedIdSet.has(th.userId));
+  const blockedPeople = people
+    .filter((p) => blockedIdSet.has(p.id))
+    .map((p) => ({ id: p.id, name: p.display_name || t.attendee }));
+
   const chatUnread = dmMsgs.some((m) => m.recipient_id === user?.id && m.created_at > lastDmReadAt);
 
   // Mark direct messages as read whenever the Chat screen is open.
@@ -746,6 +774,38 @@ export default function App() {
       setError('Message not sent. ' + err.message);
     }
     reload('triageMessages');
+  };
+
+  const reportContent = async (targetType, targetId, targetOwnerId, reason, details) => {
+    const { error: err } = await client.from('reports').insert({
+      reporter_id: user.id,
+      target_type: targetType,
+      target_id: String(targetId),
+      target_owner: targetOwnerId || null,
+      reason,
+      details: details || '',
+    });
+    if (err) setError('Report not sent. ' + err.message);
+  };
+
+  const blockUser = async (blockedId) => {
+    if (!blockedId) return;
+    const { error: err } = await client.from('blocks').insert({ blocker_id: user.id, blocked_id: blockedId });
+    if (err) {
+      setError('Could not block. ' + err.message);
+      return;
+    }
+    reload('blocks');
+  };
+
+  const unblockUser = async (blockedId) => {
+    await client.from('blocks').delete().eq('blocker_id', user.id).eq('blocked_id', blockedId);
+    reload('blocks');
+  };
+
+  const resolveReport = async (reportId, status) => {
+    await client.from('reports').update({ status }).eq('id', reportId);
+    reload('reports');
   };
 
   const saveOverallFeedback = async () => {
@@ -976,6 +1036,8 @@ export default function App() {
           person={viewingPerson}
           onBack={() => setViewingPerson(null)}
           onMessage={viewingPerson.userId ? () => openDirectThread(viewingPerson.userId) : null}
+          onReport={viewingPerson.userId && viewingPerson.userId !== user.id ? reportContent : null}
+          onBlock={viewingPerson.userId && viewingPerson.userId !== user.id ? blockUser : null}
         />
       ) : viewingSessionId ? (
         <SessionDetail
@@ -1033,6 +1095,9 @@ export default function App() {
           sessionFiles={sessionFiles}
           onUploadFile={uploadSessionFile}
           onDeleteFile={deleteSessionFile}
+          reports={reports}
+          people={people}
+          onResolveReport={resolveReport}
         />
       )}
       {screen === 'session' && (
@@ -1042,7 +1107,7 @@ export default function App() {
           userId={user.id}
           myName={pfName}
           myAvatarUrl={pfAvatarUrl}
-          messages={msgs}
+          messages={visibleMsgs}
           votes={votes}
           words={words}
           people={people}
@@ -1061,10 +1126,12 @@ export default function App() {
           isModerator={!!(profile && profile.is_moderator)}
           recap={sessionRecaps[sid]}
           onGenerateRecap={() => generateRecap(sid, 'Signature Fireside Chat', msgs)}
+          onReport={reportContent}
+          onBlock={blockUser}
         />
       )}
       {screen === 'wall' && (
-        <Wall t={t} userId={user.id} pledges={pledges} draft={pledgeDraft} setDraft={setPledgeDraft} onPost={postPledge} />
+        <Wall t={t} userId={user.id} pledges={visiblePledges} draft={pledgeDraft} setDraft={setPledgeDraft} onPost={postPledge} onReport={reportContent} onBlock={blockUser} />
       )}
       {screen === 'chat' &&
         (inDmThread ? (
@@ -1085,6 +1152,8 @@ export default function App() {
             setDraft={setDmDraft}
             onSend={sendDirect}
             onBack={() => setActiveDmUserId(null)}
+            onReport={reportContent}
+            onBlock={blockUser}
           />
         ) : (
           <Chat
@@ -1093,27 +1162,29 @@ export default function App() {
             myName={pfName}
             myAvatarUrl={pfAvatarUrl}
             people={people}
-            waitingRoomMsgs={waitingRoomMsgs}
+            waitingRoomMsgs={visibleWaitingRoomMsgs}
             waitingRoomDraft={waitingRoomDraft}
             setWaitingRoomDraft={setWaitingRoomDraft}
             onSendWaitingRoom={sendWaitingRoom}
-            lobbyMsgs={lobbyMsgs}
+            lobbyMsgs={visibleLobbyMsgs}
             lobbyDraft={lobbyDraft}
             setLobbyDraft={setLobbyDraft}
             onSendLobby={sendLobby}
-            triageMsgs={triageMsgs}
+            triageMsgs={visibleTriageMsgs}
             triageDraft={triageDraft}
             setTriageDraft={setTriageDraft}
             onSendTriage={sendTriage}
-            dmThreads={dmThreads}
+            dmThreads={visibleDmThreads}
             onOpenThread={openDirectThread}
             aiChatMsgs={aiChatMsgs}
             aiChatSending={aiChatSending}
             onSendAiChat={sendAiChat}
+            onReport={reportContent}
+            onBlock={blockUser}
           />
         ))}
       {screen === 'people' && (
-        <People t={t} lang={lang} userId={user.id} people={people} speakers={speakers} sponsors={sponsors} onMessage={openDirectThread} />
+        <People t={t} lang={lang} userId={user.id} people={visiblePeople} speakers={speakers} sponsors={sponsors} onMessage={openDirectThread} onReport={reportContent} onBlock={blockUser} />
       )}
       {screen === 'profile' &&
         (showCheckout ? (
@@ -1154,6 +1225,8 @@ export default function App() {
             onSave={saveProfile}
             onSignOut={signOut}
             onOpenCheckout={() => setShowCheckout(true)}
+            blockedPeople={blockedPeople}
+            onUnblock={unblockUser}
           />
         ))}
         </>

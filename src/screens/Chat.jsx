@@ -28,6 +28,8 @@ export default function Chat({
   aiChatMsgs,
   aiChatSending,
   onSendAiChat,
+  onReport,
+  onBlock,
 }) {
   const [tab, setTab] = useState('waitingRoom');
 
@@ -75,6 +77,7 @@ export default function Chat({
         <>
           <div style={{ padding: '14px 18px 0', font: '400 12.5px/1.55 Poppins', color: '#4A3348' }}>{t.waitingRoomIntro}</div>
           <ChatThread
+            t={t}
             youLabel={t.you}
             userId={userId}
             myName={myName}
@@ -87,6 +90,8 @@ export default function Chat({
             onSend={onSendWaitingRoom}
             placeholder={t.waitingRoomPlaceholder}
             emptyText={t.waitingRoomEmpty}
+            onReport={onReport}
+            onBlock={onBlock}
           />
         </>
       )}
@@ -95,6 +100,7 @@ export default function Chat({
         <>
           <div style={{ padding: '14px 18px 0', font: '400 12.5px/1.55 Poppins', color: '#4A3348' }}>{t.dischargeIntro}</div>
           <ChatThread
+            t={t}
             youLabel={t.you}
             userId={userId}
             myName={myName}
@@ -107,6 +113,8 @@ export default function Chat({
             onSend={onSendLobby}
             placeholder={t.dischargePlaceholder}
             emptyText={t.dischargeEmpty}
+            onReport={onReport}
+            onBlock={onBlock}
           />
         </>
       )}
@@ -115,6 +123,7 @@ export default function Chat({
         <>
           <div style={{ padding: '14px 18px 0', font: '400 12.5px/1.55 Poppins', color: '#4A3348' }}>{t.triageIntro}</div>
           <ChatThread
+            t={t}
             youLabel={t.you}
             userId={userId}
             myName={myName}
@@ -127,6 +136,8 @@ export default function Chat({
             onSend={onSendTriage}
             placeholder={t.triagePlaceholder}
             emptyText={t.triageEmpty}
+            onReport={onReport}
+            onBlock={onBlock}
           />
         </>
       )}

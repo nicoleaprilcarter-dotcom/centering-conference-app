@@ -1,9 +1,10 @@
 import Avatar from '../components/Avatar';
 import DesignationBadge from '../components/DesignationBadge';
+import ReportMenu from '../components/ReportMenu';
 import { colorForId } from '../lib/helpers';
 import { translateTagLabel } from '../data/translations';
 
-export default function PersonProfile({ t, lang, person, onBack, onMessage }) {
+export default function PersonProfile({ t, lang, person, onBack, onMessage, onReport, onBlock }) {
   const { userId, name, avatarUrl, pronouns, bio, interests, designation, role } = person;
 
   return (
@@ -17,7 +18,14 @@ export default function PersonProfile({ t, lang, person, onBack, onMessage }) {
             <path d="M15 5l-7 7 7 7" />
           </svg>
         </div>
-        <div style={{ font: '600 15px/1.2 Poppins' }}>{t.profile}</div>
+        <div style={{ font: '600 15px/1.2 Poppins', flex: 1 }}>{t.profile}</div>
+        {userId && onReport && (
+          <ReportMenu
+            t={t}
+            onReport={(reason, details) => onReport('profile', userId, userId, reason, details)}
+            onBlock={onBlock ? () => { onBlock(userId); onBack(); } : null}
+          />
+        )}
       </div>
 
       <div className="card" style={{ border: 'none', background: '#fff' }}>

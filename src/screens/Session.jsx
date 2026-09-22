@@ -3,6 +3,7 @@ import { colorForId } from '../lib/helpers';
 import { POLL_OPTIONS, POLL_PROMPT } from '../data/sessions';
 import { SendIcon, SparkleIcon } from '../components/icons';
 import Avatar from '../components/Avatar';
+import ReportMenu from '../components/ReportMenu';
 
 export default function Session({
   t,
@@ -29,6 +30,8 @@ export default function Session({
   isModerator,
   recap,
   onGenerateRecap,
+  onReport,
+  onBlock,
 }) {
   const [tab, setTab] = useState('chat');
   const [qDraft, setQDraft] = useState('');
@@ -114,11 +117,21 @@ export default function Session({
                   style={{ alignSelf: mine ? 'flex-end' : 'flex-start', flexDirection: mine ? 'row-reverse' : 'row' }}
                 >
                   <Avatar url={avatarUrl} name={avatarName} color={color} size={40} fontSize={14} />
-                  <div>
-                    <div className="chat-who">{who}</div>
-                    <div className="chat-bubble" style={{ background: mine ? '#2E1035' : '#fff', color: mine ? '#fff' : '#2E1035' }}>
-                      {m.body}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                    <div>
+                      <div className="chat-who">{who}</div>
+                      <div className="chat-bubble" style={{ background: mine ? '#2E1035' : '#fff', color: mine ? '#fff' : '#2E1035' }}>
+                        {m.body}
+                      </div>
                     </div>
+                    {!mine && onReport && (
+                      <ReportMenu
+                        t={t}
+                        align="left"
+                        onReport={(reason, details) => onReport('message', m.id, m.user_id, reason, details)}
+                        onBlock={onBlock ? () => onBlock(m.user_id) : null}
+                      />
+                    )}
                   </div>
                 </div>
               );
