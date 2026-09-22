@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { tagColors, colorForId } from '../lib/helpers';
 import { FileIcon, SparkleIcon } from '../components/icons';
 import Avatar from '../components/Avatar';
+import StarRating from '../components/StarRating';
 import { downloadICS } from '../lib/ics';
 
 const VENUE_ADDRESS_ENCODED = encodeURIComponent('Dayton Hub, 31 S Main St, Dayton, OH 45402');
@@ -12,6 +13,10 @@ export default function SessionDetail({
   lang,
   session,
   isLive,
+  hasEnded,
+  rating = 0,
+  feedbackComment = '',
+  onRateSession,
   hosts = [],
   files = [],
   detail,
@@ -25,6 +30,8 @@ export default function SessionDetail({
   const [editing, setEditing] = useState(false);
   const [descDraft, setDescDraft] = useState((detail && detail.description_en) || '');
   const [a11yDraft, setA11yDraft] = useState((detail && detail.accessibility_en) || '');
+  const [commentDraft, setCommentDraft] = useState(feedbackComment);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
   if (!session) return null;
 
@@ -202,6 +209,37 @@ export default function SessionDetail({
             ))}
           </div>
         </>
+      )}
+
+      {hasEnded && onRateSession && (
+        <div style={{ marginTop: 20, padding: 14, borderRadius: 14, background: '#F3EFF1' }}>
+          <div style={{ font: '600 13.5px/1.3 Poppins', color: '#2E1035' }}>{t.feedbackWasUseful}</div>
+          <div style={{ marginTop: 8 }}>
+            <StarRating
+              value={rating}
+              onChange={(n) => {
+                onRateSession(n, commentDraft);
+                setFeedbackSubmitted(true);
+              }}
+              size={24}
+            />
+          </div>
+          <div className="field-title" style={{ margin: '14px 0 6px' }}>
+            {t.feedbackNextYear}
+          </div>
+          <textarea
+            className="field-input dark"
+            placeholder={t.feedbackCommentPh}
+            rows={2}
+            value={commentDraft}
+            onChange={(e) => setCommentDraft(e.target.value)}
+            onBlur={() => {
+              if (rating > 0 && commentDraft !== feedbackComment) onRateSession(rating, commentDraft);
+            }}
+            style={{ resize: 'none' }}
+          />
+          {(feedbackSubmitted || rating > 0) && <div style={{ font: '400 11.5px/1.4 Poppins', color: '#1F7A78', marginTop: 6 }}>{t.feedbackThanksShort}</div>}
+        </div>
       )}
 
       <div className="field-title" style={{ margin: '20px 0 8px' }}>

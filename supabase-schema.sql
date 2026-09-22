@@ -376,9 +376,12 @@ create table if not exists session_feedback (
   user_id    uuid not null references auth.users on delete cascade,
   session_id text not null,
   rating     int not null check (rating between 1 and 5),
+  comment    text not null default '',
   created_at timestamptz not null default now(),
   primary key (user_id, session_id)
 );
+
+alter table session_feedback add column if not exists comment text not null default '';
 
 alter table session_feedback enable row level security;
 

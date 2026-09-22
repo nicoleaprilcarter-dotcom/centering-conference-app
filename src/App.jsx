@@ -152,6 +152,7 @@ export default function App() {
   const [feedbackSaving, setFeedbackSaving] = useState(false);
   const [feedbackSaved, setFeedbackSaved] = useState(false);
   const [sessionRatings, setSessionRatings] = useState({});
+  const [sessionFeedbackComments, setSessionFeedbackComments] = useState({});
 
   const [blocks, setBlocks] = useState([]);
   const [reports, setReports] = useState([]);
@@ -276,10 +277,13 @@ export default function App() {
         setFeedbackSaved(true);
       }
       const ratingMap = {};
+      const feedbackCommentMap = {};
       (sf.data || []).forEach((r) => {
         ratingMap[r.session_id] = r.rating;
+        feedbackCommentMap[r.session_id] = r.comment || '';
       });
       setSessionRatings(ratingMap);
+      setSessionFeedbackComments(feedbackCommentMap);
       setBlocks(blk.data || []);
       setReports(rpt.data || []);
     },
@@ -831,12 +835,16 @@ export default function App() {
     setFeedbackSaved(true);
   };
 
-  const rateSession = async (sessionId, rating) => {
-    const prev = sessionRatings[sessionId];
+  const rateSession = async (sessionId, rating, comment) => {
+    const prevRating = sessionRatings[sessionId];
+    const prevComment = sessionFeedbackComments[sessionId];
+    const nextComment = comment !== undefined ? comment : prevComment || '';
     setSessionRatings((s) => ({ ...s, [sessionId]: rating }));
-    const { error: err } = await client.from('session_feedback').upsert({ user_id: user.id, session_id: sessionId, rating });
+    if (comment !== undefined) setSessionFeedbackComments((s) => ({ ...s, [sessionId]: comment }));
+    const { error: err } = await client.from('session_feedback').upsert({ user_id: user.id, session_id: sessionId, rating, comment: nextComment });
     if (err) {
-      setSessionRatings((s) => ({ ...s, [sessionId]: prev }));
+      setSessionRatings((s) => ({ ...s, [sessionId]: prevRating }));
+      if (comment !== undefined) setSessionFeedbackComments((s) => ({ ...s, [sessionId]: prevComment }));
       setError('Could not save that rating. ' + err.message);
     }
   };
@@ -1049,6 +1057,13 @@ export default function App() {
           lang={lang}
           session={SESSIONS.find((s) => s.id === viewingSessionId)}
           isLive={viewingSessionId === (currentLiveSession && currentLiveSession.id)}
+          hasEnded={(() => {
+            const s = SESSIONS.find((x) => x.id === viewingSessionId);
+            return !!s && nowMin >= timeToMinutes(s.t) + (parseInt(s.d, 10) || 0);
+          })()}
+          rating={sessionRatings[viewingSessionId] || 0}
+          feedbackComment={sessionFeedbackComments[viewingSessionId] || ''}
+          onRateSession={(rating, comment) => rateSession(viewingSessionId, rating, comment)}
           hosts={sessionHosts[viewingSessionId] || []}
           files={sessionFiles[viewingSessionId] || []}
           detail={sessionDetails[viewingSessionId]}
