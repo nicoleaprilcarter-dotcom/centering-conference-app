@@ -6,3 +6,18 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# index.html must never be cached — it references the JS/CSS bundle by a
+# content hash that changes on every deploy. A cached index.html points a
+# returning visitor at files that no longer exist after the next deploy,
+# which fails silently (blank page, no error) since the browser never
+# gets far enough to run any of our own error handling.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
