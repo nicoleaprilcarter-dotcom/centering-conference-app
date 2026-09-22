@@ -897,6 +897,28 @@ create policy "moderators resolve reports" on reports
 
 
 -- ------------------------------------------------------------
+-- WELLNESS REFLECTION
+-- The optional "What helped? What got in the way?" reflection on the
+-- My Wellness Follow-Through screen. One row per attendee, private to
+-- them.
+-- ------------------------------------------------------------
+create table if not exists wellness_reflections (
+  user_id    uuid primary key references auth.users on delete cascade,
+  helped     text not null default '',
+  obstacles  text not null default '',
+  updated_at timestamptz not null default now()
+);
+
+alter table wellness_reflections enable row level security;
+
+drop policy if exists "own wellness reflection" on wellness_reflections;
+create policy "own wellness reflection" on wellness_reflections
+  for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+
+-- ------------------------------------------------------------
 -- REALTIME
 -- Lets the app update without refreshing. Wrapped so this whole
 -- file is safe to run again later (a plain ALTER PUBLICATION

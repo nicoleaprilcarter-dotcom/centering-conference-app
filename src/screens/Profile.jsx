@@ -34,6 +34,7 @@ export default function Profile({
   onSave,
   onSignOut,
   onOpenCheckout,
+  onOpenWellness,
   blockedPeople = [],
   onUnblock,
 }) {
@@ -157,6 +158,16 @@ export default function Profile({
       </div>
       <div className="primary-btn" onClick={onSave}>
         {saving ? '…' : isExisting ? t.saveChanges : t.saveAndEnter}
+      </div>
+
+      <div className="toggle-row" style={{ cursor: 'pointer' }} onClick={onOpenWellness}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="toggle-title">{t.wellnessLink}</div>
+          <div className="toggle-sub">{t.wellnessLinkSub}</div>
+        </div>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C0AEBA" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 5l7 7-7 7" />
+        </svg>
       </div>
 
       <div className="toggle-row" style={{ cursor: 'pointer' }} onClick={onOpenCheckout}>

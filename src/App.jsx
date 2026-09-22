@@ -23,6 +23,7 @@ import Chat from './screens/Chat';
 import DirectThread from './screens/DirectThread';
 import Profile from './screens/Profile';
 import Checkout from './screens/Checkout';
+import WellnessFollowThrough from './screens/WellnessFollowThrough';
 import PersonProfile from './screens/PersonProfile';
 import Header from './components/Header';
 import OnboardingIntro from './components/OnboardingIntro';
@@ -166,6 +167,8 @@ export default function App() {
   const [triageDraft, setTriageDraft] = useState('');
 
   const [showCheckout, setShowCheckout] = useState(false);
+  const [showWellness, setShowWellness] = useState(false);
+  const [wellnessReflection, setWellnessReflection] = useState(null);
   const [feedbackRating, setFeedbackRating] = useState(0);
   const [feedbackComments, setFeedbackComments] = useState('');
   const [feedbackSaving, setFeedbackSaving] = useState(false);
@@ -224,7 +227,7 @@ export default function App() {
   // ---------- after sign-in ----------
   const loadAll = useCallback(
     async (c, uid) => {
-      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh, sfl, sno, sq, sqv, src, sdt, blk, rpt] = await Promise.all([
+      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh, sfl, sno, sq, sqv, src, sdt, blk, rpt, wfr] = await Promise.all([
         c.from('saved_sessions').select('session_id').eq('user_id', uid),
         c.from('messages').select('*').eq('session_id', sid).order('created_at'),
         c.from('profiles').select('*').eq('visible', true),
@@ -249,6 +252,7 @@ export default function App() {
         c.from('session_details').select('*'),
         c.from('blocks').select('*').eq('blocker_id', uid),
         c.from('reports').select('*').order('created_at', { ascending: false }),
+        c.from('wellness_reflections').select('*').eq('user_id', uid).maybeSingle(),
       ]);
       const savedMap = {};
       (sv.data || []).forEach((r) => {
@@ -305,6 +309,7 @@ export default function App() {
       setSessionFeedbackComments(feedbackCommentMap);
       setBlocks(blk.data || []);
       setReports(rpt.data || []);
+      setWellnessReflection(wfr.data || null);
     },
     [sid],
   );
@@ -828,6 +833,25 @@ export default function App() {
     reload('pledges');
   };
 
+  const savePledgeText = async (body) => {
+    const v = body.trim();
+    if (!v) return;
+    const existing = pledges.find((p) => p.user_id === user.id);
+    const { error: err } = existing
+      ? await client.from('pledges').update({ body: v }).eq('id', existing.id)
+      : await client.from('pledges').insert({ user_id: user.id, body: v.slice(0, 300) });
+    if (err) setError('Could not save pledge. ' + err.message);
+    reload('pledges');
+  };
+
+  const saveWellnessReflection = async (helped, obstacles) => {
+    setWellnessReflection({ helped, obstacles });
+    const { error: err } = await client
+      .from('wellness_reflections')
+      .upsert({ user_id: user.id, helped, obstacles, updated_at: new Date().toISOString() });
+    if (err) setError('Could not save reflection. ' + err.message);
+  };
+
   const reportContent = async (targetType, targetId, targetOwnerId, reason, details) => {
     const { error: err } = await client.from('reports').insert({
       reporter_id: user.id,
@@ -1050,6 +1074,7 @@ export default function App() {
   const navigate = (key) => {
     setActiveDmUserId(null);
     setShowCheckout(false);
+    setShowWellness(false);
     setViewingPerson(null);
     setViewingSessionId(null);
     setViewingSponsor(null);
@@ -1260,7 +1285,19 @@ export default function App() {
         <People t={t} lang={lang} userId={user.id} people={visiblePeople} speakers={speakers} sponsors={sponsors} onMessage={openDirectThread} onReport={reportContent} onBlock={blockUser} onOpenSponsor={setViewingSponsor} />
       )}
       {screen === 'profile' &&
-        (showCheckout ? (
+        (showWellness ? (
+          <WellnessFollowThrough
+            t={t}
+            lang={lang}
+            onBack={() => setShowWellness(false)}
+            pledge={pledges.find((p) => p.user_id === user.id)}
+            saved={saved}
+            sessionNotes={sessionNotes}
+            reflection={wellnessReflection}
+            onSavePledge={savePledgeText}
+            onSaveReflection={saveWellnessReflection}
+          />
+        ) : showCheckout ? (
           <Checkout
             t={t}
             lang={lang}
@@ -1298,6 +1335,7 @@ export default function App() {
             onSave={saveProfile}
             onSignOut={signOut}
             onOpenCheckout={() => setShowCheckout(true)}
+            onOpenWellness={() => setShowWellness(true)}
             blockedPeople={blockedPeople}
             onUnblock={unblockUser}
           />
