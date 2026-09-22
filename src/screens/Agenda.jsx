@@ -12,6 +12,25 @@ import { downloadICS } from '../lib/ics';
 const MATERIALS_TAG_KEYS = ['tagPlenary', 'tagFeatured', 'tagWorkshop', 'tagTheme1', 'tagTheme2', 'tagTheme3', 'tagTheme4'];
 const TRACK_FILTERS = ['tagPlenary', 'tagFeatured', 'tagTheme1', 'tagTheme2', 'tagTheme3', 'tagTheme4'];
 
+// Pairs of saved sessions whose time ranges overlap — since every
+// theme track runs in parallel, saving more than one from the same
+// block means the attendee can only make it to one.
+function findScheduleConflicts(sessions) {
+  const withRange = sessions.map((s) => {
+    const start = timeToMinutes(s.t);
+    return { session: s, start, end: start + (parseInt(s.d, 10) || 0) };
+  });
+  const pairs = [];
+  for (let i = 0; i < withRange.length; i++) {
+    for (let j = i + 1; j < withRange.length; j++) {
+      const a = withRange[i];
+      const b = withRange[j];
+      if (a.start < b.end && b.start < a.end) pairs.push([a.session, b.session]);
+    }
+  }
+  return pairs;
+}
+
 function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checkedInAt, aiRecommendation, aiRecLoading, aiRecError, onFetchRecommendation, view, onFilter }) {
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
   const liveSession = SESSIONS.find((s) => isSessionLiveNow(s, nowMin));
@@ -163,6 +182,7 @@ export default function Agenda({
     });
   }
   const filtersActive = searchActive || trackFilter !== 'all' || liveOnly;
+  const scheduleConflicts = view === 'mine' ? findScheduleConflicts(SESSIONS.filter((s) => saved[s.id])) : [];
 
   const openNotes = (sessionId) => {
     if (openNotesFor === sessionId) {
@@ -289,6 +309,23 @@ export default function Agenda({
           );
         })}
       </div>
+
+      {view === 'mine' && scheduleConflicts.length > 0 && (
+        <div style={{ padding: '10px 12px', borderRadius: 12, background: '#FFF0DC', marginBottom: 12 }}>
+          <div style={{ font: '700 11px/1.3 Poppins', color: '#8A6A12', textTransform: 'uppercase', letterSpacing: '.03em' }}>
+            {t.scheduleConflictTitle}
+          </div>
+          {scheduleConflicts.map(([a, b], i) => {
+            const titleA = lang === 'es' ? a.titleEs : a.title;
+            const titleB = lang === 'es' ? b.titleEs : b.title;
+            return (
+              <div key={i} style={{ font: '400 12px/1.5 Poppins', color: '#5C4508', marginTop: 4 }}>
+                “{titleA}” {t.scheduleConflictAnd} “{titleB}” {t.scheduleConflictOverlap} {a.t}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {view === 'mine' && visibleSessions.length > 0 && (
         <div

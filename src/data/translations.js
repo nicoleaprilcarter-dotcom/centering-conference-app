@@ -23,6 +23,9 @@ export const TRANSLATIONS = {
     clearFilters: 'Clear filters',
     exportToCalendar: 'Add my saved sessions to calendar',
     addToCalendar: 'Add to calendar',
+    scheduleConflictTitle: 'Scheduling conflict',
+    scheduleConflictAnd: 'and',
+    scheduleConflictOverlap: 'overlap at',
 
     dashboardGreeting: 'Welcome',
     dashboardUpNext: 'Up next',
@@ -311,6 +314,9 @@ export const TRANSLATIONS = {
     clearFilters: 'Borrar filtros',
     exportToCalendar: 'Agregar mis sesiones guardadas al calendario',
     addToCalendar: 'Agregar al calendario',
+    scheduleConflictTitle: 'Conflicto de horario',
+    scheduleConflictAnd: 'y',
+    scheduleConflictOverlap: 'se cruzan a las',
 
     dashboardGreeting: 'Bienvenida',
     dashboardUpNext: 'Sigue',
