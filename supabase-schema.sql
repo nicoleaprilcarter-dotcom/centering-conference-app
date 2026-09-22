@@ -486,6 +486,13 @@ create table if not exists sponsors (
 );
 
 alter table sponsors add column if not exists website_url text;
+alter table sponsors add column if not exists mission_en text not null default '';
+alter table sponsors add column if not exists mission_es text not null default '';
+alter table sponsors add column if not exists contact_name text;
+alter table sponsors add column if not exists contact_email text;
+alter table sponsors add column if not exists category text not null default 'sponsor';
+alter table sponsors drop constraint if exists sponsors_category_check;
+alter table sponsors add constraint sponsors_category_check check (category in ('sponsor', 'partner'));
 
 alter table sponsors enable row level security;
 

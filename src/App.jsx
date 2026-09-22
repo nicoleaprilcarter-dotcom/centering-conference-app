@@ -14,6 +14,7 @@ import Setup from './screens/Setup';
 import SignIn from './screens/SignIn';
 import Agenda from './screens/Agenda';
 import SessionDetail from './screens/SessionDetail';
+import SponsorDetail from './screens/SponsorDetail';
 import Resources from './screens/Resources';
 import Session from './screens/Session';
 import Wall from './screens/Wall';
@@ -637,6 +638,8 @@ export default function App() {
     setViewingPerson(host);
   };
 
+  const [viewingSponsor, setViewingSponsor] = useState(null);
+
   const sendDirect = async () => {
     const v = dmDraft.trim();
     if (!v || !activeDmUserId) return;
@@ -994,6 +997,7 @@ export default function App() {
     setShowCheckout(false);
     setViewingPerson(null);
     setViewingSessionId(null);
+    setViewingSponsor(null);
     setScreen(key);
   };
 
@@ -1022,9 +1026,9 @@ export default function App() {
         langToggle={t.langToggle}
         onToggleLang={toggleLang}
         onAvatarClick={() => navigate('profile')}
-        showBack={screen !== 'agenda' || !!viewingPerson || !!viewingSessionId}
+        showBack={screen !== 'agenda' || !!viewingPerson || !!viewingSessionId || !!viewingSponsor}
         onBack={() => navigate('agenda')}
-        compact={screen !== 'agenda' || !!viewingPerson || !!viewingSessionId}
+        compact={screen !== 'agenda' || !!viewingPerson || !!viewingSessionId || !!viewingSponsor}
       />
       <ErrorBanner message={error} onDismiss={() => setError('')} />
 
@@ -1058,6 +1062,8 @@ export default function App() {
           }}
           onSaveDetail={saveSessionDetail}
         />
+      ) : viewingSponsor ? (
+        <SponsorDetail t={t} lang={lang} sponsor={viewingSponsor} onBack={() => setViewingSponsor(null)} />
       ) : (
         <>
       {screen === 'agenda' && (
@@ -1184,7 +1190,7 @@ export default function App() {
           />
         ))}
       {screen === 'people' && (
-        <People t={t} lang={lang} userId={user.id} people={visiblePeople} speakers={speakers} sponsors={sponsors} onMessage={openDirectThread} onReport={reportContent} onBlock={blockUser} />
+        <People t={t} lang={lang} userId={user.id} people={visiblePeople} speakers={speakers} sponsors={sponsors} onMessage={openDirectThread} onReport={reportContent} onBlock={blockUser} onOpenSponsor={setViewingSponsor} />
       )}
       {screen === 'profile' &&
         (showCheckout ? (

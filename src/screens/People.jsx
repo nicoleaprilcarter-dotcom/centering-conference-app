@@ -65,12 +65,30 @@ function PersonList({ list, emptyText, userId, lang, t, onMessage, onReport, onB
   );
 }
 
-export default function People({ t, lang, userId, people, speakers, sponsors = [], onMessage, onReport, onBlock }) {
+function SponsorCard({ sp, lang, onOpen }) {
+  return (
+    <div className="person-card" key={`org-${sp.id}`} onClick={() => onOpen(sp)} style={{ cursor: 'pointer' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <Avatar url={sp.logo_url} name={sp.name} color={colorForId(sp.id)} size={72} fontSize={22} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="person-name">{sp.name}</div>
+          {(lang === 'es' ? sp.note_es || sp.note_en : sp.note_en) && (
+            <div className="person-bio">{lang === 'es' ? sp.note_es || sp.note_en : sp.note_en}</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function People({ t, lang, userId, people, speakers, sponsors = [], onMessage, onReport, onBlock, onOpenSponsor }) {
   const [tab, setTab] = useState('speakers');
   const visiblePeople = people.filter((p) => p.display_name);
   const leadership = visiblePeople.filter((p) => ['founder', 'chair', 'board', 'staff'].includes(normalizeDesignation(p.designation)));
   const volunteers = visiblePeople.filter((p) => normalizeDesignation(p.designation) === 'volunteer');
   const sponsorAttendees = visiblePeople.filter((p) => normalizeDesignation(p.designation) === 'sponsor');
+  const sponsorOrgs = sponsors.filter((sp) => sp.category !== 'partner');
+  const partnerOrgs = sponsors.filter((sp) => sp.category === 'partner');
 
   const TABS = [
     { key: 'speakers', label: t.speakers },
@@ -138,28 +156,22 @@ export default function People({ t, lang, userId, people, speakers, sponsors = [
 
       {tab === 'sponsors' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-          {sponsors.map((sp) => (
-            <div
-              className="person-card"
-              key={`org-${sp.id}`}
-              onClick={sp.website_url ? () => window.open(sp.website_url, '_blank', 'noopener,noreferrer') : undefined}
-              style={sp.website_url ? { cursor: 'pointer' } : undefined}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Avatar url={sp.logo_url} name={sp.name} color={colorForId(sp.id)} size={72} fontSize={22} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="person-name">{sp.name}</div>
-                  {(lang === 'es' ? sp.note_es || sp.note_en : sp.note_en) && (
-                    <div className="person-bio">{lang === 'es' ? sp.note_es || sp.note_en : sp.note_en}</div>
-                  )}
-                  {sp.website_url && <div style={{ font: '600 11.5px/1.3 Poppins', color: '#B01253', marginTop: 3 }}>{t.visitWebsite}</div>}
-                </div>
-              </div>
-            </div>
+          {sponsorOrgs.map((sp) => (
+            <SponsorCard key={`org-${sp.id}`} sp={sp} lang={lang} onOpen={onOpenSponsor} />
           ))}
           {sponsorAttendees.map((p) => (
             <PersonCard key={p.id} p={p} userId={userId} lang={lang} t={t} onMessage={onMessage} onReport={onReport} onBlock={onBlock} />
           ))}
+          {partnerOrgs.length > 0 && (
+            <>
+              <div className="field-title" style={{ margin: '10px 0 0' }}>
+                {t.communityPartnersTitle}
+              </div>
+              {partnerOrgs.map((sp) => (
+                <SponsorCard key={`org-${sp.id}`} sp={sp} lang={lang} onOpen={onOpenSponsor} />
+              ))}
+            </>
+          )}
           {sponsors.length === 0 && sponsorAttendees.length === 0 && (
             <div className="empty-state">
               <Flourish color="#FBD9BC" size={160} top={-40} right={-40} opacity={0.5} />
