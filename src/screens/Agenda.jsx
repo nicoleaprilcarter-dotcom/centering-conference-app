@@ -4,6 +4,7 @@ import { tagColors, colorForId, timeToMinutes, isSessionLiveNow } from '../lib/h
 import { StarIcon, CheckCircleIcon, FileIcon, NoteIcon, SparkleIcon } from '../components/icons';
 import Avatar from '../components/Avatar';
 import Flourish from '../components/Flourish';
+import { downloadICS } from '../lib/ics';
 
 // Only sessions with actual content (not arrival/breaks/transitions) get
 // a "materials coming soon" placeholder when no flyer/worksheet/slides
@@ -288,6 +289,16 @@ export default function Agenda({
           );
         })}
       </div>
+
+      {view === 'mine' && visibleSessions.length > 0 && (
+        <div
+          className="text-link-btn"
+          style={{ padding: 0, margin: '0 0 14px' }}
+          onClick={() => downloadICS(visibleSessions, lang, 'my-schedule.ics')}
+        >
+          {t.exportToCalendar}
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', margin: '2px 0 14px', font: '400 11px/1.3 Poppins', color: '#7A6070' }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>

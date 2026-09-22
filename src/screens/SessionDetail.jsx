@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { tagColors, colorForId } from '../lib/helpers';
 import { FileIcon, SparkleIcon } from '../components/icons';
 import Avatar from '../components/Avatar';
+import { downloadICS } from '../lib/ics';
 
 const VENUE_ADDRESS_ENCODED = encodeURIComponent('Dayton Hub, 31 S Main St, Dayton, OH 45402');
 const LIVE_SESSION_ID = 's8';
@@ -63,6 +64,13 @@ export default function SessionDetail({
       <div style={{ font: '700 20px/1.3 Poppins', color: '#2E1035', margin: '10px 0 4px' }}>{title}</div>
       <div style={{ font: '400 13px/1.4 Poppins', color: '#7A6070' }}>
         {session.t} · {session.d} · {session.room}
+      </div>
+      <div
+        className="text-link-btn"
+        style={{ padding: 0, margin: '8px 0 0' }}
+        onClick={() => downloadICS([session], lang, `${session.id}.ics`)}
+      >
+        {t.addToCalendar}
       </div>
 
       {session.id === LIVE_SESSION_ID && (

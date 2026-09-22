@@ -21,6 +21,8 @@ export const TRANSLATIONS = {
     filterLiveNow: 'Live now',
     noSearchResults: 'No sessions match your search or filters.',
     clearFilters: 'Clear filters',
+    exportToCalendar: 'Add my saved sessions to calendar',
+    addToCalendar: 'Add to calendar',
 
     dashboardGreeting: 'Welcome',
     dashboardUpNext: 'Up next',
@@ -307,6 +309,8 @@ export const TRANSLATIONS = {
     filterLiveNow: 'En vivo ahora',
     noSearchResults: 'Ninguna sesión coincide con tu búsqueda o filtros.',
     clearFilters: 'Borrar filtros',
+    exportToCalendar: 'Agregar mis sesiones guardadas al calendario',
+    addToCalendar: 'Agregar al calendario',
 
     dashboardGreeting: 'Bienvenida',
     dashboardUpNext: 'Sigue',
