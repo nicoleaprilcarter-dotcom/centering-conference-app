@@ -28,8 +28,8 @@ export default function EventBadge({ t, name, avatarUrl, designation }) {
 
   return (
     <div style={{ width: 240, margin: '0 auto', borderRadius: 22, padding: 4, background: 'linear-gradient(165deg, #FF3D8F 0%, #C6106B 55%, #6B1029 100%)' }}>
-      <div style={{ background: '#FFF7EF', borderRadius: 18, padding: '20px 16px 18px', textAlign: 'center' }}>
-        <div style={{ font: '700 9.5px/1 Poppins', letterSpacing: '0.1em', color: '#B01253', textTransform: 'uppercase', marginBottom: 14 }}>
+      <div style={{ background: 'var(--hotpink)', borderRadius: 18, padding: '20px 16px 18px', textAlign: 'center' }}>
+        <div style={{ font: '700 9.5px/1 Poppins', letterSpacing: '0.1em', color: '#fff', textTransform: 'uppercase', marginBottom: 14 }}>
           {t.badgeEventName}
         </div>
         <div
