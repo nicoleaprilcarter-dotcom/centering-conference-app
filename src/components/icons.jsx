@@ -109,6 +109,33 @@ export function NoteIcon({ color = '#7E6A76' }) {
   );
 }
 
+export function CommunityIcon({ color }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2.5 15.5V6h13v9.5H10l-3 3v-3H2.5z" />
+      <path d="M11.5 4h10v9.5h-2.5v3l-3-3h-1" />
+    </svg>
+  );
+}
+
+export function HeartIcon({ filled, color = '#7E6A76' }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" strokeWidth="1.9" strokeLinejoin="round" strokeLinecap="round" fill={filled ? color : 'none'} stroke={color}>
+      <path d="M12 20.5s-7.8-4.6-10-9.3C.4 7.6 2.3 4 6 4c2.1 0 3.7 1.1 6 3.6C14.3 5.1 15.9 4 18 4c3.7 0 5.6 3.6 4 7.2-2.2 4.7-10 9.3-10 9.3z" />
+    </svg>
+  );
+}
+
+export function BadgeIcon({ color = '#fff' }) {
+  return (
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="3.5" width="16" height="17" rx="3" />
+      <circle cx="12" cy="10" r="3" />
+      <path d="M8 20v-2.2c0-1 .9-1.8 2-1.8h4c1.1 0 2 .8 2 1.8V20" />
+    </svg>
+  );
+}
+
 export function ProfileIcon({ color }) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">

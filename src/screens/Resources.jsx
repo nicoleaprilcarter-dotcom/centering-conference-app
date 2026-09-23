@@ -117,6 +117,21 @@ export default function Resources({
         </div>
       </div>
 
+      <div className="card" style={{ marginBottom: 14, border: 'none', background: '#F0E9F5' }}>
+        <div style={{ font: '600 13.5px/1.3 Poppins', color: '#2E1035', marginBottom: 4 }}>{t.quietRoomsTitle}</div>
+        <div style={{ font: '400 12.5px/1.55 Poppins', color: '#4A3348' }}>{t.quietRoomsBody}</div>
+      </div>
+
+      <div className="card" style={{ marginBottom: 14, border: 'none', background: '#FFF0F0' }}>
+        <div style={{ font: '600 13.5px/1.3 Poppins', color: '#8E1148', marginBottom: 4 }}>{t.crisisSupportTitle}</div>
+        <div style={{ font: '400 12px/1.5 Poppins', color: '#4A3348', marginBottom: 10 }}>{t.crisisSupportIntro}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+          {[t.crisisSupport988, t.crisisSupportMaternal, t.crisisSupportDv, t.crisisSupportLocal, t.crisisSupportFirstAid].map((line, i) => (
+            <div key={i} style={{ font: '500 12.5px/1.5 Poppins', color: '#2E1035' }}>{line}</div>
+          ))}
+        </div>
+      </div>
+
       <div style={{ font: '400 11px/1.5 Poppins', color: '#7E6A76', marginBottom: 14 }}>{t.appDisclaimer}</div>
 
       {isModerator && (

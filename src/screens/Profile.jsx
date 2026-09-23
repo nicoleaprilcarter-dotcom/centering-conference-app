@@ -37,6 +37,8 @@ export default function Profile({
   onOpenWellness,
   blockedPeople = [],
   onUnblock,
+  wellnessReminders,
+  onToggleWellnessReminders,
 }) {
   const fileInputRef = useRef(null);
 
@@ -153,6 +155,15 @@ export default function Profile({
           <div className="toggle-sub">{t.showInDirectorySub}</div>
         </div>
         <div className="toggle-track" style={{ background: visible ? '#FF2D95' : 'rgba(46,16,53,.15)', justifyContent: visible ? 'flex-end' : 'flex-start' }}>
+          <div className="toggle-knob" />
+        </div>
+      </div>
+      <div className="toggle-row" onClick={onToggleWellnessReminders}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="toggle-title">{t.wellnessRemindersTitle}</div>
+          <div className="toggle-sub">{t.wellnessRemindersSub}</div>
+        </div>
+        <div className="toggle-track" style={{ background: wellnessReminders ? '#FF2D95' : 'rgba(46,16,53,.15)', justifyContent: wellnessReminders ? 'flex-end' : 'flex-start' }}>
           <div className="toggle-knob" />
         </div>
       </div>

@@ -919,6 +919,64 @@ create policy "own wellness reflection" on wellness_reflections
 
 
 -- ------------------------------------------------------------
+-- WELLNESS REMINDERS PREFERENCE
+-- Opt-in gentle transition prompts (breathing, hydration) shown
+-- during the 15-minute passing periods between sessions.
+-- ------------------------------------------------------------
+alter table profiles add column if not exists wellness_reminders boolean not null default false;
+
+
+-- ------------------------------------------------------------
+-- PLEDGE SUPPORTS
+-- A lightweight "heart" on someone else's Pledge Wall post, so
+-- attendees can show community care without leaving a comment.
+-- ------------------------------------------------------------
+create table if not exists pledge_supports (
+  id         bigint generated always as identity primary key,
+  pledge_id  bigint not null references pledges on delete cascade,
+  user_id    uuid not null references auth.users on delete cascade,
+  created_at timestamptz not null default now(),
+  unique (pledge_id, user_id)
+);
+
+alter table pledge_supports enable row level security;
+
+drop policy if exists "read pledge supports" on pledge_supports;
+create policy "read pledge supports" on pledge_supports
+  for select to authenticated
+  using (true);
+
+drop policy if exists "manage own pledge support" on pledge_supports;
+create policy "manage own pledge support" on pledge_supports
+  for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+
+-- ------------------------------------------------------------
+-- TOOLKIT SAVES ("digital tote bag")
+-- Lets an attendee bookmark a sponsor or community partner profile
+-- into their own Wellness Follow-Through screen instead of
+-- collecting a paper flyer.
+-- ------------------------------------------------------------
+create table if not exists toolkit_saves (
+  id         bigint generated always as identity primary key,
+  sponsor_id bigint not null references sponsors on delete cascade,
+  user_id    uuid not null references auth.users on delete cascade,
+  created_at timestamptz not null default now(),
+  unique (sponsor_id, user_id)
+);
+
+alter table toolkit_saves enable row level security;
+
+drop policy if exists "manage own toolkit saves" on toolkit_saves;
+create policy "manage own toolkit saves" on toolkit_saves
+  for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+
+-- ------------------------------------------------------------
 -- REALTIME
 -- Lets the app update without refreshing. Wrapped so this whole
 -- file is safe to run again later (a plain ALTER PUBLICATION
@@ -974,6 +1032,9 @@ begin
   end if;
   if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'reports') then
     alter publication supabase_realtime add table reports;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'pledge_supports') then
+    alter publication supabase_realtime add table pledge_supports;
   end if;
 end $$;
 

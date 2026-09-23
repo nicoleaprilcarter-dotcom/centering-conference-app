@@ -31,7 +31,7 @@ function findScheduleConflicts(sessions) {
   return pairs;
 }
 
-function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checkedInAt, aiRecommendation, aiRecLoading, aiRecError, onFetchRecommendation, view, onFilter }) {
+function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checkedInAt, aiRecommendation, aiRecLoading, aiRecError, onFetchRecommendation, view, onFilter, onOpenSession }) {
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
   const liveSession = SESSIONS.find((s) => isSessionLiveNow(s, nowMin));
   const upNext = liveSession
@@ -48,7 +48,11 @@ function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checke
       <div style={{ position: 'relative', zIndex: 1 }}>
         <div style={{ font: '700 18px/1.3 Poppins', color: '#fff' }}>{t.dashboardGreeting}{name ? `, ${name.split(' ')[0]}` : ''}</div>
         {liveSession ? (
-          <div style={{ marginTop: 10, padding: 12, borderRadius: 14, background: 'rgba(255,45,149,.16)' }}>
+          <div
+            onClick={() => onOpenSession(liveSession.id)}
+            style={{ marginTop: 10, padding: 12, borderRadius: 14, background: 'rgba(255,45,149,.16)', cursor: 'pointer' }}
+            role="button"
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, font: '700 10.5px/1 Poppins', color: '#FF2D95', textTransform: 'uppercase', letterSpacing: '.04em' }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF2D95', display: 'inline-block' }} />
               {t.liveNow}
@@ -62,7 +66,11 @@ function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checke
             </div>
           </div>
         ) : upNext ? (
-          <div style={{ marginTop: 10, padding: 12, borderRadius: 14, background: 'rgba(255,255,255,.08)' }}>
+          <div
+            onClick={() => onOpenSession(upNext.id)}
+            style={{ marginTop: 10, padding: 12, borderRadius: 14, background: 'rgba(255,255,255,.08)', cursor: 'pointer' }}
+            role="button"
+          >
             <div style={{ font: '600 10.5px/1 Poppins', color: '#FBD9BC', textTransform: 'uppercase', letterSpacing: '.04em' }}>{t.dashboardUpNext}</div>
             <div style={{ font: '600 14px/1.4 Poppins', color: '#fff', marginTop: 4 }}>
               {upNext.t} · {lang === 'es' ? upNext.titleEs : upNext.title}
@@ -209,6 +217,7 @@ export default function Agenda({
         onFetchRecommendation={onFetchRecommendation}
         view={view}
         onFilter={(v) => setView((cur) => (cur === v ? 'all' : v))}
+        onOpenSession={onOpenSession}
       />
       <div style={{ display: 'flex', background: '#F0E7EC', borderRadius: 999, padding: 4, marginBottom: 14 }}>
         <div

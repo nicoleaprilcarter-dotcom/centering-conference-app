@@ -338,6 +338,47 @@ export const TRANSLATIONS = {
     signedInAs: 'Signed in as',
     language: 'Language',
 
+    tabCommunity: 'Community',
+
+    triageSafetyNote: 'For room assistance, accessibility help, and staff support. If experiencing a medical or mental health emergency, please contact 911 or visit the on-site First Aid desk.',
+
+    myBadgeButton: 'My badge',
+    badgeQuickTitle: 'Your check-in badge',
+    badgeQuickNotCheckedInNote: "You haven't checked in yet. Check in below to get your badge.",
+    badgeQuickCheckInNow: 'Check in now',
+    badgeQuickClose: 'Close',
+
+    quietRoomsTitle: 'Quiet & care spaces',
+    quietRoomsBody: 'A designated Quiet Room, Nursing Suite, and hydration stations are available throughout the venue for anyone who needs a break. Exact room locations will be posted at check-in and marked on the venue map.',
+
+    crisisSupportTitle: 'Crisis & support numbers',
+    crisisSupportIntro: 'These numbers work by call or text, any time, from anywhere. They are saved in the app so they stay available even if the venue WiFi drops.',
+    crisisSupport988: '988 Suicide & Crisis Lifeline: call or text 988',
+    crisisSupportMaternal: 'National Maternal Mental Health Hotline: 1-833-9-HELP4MOM (1-833-943-5746)',
+    crisisSupportDv: 'National Domestic Violence Hotline: 1-800-799-7233',
+    crisisSupportLocal: 'Dayton / Montgomery County crisis line: to be confirmed by HUES',
+    crisisSupportFirstAid: 'On-site First Aid desk: location to be confirmed by HUES',
+
+    wellnessRemindersTitle: 'Gentle transition reminders',
+    wellnessRemindersSub: 'Occasional prompts to breathe or hydrate during the 15-minute passing periods between sessions.',
+    microRestDismiss: 'Got it',
+    microRestPrompts: [
+      'Take 3 deep grounding breaths before your next session.',
+      "Take a moment to hydrate before the next session begins.",
+      'Roll your shoulders back and unclench your jaw. You have a few minutes.',
+    ],
+
+    toolkitSaveButton: 'Save to my toolkit',
+    toolkitSavedButton: 'Saved to my toolkit',
+    wellnessToolkitTitle: 'Saved resources',
+    wellnessToolkitEmpty: "You haven't saved any vendor or partner resources yet. Look for “Save to my toolkit” on sponsor and partner profiles in People.",
+    wellnessPrintButton: 'Print / save as PDF',
+
+    pledgeSupportLabel: 'Support this pledge',
+    presenterModeLink: 'Open presenter view',
+    presenterModeExit: 'Exit presenter view',
+    presenterModeEmpty: 'No pledges yet.',
+
     interestTags: [
       'Maternal health', 'Doula care', 'Peer support', 'Español', 'Outreach', 'Clinical',
       'Chronic care', 'Policy', 'Language access', 'Mental health', 'Caregiving', 'Research',
@@ -675,6 +716,47 @@ export const TRANSLATIONS = {
     signOut: 'Cerrar sesión',
     signedInAs: 'Sesión iniciada como',
     language: 'Idioma',
+
+    tabCommunity: 'Comunidad',
+
+    triageSafetyNote: 'Para ayuda con salas, accesibilidad y apoyo del personal. Si tienes una emergencia médica o de salud mental, llama al 911 o visita el módulo de primeros auxilios en el lugar.',
+
+    myBadgeButton: 'Mi insignia',
+    badgeQuickTitle: 'Tu insignia de registro',
+    badgeQuickNotCheckedInNote: 'Aún no te has registrado. Regístrate abajo para obtener tu insignia.',
+    badgeQuickCheckInNow: 'Registrarme ahora',
+    badgeQuickClose: 'Cerrar',
+
+    quietRoomsTitle: 'Espacios tranquilos y de cuidado',
+    quietRoomsBody: 'Hay una Sala Tranquila designada, una Suite de Lactancia y estaciones de hidratación disponibles en todo el lugar para quien necesite una pausa. Las ubicaciones exactas se publicarán en el registro y se marcarán en el mapa del lugar.',
+
+    crisisSupportTitle: 'Números de crisis y apoyo',
+    crisisSupportIntro: 'Estos números funcionan por llamada o mensaje de texto, en cualquier momento y lugar. Están guardados en la aplicación para que sigan disponibles aunque falle el WiFi del lugar.',
+    crisisSupport988: 'Línea 988 de Crisis y Suicidio: llama o envía un mensaje de texto al 988',
+    crisisSupportMaternal: 'Línea Nacional de Salud Mental Materna: 1-833-9-HELP4MOM (1-833-943-5746)',
+    crisisSupportDv: 'Línea Nacional sobre Violencia Doméstica: 1-800-799-7233',
+    crisisSupportLocal: 'Línea de crisis de Dayton / Condado de Montgomery: pendiente de confirmar por HUES',
+    crisisSupportFirstAid: 'Módulo de primeros auxilios en el lugar: ubicación pendiente de confirmar por HUES',
+
+    wellnessRemindersTitle: 'Recordatorios suaves de transición',
+    wellnessRemindersSub: 'Avisos ocasionales para respirar o hidratarte durante los 15 minutos de transición entre sesiones.',
+    microRestDismiss: 'Entendido',
+    microRestPrompts: [
+      'Toma 3 respiraciones profundas antes de tu próxima sesión.',
+      'Aprovecha este momento para hidratarte antes de que empiece la próxima sesión.',
+      'Relaja los hombros y afloja la mandíbula. Tienes unos minutos.',
+    ],
+
+    toolkitSaveButton: 'Guardar en mi kit de herramientas',
+    toolkitSavedButton: 'Guardado en mi kit de herramientas',
+    wellnessToolkitTitle: 'Recursos guardados',
+    wellnessToolkitEmpty: 'Aún no has guardado recursos de patrocinadores o socios. Busca "Guardar en mi kit de herramientas" en los perfiles de patrocinadores y socios en Personas.',
+    wellnessPrintButton: 'Imprimir / guardar como PDF',
+
+    pledgeSupportLabel: 'Apoyar este compromiso',
+    presenterModeLink: 'Abrir vista de presentador',
+    presenterModeExit: 'Salir de la vista de presentador',
+    presenterModeEmpty: 'Aún no hay compromisos.',
 
     interestTags: [
       'Salud materna', 'Cuidado de doula', 'Apoyo entre pares', 'Español', 'Alcance comunitario', 'Clínica',

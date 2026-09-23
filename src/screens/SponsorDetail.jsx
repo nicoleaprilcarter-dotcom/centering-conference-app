@@ -1,7 +1,7 @@
 import Avatar from '../components/Avatar';
 import { colorForId } from '../lib/helpers';
 
-export default function SponsorDetail({ t, lang, sponsor, onBack }) {
+export default function SponsorDetail({ t, lang, sponsor, onBack, saved, onToggleSave }) {
   if (!sponsor) return null;
   const note = lang === 'es' ? sponsor.note_es || sponsor.note_en : sponsor.note_en;
   const mission = lang === 'es' ? sponsor.mission_es || sponsor.mission_en : sponsor.mission_en;
@@ -53,10 +53,20 @@ export default function SponsorDetail({ t, lang, sponsor, onBack }) {
         )}
       </div>
 
+      {onToggleSave && (
+        <div
+          className="primary-btn"
+          style={{ marginTop: 12, background: saved ? '#F3EFF1' : undefined, color: saved ? '#2E1035' : undefined }}
+          onClick={() => onToggleSave(sponsor.id)}
+        >
+          {saved ? t.toolkitSavedButton : t.toolkitSaveButton}
+        </div>
+      )}
+
       {sponsor.website_url && (
         <a
           className="primary-btn"
-          style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}
+          style={{ display: 'block', textAlign: 'center', textDecoration: 'none', marginTop: 12 }}
           href={sponsor.website_url}
           target="_blank"
           rel="noreferrer"

@@ -29,6 +29,10 @@ import Header from './components/Header';
 import OnboardingIntro from './components/OnboardingIntro';
 import BottomNav from './components/BottomNav';
 import ErrorBanner from './components/ErrorBanner';
+import BadgeQuickView from './components/BadgeQuickView';
+import PledgeStream from './components/PledgeStream';
+import MicroRestToast from './components/MicroRestToast';
+import { BadgeIcon } from './components/icons';
 
 const LOBBY_SESSION_ID = 'lobby';
 const WAITING_ROOM_SESSION_ID = 'waiting-room';
@@ -55,6 +59,14 @@ function readLastDmRead() {
     return localStorage.getItem('cwoc_dm_read_at') || '';
   } catch {
     return '';
+  }
+}
+
+function readDismissedMicroRest() {
+  try {
+    return JSON.parse(localStorage.getItem('cwoc_microrest_dismissed') || '[]');
+  } catch {
+    return [];
   }
 }
 
@@ -179,6 +191,13 @@ export default function App() {
   const [blocks, setBlocks] = useState([]);
   const [reports, setReports] = useState([]);
 
+  const [pledgeSupports, setPledgeSupports] = useState([]);
+  const [toolkitSaves, setToolkitSaves] = useState([]);
+  const [wellnessReminders, setWellnessReminders] = useState(false);
+  const [showBadgeQuick, setShowBadgeQuick] = useState(false);
+  const [showPledgeStream, setShowPledgeStream] = useState(false);
+  const [dismissedMicroRest, setDismissedMicroRest] = useState(readDismissedMicroRest);
+
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
   const channelRef = useRef(null);
@@ -236,7 +255,7 @@ export default function App() {
   // ---------- after sign-in ----------
   const loadAll = useCallback(
     async (c, uid) => {
-      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh, sfl, sno, sq, sqv, src, sdt, blk, rpt, wfr] = await Promise.all([
+      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh, sfl, sno, sq, sqv, src, sdt, blk, rpt, wfr, pls, tks] = await Promise.all([
         c.from('saved_sessions').select('session_id').eq('user_id', uid),
         c.from('messages').select('*').eq('session_id', sid).order('created_at'),
         c.from('profiles').select('*').eq('visible', true),
@@ -262,6 +281,8 @@ export default function App() {
         c.from('blocks').select('*').eq('blocker_id', uid),
         c.from('reports').select('*').order('created_at', { ascending: false }),
         c.from('wellness_reflections').select('*').eq('user_id', uid).maybeSingle(),
+        c.from('pledge_supports').select('*'),
+        c.from('toolkit_saves').select('*').eq('user_id', uid),
       ]);
       const savedMap = {};
       (sv.data || []).forEach((r) => {
@@ -319,6 +340,8 @@ export default function App() {
       setBlocks(blk.data || []);
       setReports(rpt.data || []);
       setWellnessReflection(wfr.data || null);
+      setPledgeSupports(pls.data || []);
+      setToolkitSaves(tks.data || []);
     },
     [sid],
   );
@@ -422,6 +445,14 @@ export default function App() {
         const { data } = await client.from('reports').select('*').order('created_at', { ascending: false });
         setReports(data || []);
       }
+      if (what === 'pledgeSupports') {
+        const { data } = await client.from('pledge_supports').select('*');
+        setPledgeSupports(data || []);
+      }
+      if (what === 'toolkitSaves' && user) {
+        const { data } = await client.from('toolkit_saves').select('*').eq('user_id', user.id);
+        setToolkitSaves(data || []);
+      }
     },
     [client, sid, user],
   );
@@ -452,6 +483,7 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_recaps' }, () => reload('sessionRecaps'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_details' }, () => reload('sessionDetails'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'reports' }, () => reload('reports'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pledge_supports' }, () => reload('pledgeSupports'))
       .subscribe();
     channelRef.current = ch;
   }, [client, reload]);
@@ -485,6 +517,7 @@ export default function App() {
         setPfVisible(prof.visible);
         setPfAvatarUrl(prof.avatar_url || '');
         setCheckedInAt(prof.checked_in_at || null);
+        setWellnessReminders(!!prof.wellness_reminders);
         if (prof.language) {
           setLang(prof.language);
           try {
@@ -736,6 +769,14 @@ export default function App() {
     .filter((p) => blockedIdSet.has(p.id))
     .map((p) => ({ id: p.id, name: p.display_name || t.attendee }));
 
+  const supportCounts = {};
+  pledgeSupports.forEach((s) => {
+    supportCounts[s.pledge_id] = (supportCounts[s.pledge_id] || 0) + 1;
+  });
+  const mySupportedIds = new Set(pledgeSupports.filter((s) => s.user_id === user.id).map((s) => s.pledge_id));
+  const toolkitSponsorIds = new Set(toolkitSaves.map((s) => s.sponsor_id));
+  const toolkitItems = sponsors.filter((sp) => toolkitSponsorIds.has(sp.id));
+
   const chatUnread = dmMsgs.some((m) => m.recipient_id === user?.id && m.created_at > lastDmReadAt);
 
   // Mark direct messages as read whenever the Chat screen is open.
@@ -788,6 +829,52 @@ export default function App() {
       setCheckedInAt(prev);
       setError('Could not undo check-in. ' + err.message);
     }
+  };
+
+  const toggleWellnessReminders = async () => {
+    const next = !wellnessReminders;
+    setWellnessReminders(next);
+    const { error: err } = await client.from('profiles').update({ wellness_reminders: next }).eq('id', user.id);
+    if (err) {
+      setWellnessReminders(!next);
+      setError('Could not save that preference. ' + err.message);
+    }
+  };
+
+  const dismissMicroRest = (key) => {
+    setDismissedMicroRest((d) => {
+      const next = [...d, key];
+      try {
+        localStorage.setItem('cwoc_microrest_dismissed', JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+
+  const toggleSupportPledge = async (pledgeId) => {
+    const already = pledgeSupports.some((s) => s.pledge_id === pledgeId && s.user_id === user.id);
+    setPledgeSupports((s) =>
+      already ? s.filter((x) => !(x.pledge_id === pledgeId && x.user_id === user.id)) : [...s, { pledge_id: pledgeId, user_id: user.id }],
+    );
+    const { error: err } = already
+      ? await client.from('pledge_supports').delete().eq('pledge_id', pledgeId).eq('user_id', user.id)
+      : await client.from('pledge_supports').insert({ pledge_id: pledgeId, user_id: user.id });
+    if (err) setError('Could not save that. ' + err.message);
+    reload('pledgeSupports');
+  };
+
+  const toggleToolkitSave = async (sponsorId) => {
+    const already = toolkitSaves.some((s) => s.sponsor_id === sponsorId);
+    setToolkitSaves((s) =>
+      already ? s.filter((x) => x.sponsor_id !== sponsorId) : [...s, { sponsor_id: sponsorId, user_id: user.id }],
+    );
+    const { error: err } = already
+      ? await client.from('toolkit_saves').delete().eq('sponsor_id', sponsorId).eq('user_id', user.id)
+      : await client.from('toolkit_saves').insert({ sponsor_id: sponsorId, user_id: user.id });
+    if (err) setError('Could not save that. ' + err.message);
+    reload('toolkitSaves');
   };
 
   const toggleSessionCheckIn = async (sessionId) => {
@@ -1102,6 +1189,15 @@ export default function App() {
 
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
   const currentLiveSession = SESSIONS.find((s) => isSessionLiveNow(s, nowMin));
+  const upNextSoon = !currentLiveSession
+    ? SESSIONS.find((s) => {
+        const start = timeToMinutes(s.t);
+        return start > nowMin && start - nowMin <= 10;
+      })
+    : null;
+  const microRestKey = upNextSoon ? `${new Date().toDateString()}-${upNextSoon.id}` : null;
+  const showMicroRest = wellnessReminders && upNextSoon && microRestKey && !dismissedMicroRest.includes(microRestKey);
+  const microRestMessage = upNextSoon ? t.microRestPrompts[upNextSoon.id.charCodeAt(0) % t.microRestPrompts.length] : '';
 
   return (
     <div className="app-shell">
@@ -1160,7 +1256,14 @@ export default function App() {
           onSaveDetail={saveSessionDetail}
         />
       ) : viewingSponsor ? (
-        <SponsorDetail t={t} lang={lang} sponsor={viewingSponsor} onBack={() => setViewingSponsor(null)} />
+        <SponsorDetail
+          t={t}
+          lang={lang}
+          sponsor={viewingSponsor}
+          onBack={() => setViewingSponsor(null)}
+          saved={toolkitSponsorIds.has(viewingSponsor.id)}
+          onToggleSave={toggleToolkitSave}
+        />
       ) : (
         <>
       {screen === 'agenda' && (
@@ -1235,8 +1338,44 @@ export default function App() {
           onDelete={deleteMessage}
         />
       )}
+      {(screen === 'wall' || screen === 'chat') && !inDmThread && (
+        <div style={{ padding: '14px 18px 0' }}>
+          <div className="tab-row">
+            <div
+              className="tab-item"
+              style={{ color: screen === 'wall' ? '#2E1035' : '#7E6A76', borderColor: screen === 'wall' ? '#D81B60' : 'transparent' }}
+              onClick={() => navigate('wall')}
+            >
+              {t.tabWall}
+            </div>
+            <div
+              className="tab-item"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, color: screen === 'chat' ? '#2E1035' : '#7E6A76', borderColor: screen === 'chat' ? '#D81B60' : 'transparent' }}
+              onClick={() => navigate('chat')}
+            >
+              {t.tabChat}
+              {chatUnread && <span style={{ width: 7, height: 7, borderRadius: 999, background: '#D81B60', display: 'inline-block' }} />}
+            </div>
+          </div>
+        </div>
+      )}
       {screen === 'wall' && (
-        <Wall t={t} userId={user.id} pledges={visiblePledges} draft={pledgeDraft} setDraft={setPledgeDraft} onPost={postPledge} onReport={reportContent} onBlock={blockUser} onDelete={deletePledge} />
+        <Wall
+          t={t}
+          userId={user.id}
+          pledges={visiblePledges}
+          draft={pledgeDraft}
+          setDraft={setPledgeDraft}
+          onPost={postPledge}
+          onReport={reportContent}
+          onBlock={blockUser}
+          onDelete={deletePledge}
+          supportCounts={supportCounts}
+          mySupportedIds={mySupportedIds}
+          onToggleSupport={toggleSupportPledge}
+          isModerator={!!(profile && profile.is_moderator)}
+          onOpenPresenter={() => setShowPledgeStream(true)}
+        />
       )}
       {screen === 'chat' &&
         (inDmThread ? (
@@ -1303,6 +1442,7 @@ export default function App() {
             saved={saved}
             sessionNotes={sessionNotes}
             reflection={wellnessReflection}
+            toolkitItems={toolkitItems}
             onSavePledge={savePledgeText}
             onSaveReflection={saveWellnessReflection}
           />
@@ -1347,11 +1487,51 @@ export default function App() {
             onOpenWellness={() => setShowWellness(true)}
             blockedPeople={blockedPeople}
             onUnblock={unblockUser}
+            wellnessReminders={wellnessReminders}
+            onToggleWellnessReminders={toggleWellnessReminders}
           />
         ))}
         </>
       )}
       </div>
+
+      {screen === 'agenda' && !viewingPerson && !viewingSessionId && !viewingSponsor && (
+        <div
+          onClick={() => setShowBadgeQuick(true)}
+          role="button"
+          aria-label={t.myBadgeButton}
+          style={{
+            position: 'absolute',
+            right: 18,
+            bottom: 96,
+            zIndex: 40,
+            width: 52,
+            height: 52,
+            borderRadius: 999,
+            background: '#FF2D95',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 6px 18px rgba(216,27,96,.4)',
+            cursor: 'pointer',
+          }}
+        >
+          <BadgeIcon />
+        </div>
+      )}
+      {showBadgeQuick && (
+        <BadgeQuickView
+          t={t}
+          userId={user.id}
+          checkedInAt={checkedInAt}
+          onCheckIn={checkIn}
+          onClose={() => setShowBadgeQuick(false)}
+        />
+      )}
+      {showPledgeStream && <PledgeStream t={t} pledges={visiblePledges} onExit={() => setShowPledgeStream(false)} />}
+      {showMicroRest && (
+        <MicroRestToast message={microRestMessage} dismissLabel={t.microRestDismiss} onDismiss={() => dismissMicroRest(microRestKey)} />
+      )}
 
       <BottomNav screen={screen} onNavigate={navigate} t={t} chatUnread={chatUnread} />
     </div>

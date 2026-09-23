@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { SESSIONS } from '../data/sessions';
 
-function buildExportText(t, lang, pledge, savedSessions, sessionNotes, helped, obstacles) {
+function buildExportText(t, lang, pledge, savedSessions, sessionNotes, helped, obstacles, toolkitItems) {
   const lines = [];
-  lines.push('Centering Women of Color 2026 — My Wellness Follow-Through');
+  lines.push('Centering Women of Color 2026 - My Wellness Follow-Through');
   lines.push('');
   lines.push(t.wellnessMyPledge + ':');
   lines.push(pledge ? pledge.body : t.wellnessNoPledge);
@@ -18,14 +18,21 @@ function buildExportText(t, lang, pledge, savedSessions, sessionNotes, helped, o
   });
   lines.push('');
   lines.push(t.wellnessWhatHelped + ':');
-  lines.push(helped || '—');
+  lines.push(helped || '-');
   lines.push('');
   lines.push(t.wellnessWhatGotInWay + ':');
-  lines.push(obstacles || '—');
+  lines.push(obstacles || '-');
+  if (toolkitItems && toolkitItems.length > 0) {
+    lines.push('');
+    lines.push(t.wellnessToolkitTitle + ':');
+    toolkitItems.forEach((sp) => {
+      lines.push(`- ${sp.name}${sp.website_url ? ` (${sp.website_url})` : ''}`);
+    });
+  }
   return lines.join('\n');
 }
 
-export default function WellnessFollowThrough({ t, lang, onBack, pledge, saved, sessionNotes, reflection, onSavePledge, onSaveReflection }) {
+export default function WellnessFollowThrough({ t, lang, onBack, pledge, saved, sessionNotes, reflection, toolkitItems = [], onSavePledge, onSaveReflection }) {
   const [editingPledge, setEditingPledge] = useState(false);
   const [pledgeDraft, setPledgeDraft] = useState((pledge && pledge.body) || '');
   const [helped, setHelped] = useState((reflection && reflection.helped) || '');
@@ -46,7 +53,7 @@ export default function WellnessFollowThrough({ t, lang, onBack, pledge, saved, 
   };
 
   const downloadNotes = () => {
-    const text = buildExportText(t, lang, pledge, savedSessions, sessionNotes, helped, obstacles);
+    const text = buildExportText(t, lang, pledge, savedSessions, sessionNotes, helped, obstacles, toolkitItems);
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -58,9 +65,11 @@ export default function WellnessFollowThrough({ t, lang, onBack, pledge, saved, 
     URL.revokeObjectURL(url);
   };
 
+  const printNotes = () => window.print();
+
   return (
-    <div className="screen">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px 0' }}>
+    <div className="screen wellness-print-area">
+      <div className="no-print" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px 0' }}>
         <div
           style={{ width: 36, height: 36, borderRadius: 999, background: '#fff', border: '1px solid rgba(46,16,53,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flex: 'none' }}
           onClick={onBack}
@@ -70,6 +79,9 @@ export default function WellnessFollowThrough({ t, lang, onBack, pledge, saved, 
           </svg>
         </div>
         <div style={{ font: '600 15px/1.2 Poppins' }}>{t.wellnessTitle}</div>
+      </div>
+      <div className="print-only" style={{ font: '700 20px/1.3 Poppins', color: '#2E1035', padding: '0 18px 6px' }}>
+        {t.wellnessTitle}
       </div>
 
       <div className="screen-pad">
@@ -98,7 +110,7 @@ export default function WellnessFollowThrough({ t, lang, onBack, pledge, saved, 
           <div style={{ marginTop: 8, padding: 14, borderRadius: 14, background: '#FFF0F6' }}>
             <div style={{ font: '500 14px/1.5 Poppins', color: '#2E1035' }}>{(pledge && pledge.body) || t.wellnessNoPledge}</div>
             <div
-              className="text-link-btn"
+              className="no-print text-link-btn"
               style={{ padding: 0, marginTop: 8 }}
               onClick={() => {
                 setPledgeDraft((pledge && pledge.body) || '');
@@ -133,6 +145,24 @@ export default function WellnessFollowThrough({ t, lang, onBack, pledge, saved, 
         )}
 
         <div className="field-title" style={{ margin: '22px 0 8px' }}>
+          {t.wellnessToolkitTitle}
+        </div>
+        {toolkitItems.length === 0 ? (
+          <div style={{ font: '400 13px/1.6 Poppins', color: '#7A6070' }}>{t.wellnessToolkitEmpty}</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {toolkitItems.map((sp) => (
+              <div key={sp.id} className="card" style={{ border: 'none', background: '#fff' }}>
+                <div style={{ font: '600 13px/1.35 Poppins', color: '#2E1035' }}>{sp.name}</div>
+                {sp.website_url && (
+                  <div style={{ font: '400 12px/1.5 Poppins', color: '#B01253', marginTop: 4 }}>{sp.website_url}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="field-title" style={{ margin: '22px 0 8px' }}>
           {t.wellnessWhatHelped}
         </div>
         <textarea
@@ -155,13 +185,18 @@ export default function WellnessFollowThrough({ t, lang, onBack, pledge, saved, 
           onChange={(e) => setObstacles(e.target.value)}
           style={{ resize: 'none' }}
         />
-        <div className="primary-btn" style={{ marginTop: 10 }} onClick={saveReflection}>
+        <div className="no-print primary-btn" style={{ marginTop: 10 }} onClick={saveReflection}>
           {t.save}
         </div>
-        {reflectionSaved && <div style={{ font: '400 11.5px/1.4 Poppins', color: '#1F7A78', marginTop: 6 }}>{t.feedbackThanksShort}</div>}
+        {reflectionSaved && <div className="no-print" style={{ font: '400 11.5px/1.4 Poppins', color: '#1F7A78', marginTop: 6 }}>{t.feedbackThanksShort}</div>}
 
-        <div className="text-link-btn" style={{ marginTop: 26 }} onClick={downloadNotes}>
-          {t.wellnessDownload}
+        <div className="no-print" style={{ display: 'flex', gap: 18, marginTop: 26, flexWrap: 'wrap' }}>
+          <div className="text-link-btn" style={{ padding: 0 }} onClick={downloadNotes}>
+            {t.wellnessDownload}
+          </div>
+          <div className="text-link-btn" style={{ padding: 0 }} onClick={printNotes}>
+            {t.wellnessPrintButton}
+          </div>
         </div>
       </div>
     </div>

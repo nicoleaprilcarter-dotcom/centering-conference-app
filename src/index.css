@@ -124,3 +124,32 @@ button {
     box-shadow: 0 0 0 1px var(--line);
   }
 }
+
+.print-only {
+  display: none;
+}
+
+/* Printing the Wellness Follow-Through screen (via window.print, used for
+   "save as PDF") should show only that screen's content, not the app
+   header/nav chrome around it. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .wellness-print-area,
+  .wellness-print-area * {
+    visibility: visible;
+  }
+  .wellness-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block;
+  }
+}

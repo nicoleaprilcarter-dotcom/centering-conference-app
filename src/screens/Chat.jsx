@@ -3,6 +3,7 @@ import ChatThread from '../components/ChatThread';
 import Avatar from '../components/Avatar';
 import AskHues from '../components/AskHues';
 import CommunityGuidelines from '../components/CommunityGuidelines';
+import { WarnIcon } from '../components/icons';
 import { colorForId } from '../lib/helpers';
 
 export default function Chat({
@@ -128,6 +129,10 @@ export default function Chat({
       {tab === 'triage' && (
         <>
           <div style={{ padding: '14px 18px 0', font: '400 12.5px/1.55 Poppins', color: '#4A3348' }}>{t.triageIntro}</div>
+          <div style={{ margin: '10px 18px 0', padding: 12, borderRadius: 12, background: '#FBEAB0', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+            <WarnIcon />
+            <div style={{ font: '500 11.5px/1.5 Poppins', color: '#5C4508' }}>{t.triageSafetyNote}</div>
+          </div>
           <div style={{ padding: '10px 18px 0' }}>
             <div style={{ font: '600 10.5px/1 Poppins', color: '#7A6070', marginBottom: 6 }}>{t.triageWhoSeesThis}</div>
             <div style={{ display: 'flex', gap: 6, overflowX: 'auto', margin: '0 -18px', padding: '0 18px 2px' }}>
