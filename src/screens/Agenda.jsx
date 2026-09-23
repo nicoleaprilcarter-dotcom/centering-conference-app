@@ -4,6 +4,9 @@ import { tagColors, colorForId, timeToMinutes, isSessionLiveNow } from '../lib/h
 import { StarIcon, CheckCircleIcon, FileIcon, NoteIcon, SparkleIcon } from '../components/icons';
 import Avatar from '../components/Avatar';
 import Flourish from '../components/Flourish';
+import EventBadge from '../components/EventBadge';
+import QrCode from '../components/QrCode';
+import { badgeCode } from '../lib/badge';
 import { downloadICS } from '../lib/ics';
 
 // Only sessions with actual content (not arrival/breaks/transitions) get
@@ -138,6 +141,61 @@ function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checke
   );
 }
 
+function CheckInCard({ t, checkedInAt, onCheckIn, onUndoCheckIn, userId, name, avatarUrl, designation }) {
+  return (
+    <div
+      className="card"
+      style={{
+        marginBottom: 16,
+        background: checkedInAt ? '#FBF0D3' : '#FFF0F6',
+        border: 'none',
+        cursor: checkedInAt ? 'default' : 'pointer',
+      }}
+      onClick={checkedInAt ? undefined : onCheckIn}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+        <div>
+          <div style={{ font: '600 13.5px/1.3 Poppins', color: checkedInAt ? '#8A6A12' : '#B01253' }}>
+            {checkedInAt ? t.checkedInAt : t.checkInPromptTitle}
+          </div>
+          <div style={{ font: '400 11.5px/1.4 Poppins', color: '#7A6070', marginTop: 3 }}>
+            {checkedInAt
+              ? new Date(checkedInAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+              : t.checkInPromptBody}
+          </div>
+        </div>
+        {!checkedInAt && (
+          <div style={{ flex: 'none', padding: '9px 14px', borderRadius: 999, background: '#B01253', color: '#fff', font: '600 12px/1 Poppins' }}>
+            {t.checkInButton}
+          </div>
+        )}
+      </div>
+
+      {checkedInAt && (
+        <div style={{ marginTop: 16, textAlign: 'center' }}>
+          <div style={{ marginBottom: 16 }}>
+            <EventBadge t={t} name={name} avatarUrl={avatarUrl} designation={designation} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
+            <QrCode value={badgeCode(userId)} size={128} />
+          </div>
+          <div style={{ font: '600 12.5px/1 Poppins', letterSpacing: '0.08em', color: '#8A6A12' }}>{badgeCode(userId)}</div>
+          <div style={{ font: '400 11.5px/1.5 Poppins', color: '#7A6070', marginTop: 8 }}>{t.badgeShow}</div>
+          <div
+            style={{ font: '400 11px/1 Poppins', color: '#7E6A76', marginTop: 16 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (window.confirm(t.undoCheckInConfirm)) onUndoCheckIn();
+            }}
+          >
+            {t.undoCheckIn}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Agenda({
   t,
   lang,
@@ -154,6 +212,11 @@ export default function Agenda({
   onSaveNote,
   sessionRecaps = {},
   checkedInAt,
+  onCheckIn,
+  onUndoCheckIn,
+  userId,
+  avatarUrl,
+  designation,
   aiRecommendation,
   aiRecLoading,
   aiRecError,
@@ -203,6 +266,16 @@ export default function Agenda({
 
   return (
     <div className="screen-pad" style={{ display: 'flex', flexDirection: 'column' }}>
+      <CheckInCard
+        t={t}
+        checkedInAt={checkedInAt}
+        onCheckIn={onCheckIn}
+        onUndoCheckIn={onUndoCheckIn}
+        userId={userId}
+        name={name}
+        avatarUrl={avatarUrl}
+        designation={designation}
+      />
       <Dashboard
         t={t}
         lang={lang}

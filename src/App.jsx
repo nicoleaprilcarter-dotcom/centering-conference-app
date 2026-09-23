@@ -29,10 +29,8 @@ import Header from './components/Header';
 import OnboardingIntro from './components/OnboardingIntro';
 import BottomNav from './components/BottomNav';
 import ErrorBanner from './components/ErrorBanner';
-import BadgeQuickView from './components/BadgeQuickView';
 import PledgeStream from './components/PledgeStream';
 import MicroRestToast from './components/MicroRestToast';
-import { BadgeIcon } from './components/icons';
 
 const LOBBY_SESSION_ID = 'lobby';
 const WAITING_ROOM_SESSION_ID = 'waiting-room';
@@ -194,7 +192,6 @@ export default function App() {
   const [pledgeSupports, setPledgeSupports] = useState([]);
   const [toolkitSaves, setToolkitSaves] = useState([]);
   const [wellnessReminders, setWellnessReminders] = useState(false);
-  const [showBadgeQuick, setShowBadgeQuick] = useState(false);
   const [showPledgeStream, setShowPledgeStream] = useState(false);
   const [dismissedMicroRest, setDismissedMicroRest] = useState(readDismissedMicroRest);
 
@@ -1283,6 +1280,11 @@ export default function App() {
           onSaveNote={saveNote}
           sessionRecaps={sessionRecaps}
           checkedInAt={checkedInAt}
+          onCheckIn={checkIn}
+          onUndoCheckIn={undoCheckIn}
+          userId={user.id}
+          avatarUrl={pfAvatarUrl}
+          designation={profile && profile.designation}
           aiRecommendation={aiRecommendation}
           aiRecLoading={aiRecLoading}
           aiRecError={aiRecError}
@@ -1293,13 +1295,6 @@ export default function App() {
         <Resources
           t={t}
           lang={lang}
-          checkedInAt={checkedInAt}
-          onCheckIn={checkIn}
-          onUndoCheckIn={undoCheckIn}
-          userId={user.id}
-          name={pfName}
-          avatarUrl={pfAvatarUrl}
-          designation={profile && profile.designation}
           isModerator={!!(profile && profile.is_moderator)}
           sessionFiles={sessionFiles}
           onUploadFile={uploadSessionFile}
@@ -1498,42 +1493,6 @@ export default function App() {
       )}
       </div>
 
-      {screen === 'agenda' && !viewingPerson && !viewingSessionId && !viewingSponsor && (
-        <div
-          onClick={() => setShowBadgeQuick(true)}
-          role="button"
-          aria-label={t.myBadgeButton}
-          style={{
-            position: 'absolute',
-            right: 18,
-            bottom: 96,
-            zIndex: 40,
-            width: 52,
-            height: 52,
-            borderRadius: 999,
-            background: '#FF2D95',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 6px 18px rgba(216,27,96,.4)',
-            cursor: 'pointer',
-          }}
-        >
-          <BadgeIcon />
-        </div>
-      )}
-      {showBadgeQuick && (
-        <BadgeQuickView
-          t={t}
-          userId={user.id}
-          name={pfName}
-          avatarUrl={pfAvatarUrl}
-          designation={profile && profile.designation}
-          checkedInAt={checkedInAt}
-          onCheckIn={checkIn}
-          onClose={() => setShowBadgeQuick(false)}
-        />
-      )}
       {showPledgeStream && <PledgeStream t={t} pledges={visiblePledges} onExit={() => setShowPledgeStream(false)} />}
       {showMicroRest && (
         <MicroRestToast message={microRestMessage} dismissLabel={t.microRestDismiss} onDismiss={() => dismissMicroRest(microRestKey)} />

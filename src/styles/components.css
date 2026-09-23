@@ -16,7 +16,7 @@
   display: flex;
   flex-direction: column;
   padding: max(28px, env(safe-area-inset-top)) 24px 36px;
-  background: linear-gradient(160deg, #e8660d 0%, #ff2d95 48%, #6b1029 100%);
+  background: var(--hero-bg);
   color: #fff;
   position: relative;
   overflow: hidden;
