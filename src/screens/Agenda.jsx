@@ -141,7 +141,30 @@ function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checke
   );
 }
 
+function readBadgeExpanded() {
+  try {
+    return localStorage.getItem('cwoc_badge_expanded') !== '0';
+  } catch {
+    return true;
+  }
+}
+
 function CheckInCard({ t, checkedInAt, onCheckIn, onUndoCheckIn, userId, name, avatarUrl, designation }) {
+  const [expanded, setExpanded] = useState(readBadgeExpanded);
+
+  const toggleExpanded = (e) => {
+    e.stopPropagation();
+    setExpanded((v) => {
+      const next = !v;
+      try {
+        localStorage.setItem('cwoc_badge_expanded', next ? '1' : '0');
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+
   return (
     <div
       className="card"
@@ -149,9 +172,9 @@ function CheckInCard({ t, checkedInAt, onCheckIn, onUndoCheckIn, userId, name, a
         marginBottom: 16,
         background: checkedInAt ? '#FBF0D3' : '#FFF0F6',
         border: 'none',
-        cursor: checkedInAt ? 'default' : 'pointer',
+        cursor: 'pointer',
       }}
-      onClick={checkedInAt ? undefined : onCheckIn}
+      onClick={checkedInAt ? toggleExpanded : onCheckIn}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
         <div>
@@ -164,14 +187,36 @@ function CheckInCard({ t, checkedInAt, onCheckIn, onUndoCheckIn, userId, name, a
               : t.checkInPromptBody}
           </div>
         </div>
-        {!checkedInAt && (
+        {checkedInAt ? (
+          <div
+            role="button"
+            aria-label={expanded ? t.badgeCollapse : t.badgeExpand}
+            aria-expanded={expanded}
+            style={{
+              flex: 'none',
+              width: 30,
+              height: 30,
+              borderRadius: 999,
+              background: 'rgba(138,106,18,.12)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#8A6A12',
+              font: '700 12px/1 Poppins',
+              transform: expanded ? 'rotate(180deg)' : 'none',
+              transition: 'transform .2s ease',
+            }}
+          >
+            ▾
+          </div>
+        ) : (
           <div style={{ flex: 'none', padding: '9px 14px', borderRadius: 999, background: '#B01253', color: '#fff', font: '600 12px/1 Poppins' }}>
             {t.checkInButton}
           </div>
         )}
       </div>
 
-      {checkedInAt && (
+      {checkedInAt && expanded && (
         <div style={{ marginTop: 16, textAlign: 'center' }}>
           <div style={{ marginBottom: 16 }}>
             <EventBadge t={t} name={name} avatarUrl={avatarUrl} designation={designation} />
