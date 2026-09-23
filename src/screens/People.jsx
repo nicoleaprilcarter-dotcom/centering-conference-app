@@ -117,7 +117,16 @@ export default function People({
 
   return (
     <div className="screen-pad">
-      <div className="tab-row" style={{ marginBottom: 14, overflowX: 'auto', flexWrap: 'nowrap' }}>
+      <div
+        className="tab-row"
+        style={{
+          flexWrap: 'nowrap',
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          margin: '0 -18px 14px',
+          padding: '0 18px 2px',
+        }}
+      >
         {TABS.map(({ key, label }) => (
           <div
             key={key}
