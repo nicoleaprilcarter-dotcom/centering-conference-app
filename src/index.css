@@ -39,7 +39,7 @@
      background, behind the header and showing through page gaps. */
   --hero-bg:
     radial-gradient(circle at 14% 18%, #ff5a1f 0%, rgba(255, 90, 31, 0) 52%),
-    radial-gradient(circle at 82% 8%, #ffc400 0%, #ffc400 16%, rgba(255, 196, 0, 0) 52%),
+    radial-gradient(circle at 88% 4%, #ffc700 0%, #ffc700 38%, rgba(255, 199, 0, 0) 68%),
     radial-gradient(circle at 55% 40%, #ff7fd1 0%, rgba(255, 127, 209, 0) 58%),
     radial-gradient(circle at 90% 62%, #ff2d95 0%, rgba(255, 45, 149, 0) 55%),
     radial-gradient(circle at 12% 78%, #f4390f 0%, rgba(244, 57, 15, 0) 55%),

@@ -15,7 +15,6 @@ export default function SignIn({ t, onSendLink, sending, linkSent, error, onChan
 
   return (
     <div className="hero">
-      <Flourish color="#ffffff" size={200} top={-50} right={-60} opacity={0.1} />
       <Flourish color="#FBEAB0" size={170} bottom={40} left={-70} opacity={0.16} rotate={25} />
 
       <div className="hero-content">
