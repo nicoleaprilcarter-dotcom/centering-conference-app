@@ -136,6 +136,23 @@ export function BadgeIcon({ color = '#fff' }) {
   );
 }
 
+export function XIcon({ color = '#7E6A76' }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  );
+}
+
+export function CameraIcon({ color = '#7E6A76' }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 8h3l2-3h6l2 3h3v12H4V8z" />
+      <circle cx="12" cy="14" r="3.5" />
+    </svg>
+  );
+}
+
 export function ProfileIcon({ color }) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">

@@ -31,6 +31,7 @@ import BottomNav from './components/BottomNav';
 import ErrorBanner from './components/ErrorBanner';
 import PledgeStream from './components/PledgeStream';
 import MicroRestToast from './components/MicroRestToast';
+import PhotoContest from './components/PhotoContest';
 
 const LOBBY_SESSION_ID = 'lobby';
 const WAITING_ROOM_SESSION_ID = 'waiting-room';
@@ -192,6 +193,11 @@ export default function App() {
   const [pledgeSupports, setPledgeSupports] = useState([]);
   const [toolkitSaves, setToolkitSaves] = useState([]);
   const [wellnessReminders, setWellnessReminders] = useState(false);
+  const [pfIcebreaker, setPfIcebreaker] = useState('');
+  const [matchLikes, setMatchLikes] = useState([]);
+  const [contestEntries, setContestEntries] = useState([]);
+  const [contestVotes, setContestVotes] = useState([]);
+  const [contestUploading, setContestUploading] = useState(false);
   const [showPledgeStream, setShowPledgeStream] = useState(false);
   const [dismissedMicroRest, setDismissedMicroRest] = useState(readDismissedMicroRest);
 
@@ -252,7 +258,7 @@ export default function App() {
   // ---------- after sign-in ----------
   const loadAll = useCallback(
     async (c, uid) => {
-      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh, sfl, sno, sq, sqv, src, sdt, blk, rpt, wfr, pls, tks] = await Promise.all([
+      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh, sfl, sno, sq, sqv, src, sdt, blk, rpt, wfr, pls, tks, mlk, cen, cvo] = await Promise.all([
         c.from('saved_sessions').select('session_id').eq('user_id', uid),
         c.from('messages').select('*').eq('session_id', sid).order('created_at'),
         c.from('profiles').select('*').eq('visible', true),
@@ -280,6 +286,9 @@ export default function App() {
         c.from('wellness_reflections').select('*').eq('user_id', uid).maybeSingle(),
         c.from('pledge_supports').select('*'),
         c.from('toolkit_saves').select('*').eq('user_id', uid),
+        c.from('match_likes').select('*').or(`liker_id.eq.${uid},liked_id.eq.${uid}`),
+        c.from('contest_entries').select('*').order('created_at', { ascending: false }),
+        c.from('contest_votes').select('*'),
       ]);
       const savedMap = {};
       (sv.data || []).forEach((r) => {
@@ -339,6 +348,9 @@ export default function App() {
       setWellnessReflection(wfr.data || null);
       setPledgeSupports(pls.data || []);
       setToolkitSaves(tks.data || []);
+      setMatchLikes(mlk.data || []);
+      setContestEntries(cen.data || []);
+      setContestVotes(cvo.data || []);
     },
     [sid],
   );
@@ -450,6 +462,18 @@ export default function App() {
         const { data } = await client.from('toolkit_saves').select('*').eq('user_id', user.id);
         setToolkitSaves(data || []);
       }
+      if (what === 'matchLikes' && user) {
+        const { data } = await client.from('match_likes').select('*').or(`liker_id.eq.${user.id},liked_id.eq.${user.id}`);
+        setMatchLikes(data || []);
+      }
+      if (what === 'contestEntries') {
+        const { data } = await client.from('contest_entries').select('*').order('created_at', { ascending: false });
+        setContestEntries(data || []);
+      }
+      if (what === 'contestVotes') {
+        const { data } = await client.from('contest_votes').select('*');
+        setContestVotes(data || []);
+      }
     },
     [client, sid, user],
   );
@@ -481,6 +505,9 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_details' }, () => reload('sessionDetails'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'reports' }, () => reload('reports'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pledge_supports' }, () => reload('pledgeSupports'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'match_likes' }, () => reload('matchLikes'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'contest_entries' }, () => reload('contestEntries'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'contest_votes' }, () => reload('contestVotes'))
       .subscribe();
     channelRef.current = ch;
   }, [client, reload]);
@@ -510,6 +537,7 @@ export default function App() {
         setPfName(prof.display_name || '');
         setPfPron(prof.pronouns || '');
         setPfBio(prof.bio || '');
+        setPfIcebreaker(prof.icebreaker || '');
         setPfTags(tagMap);
         setPfVisible(prof.visible);
         setPfAvatarUrl(prof.avatar_url || '');
@@ -667,6 +695,7 @@ export default function App() {
       display_name: pfName.trim(),
       pronouns: pfPron.trim(),
       bio: pfBio.trim(),
+      icebreaker: pfIcebreaker.trim(),
       interests,
       visible: pfVisible,
       avatar_url: pfAvatarUrl || null,
@@ -774,6 +803,19 @@ export default function App() {
   const toolkitSponsorIds = new Set(toolkitSaves.map((s) => s.sponsor_id));
   const toolkitItems = sponsors.filter((sp) => toolkitSponsorIds.has(sp.id));
 
+  const myLikedIds = new Set(matchLikes.filter((m) => m.liker_id === user.id).map((m) => m.liked_id));
+  const likedMeIds = new Set(matchLikes.filter((m) => m.liked_id === user.id).map((m) => m.liker_id));
+  const matchCandidates = visiblePeople.filter((p) => p.id !== user.id && !myLikedIds.has(p.id));
+  const myMatches = visiblePeople.filter((p) => myLikedIds.has(p.id) && likedMeIds.has(p.id));
+  const myInterests = (profile && profile.interests) || [];
+
+  const contestVoteCounts = {};
+  contestVotes.forEach((v) => {
+    contestVoteCounts[v.entry_id] = (contestVoteCounts[v.entry_id] || 0) + 1;
+  });
+  const myContestVotedIds = new Set(contestVotes.filter((v) => v.user_id === user.id).map((v) => v.entry_id));
+  const visibleContestEntries = contestEntries.filter((e) => !blockedIdSet.has(e.user_id));
+
   const chatUnread = dmMsgs.some((m) => m.recipient_id === user?.id && m.created_at > lastDmReadAt);
 
   // Mark direct messages as read whenever the Chat screen is open.
@@ -872,6 +914,73 @@ export default function App() {
       : await client.from('toolkit_saves').insert({ sponsor_id: sponsorId, user_id: user.id });
     if (err) setError('Could not save that. ' + err.message);
     reload('toolkitSaves');
+  };
+
+  // Whether liking personId completes a mutual match is knowable
+  // synchronously from state already in hand, so Match can show the
+  // "It's a match!" screen immediately instead of waiting on the network.
+  const likePerson = (personId) => {
+    const becameMatch = matchLikes.some((m) => m.liker_id === personId && m.liked_id === user.id);
+    setMatchLikes((m) => [...m, { liker_id: user.id, liked_id: personId }]);
+    client
+      .from('match_likes')
+      .insert({ liker_id: user.id, liked_id: personId })
+      .then(({ error: err }) => {
+        if (err) {
+          setMatchLikes((m) => m.filter((x) => !(x.liker_id === user.id && x.liked_id === personId)));
+          setError('Could not save that. ' + err.message);
+        }
+        reload('matchLikes');
+      });
+    return becameMatch;
+  };
+
+  const uploadContestPhoto = async (file, caption, theme) => {
+    if (!file.type.startsWith('image/')) {
+      setError('Please choose an image file.');
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setError('That image is too large. Please choose one under 8MB.');
+      return;
+    }
+    setContestUploading(true);
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const path = `${user.id}/${Date.now()}.${ext}`;
+    const { error: upErr } = await client.storage.from('contest-photos').upload(path, file, { cacheControl: '3600' });
+    if (upErr) {
+      setContestUploading(false);
+      setError('Photo not uploaded. ' + upErr.message);
+      return;
+    }
+    const { data } = client.storage.from('contest-photos').getPublicUrl(path);
+    const { error: insErr } = await client.from('contest_entries').insert({
+      user_id: user.id,
+      theme,
+      image_url: data.publicUrl,
+      caption: (caption || '').trim().slice(0, 200),
+    });
+    setContestUploading(false);
+    if (insErr) setError('Photo uploaded but not saved. ' + insErr.message);
+    reload('contestEntries');
+  };
+
+  const deleteContestEntry = async (entryId) => {
+    const { error: err } = await client.from('contest_entries').delete().eq('id', entryId);
+    if (err) setError('Could not delete. ' + err.message);
+    reload('contestEntries');
+  };
+
+  const toggleContestVote = async (entryId) => {
+    const already = contestVotes.some((v) => v.entry_id === entryId && v.user_id === user.id);
+    setContestVotes((v) =>
+      already ? v.filter((x) => !(x.entry_id === entryId && x.user_id === user.id)) : [...v, { entry_id: entryId, user_id: user.id }],
+    );
+    const { error: err } = already
+      ? await client.from('contest_votes').delete().eq('entry_id', entryId).eq('user_id', user.id)
+      : await client.from('contest_votes').insert({ entry_id: entryId, user_id: user.id });
+    if (err) setError('Could not save that. ' + err.message);
+    reload('contestVotes');
   };
 
   const toggleSessionCheckIn = async (sessionId) => {
@@ -1336,7 +1445,7 @@ export default function App() {
           onDelete={deleteMessage}
         />
       )}
-      {(screen === 'wall' || screen === 'chat') && !inDmThread && (
+      {(screen === 'wall' || screen === 'chat' || screen === 'photos') && !inDmThread && (
         <div style={{ padding: '14px 18px 0' }}>
           <div className="tab-row">
             <div
@@ -1354,7 +1463,32 @@ export default function App() {
               {t.tabChat}
               {chatUnread && <span style={{ width: 7, height: 7, borderRadius: 999, background: '#D81B60', display: 'inline-block' }} />}
             </div>
+            <div
+              className="tab-item"
+              style={{ color: screen === 'photos' ? '#2E1035' : '#7E6A76', borderColor: screen === 'photos' ? '#D81B60' : 'transparent' }}
+              onClick={() => navigate('photos')}
+            >
+              {t.tabPhotos}
+            </div>
           </div>
+        </div>
+      )}
+      {screen === 'photos' && (
+        <div className="screen-pad">
+          <PhotoContest
+            t={t}
+            userId={user.id}
+            entries={visibleContestEntries}
+            people={people}
+            voteCounts={contestVoteCounts}
+            myVotedIds={myContestVotedIds}
+            uploading={contestUploading}
+            onUpload={uploadContestPhoto}
+            onDeleteEntry={deleteContestEntry}
+            onToggleVote={toggleContestVote}
+            onReport={reportContent}
+            onBlock={blockUser}
+          />
         </div>
       )}
       {screen === 'wall' && (
@@ -1428,7 +1562,22 @@ export default function App() {
           />
         ))}
       {screen === 'people' && (
-        <People t={t} lang={lang} userId={user.id} people={visiblePeople} speakers={speakers} sponsors={sponsors} onMessage={openDirectThread} onReport={reportContent} onBlock={blockUser} onOpenSponsor={setViewingSponsor} />
+        <People
+          t={t}
+          lang={lang}
+          userId={user.id}
+          people={visiblePeople}
+          speakers={speakers}
+          sponsors={sponsors}
+          onMessage={openDirectThread}
+          onReport={reportContent}
+          onBlock={blockUser}
+          onOpenSponsor={setViewingSponsor}
+          myInterests={myInterests}
+          matchCandidates={matchCandidates}
+          matches={myMatches}
+          onLikePerson={likePerson}
+        />
       )}
       {screen === 'profile' &&
         (showWellness ? (
@@ -1487,6 +1636,8 @@ export default function App() {
             onUnblock={unblockUser}
             wellnessReminders={wellnessReminders}
             onToggleWellnessReminders={toggleWellnessReminders}
+            icebreaker={pfIcebreaker}
+            setIcebreaker={setPfIcebreaker}
           />
         ))}
         </>

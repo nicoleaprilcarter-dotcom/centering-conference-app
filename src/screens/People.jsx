@@ -5,6 +5,7 @@ import Avatar from '../components/Avatar';
 import Flourish from '../components/Flourish';
 import DesignationBadge from '../components/DesignationBadge';
 import ReportMenu from '../components/ReportMenu';
+import Match from '../components/Match';
 
 function PersonCard({ p, userId, lang, t, onMessage, onReport, onBlock }) {
   return (
@@ -81,7 +82,22 @@ function SponsorCard({ sp, lang, onOpen }) {
   );
 }
 
-export default function People({ t, lang, userId, people, speakers, sponsors = [], onMessage, onReport, onBlock, onOpenSponsor }) {
+export default function People({
+  t,
+  lang,
+  userId,
+  people,
+  speakers,
+  sponsors = [],
+  onMessage,
+  onReport,
+  onBlock,
+  onOpenSponsor,
+  myInterests = [],
+  matchCandidates = [],
+  matches = [],
+  onLikePerson,
+}) {
   const [tab, setTab] = useState('speakers');
   const visiblePeople = people.filter((p) => p.display_name);
   const leadership = visiblePeople.filter((p) => ['founder', 'chair', 'board', 'staff'].includes(normalizeDesignation(p.designation)));
@@ -91,6 +107,7 @@ export default function People({ t, lang, userId, people, speakers, sponsors = [
   const partnerOrgs = sponsors.filter((sp) => sp.category === 'partner');
 
   const TABS = [
+    { key: 'discover', label: t.tabDiscover },
     { key: 'speakers', label: t.speakers },
     { key: 'leadership', label: t.leadership },
     { key: 'volunteers', label: t.volunteers },
@@ -112,6 +129,10 @@ export default function People({ t, lang, userId, people, speakers, sponsors = [
           </div>
         ))}
       </div>
+
+      {tab === 'discover' && (
+        <Match t={t} lang={lang} myInterests={myInterests} candidates={matchCandidates} matches={matches} onLike={onLikePerson} onOpenThread={onMessage} />
+      )}
 
       {tab === 'speakers' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>

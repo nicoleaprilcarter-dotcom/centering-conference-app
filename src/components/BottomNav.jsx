@@ -4,7 +4,7 @@ import { AgendaIcon, CommunityIcon, PeopleIcon, ResourcesIcon, ProfileIcon } fro
 // bottom-tab slot (five icons instead of seven keeps touch targets usable
 // on small phones). Live is reached from the Agenda's live banner, and
 // Wall/Chat live under a single "Community" tab with its own sub-tabs.
-const SCREEN_TO_TAB = { wall: 'community', chat: 'community', session: 'agenda' };
+const SCREEN_TO_TAB = { wall: 'community', chat: 'community', photos: 'community', session: 'agenda' };
 
 export default function BottomNav({ screen, onNavigate, t, chatUnread }) {
   const TABS = [

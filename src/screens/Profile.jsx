@@ -39,6 +39,8 @@ export default function Profile({
   onUnblock,
   wellnessReminders,
   onToggleWellnessReminders,
+  icebreaker,
+  setIcebreaker,
 }) {
   const fileInputRef = useRef(null);
 
@@ -117,6 +119,16 @@ export default function Profile({
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             style={{ resize: 'none' }}
+          />
+        </div>
+        <div>
+          <div className="field-title">{t.icebreakerLabel}</div>
+          <input
+            className="field-input dark"
+            type="text"
+            placeholder={t.icebreakerPh}
+            value={icebreaker}
+            onChange={(e) => setIcebreaker(e.target.value)}
           />
         </div>
       </div>

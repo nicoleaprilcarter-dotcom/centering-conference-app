@@ -977,6 +977,126 @@ create policy "manage own toolkit saves" on toolkit_saves
 
 
 -- ------------------------------------------------------------
+-- ICEBREAKER
+-- A short, optional "digital business card" prompt shown on a
+-- profile to remove the awkwardness of a first approach.
+-- ------------------------------------------------------------
+alter table profiles add column if not exists icebreaker text not null default '';
+
+
+-- ------------------------------------------------------------
+-- MATCH LIKES ("Discover")
+-- A one-at-a-time "Connect" or "Pass" deck. A mutual match exists
+-- when both people have a row liking the other; no one ever sees
+-- who passed on them.
+-- ------------------------------------------------------------
+create table if not exists match_likes (
+  id         bigint generated always as identity primary key,
+  liker_id   uuid not null references auth.users on delete cascade,
+  liked_id   uuid not null references auth.users on delete cascade,
+  created_at timestamptz not null default now(),
+  unique (liker_id, liked_id)
+);
+
+alter table match_likes enable row level security;
+
+drop policy if exists "read own match likes" on match_likes;
+create policy "read own match likes" on match_likes
+  for select to authenticated
+  using (liker_id = auth.uid() or liked_id = auth.uid());
+
+drop policy if exists "create own match like" on match_likes;
+create policy "create own match like" on match_likes
+  for insert to authenticated
+  with check (liker_id = auth.uid());
+
+drop policy if exists "delete own match like" on match_likes;
+create policy "delete own match like" on match_likes
+  for delete to authenticated
+  using (liker_id = auth.uid());
+
+
+-- ------------------------------------------------------------
+-- PHOTO CONTEST
+-- A themed photo wall attendees post to and cheer on with a vote,
+-- moderated the same way as everything else (report/block).
+-- ------------------------------------------------------------
+create table if not exists contest_entries (
+  id         bigint generated always as identity primary key,
+  user_id    uuid not null references auth.users on delete cascade,
+  theme      text not null check (theme in ('squad', 'moment', 'selfcare')),
+  image_url  text not null,
+  caption    text not null default '',
+  created_at timestamptz not null default now()
+);
+
+alter table contest_entries enable row level security;
+
+drop policy if exists "read contest entries" on contest_entries;
+create policy "read contest entries" on contest_entries
+  for select to authenticated
+  using (true);
+
+drop policy if exists "post own contest entry" on contest_entries;
+create policy "post own contest entry" on contest_entries
+  for insert to authenticated
+  with check (user_id = auth.uid());
+
+drop policy if exists "delete own contest entry" on contest_entries;
+create policy "delete own contest entry" on contest_entries
+  for delete to authenticated
+  using (
+    user_id = auth.uid()
+    or exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator)
+  );
+
+create table if not exists contest_votes (
+  id         bigint generated always as identity primary key,
+  entry_id   bigint not null references contest_entries on delete cascade,
+  user_id    uuid not null references auth.users on delete cascade,
+  created_at timestamptz not null default now(),
+  unique (entry_id, user_id)
+);
+
+alter table contest_votes enable row level security;
+
+drop policy if exists "read contest votes" on contest_votes;
+create policy "read contest votes" on contest_votes
+  for select to authenticated
+  using (true);
+
+drop policy if exists "manage own contest vote" on contest_votes;
+create policy "manage own contest vote" on contest_votes
+  for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+-- Photo wall entries can now be reported alongside messages/profiles/pledges.
+alter table reports drop constraint if exists reports_target_type_check;
+alter table reports add constraint reports_target_type_check
+  check (target_type in ('message', 'profile', 'pledge', 'contest_entry'));
+
+-- Contest photos: public bucket, each attendee manages their own uploads.
+insert into storage.buckets (id, name, public)
+values ('contest-photos', 'contest-photos', true)
+on conflict (id) do nothing;
+
+drop policy if exists "contest photo public read" on storage.objects;
+create policy "contest photo public read" on storage.objects
+  for select using (bucket_id = 'contest-photos');
+
+drop policy if exists "contest photo own upload" on storage.objects;
+create policy "contest photo own upload" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'contest-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "contest photo own delete" on storage.objects;
+create policy "contest photo own delete" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'contest-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+
+-- ------------------------------------------------------------
 -- REALTIME
 -- Lets the app update without refreshing. Wrapped so this whole
 -- file is safe to run again later (a plain ALTER PUBLICATION
@@ -1035,6 +1155,15 @@ begin
   end if;
   if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'pledge_supports') then
     alter publication supabase_realtime add table pledge_supports;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'match_likes') then
+    alter publication supabase_realtime add table match_likes;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'contest_entries') then
+    alter publication supabase_realtime add table contest_entries;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'contest_votes') then
+    alter publication supabase_realtime add table contest_votes;
   end if;
 end $$;
 
