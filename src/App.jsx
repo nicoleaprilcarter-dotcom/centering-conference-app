@@ -1297,6 +1297,9 @@ export default function App() {
           onCheckIn={checkIn}
           onUndoCheckIn={undoCheckIn}
           userId={user.id}
+          name={pfName}
+          avatarUrl={pfAvatarUrl}
+          designation={profile && profile.designation}
           isModerator={!!(profile && profile.is_moderator)}
           sessionFiles={sessionFiles}
           onUploadFile={uploadSessionFile}
@@ -1523,6 +1526,9 @@ export default function App() {
         <BadgeQuickView
           t={t}
           userId={user.id}
+          name={pfName}
+          avatarUrl={pfAvatarUrl}
+          designation={profile && profile.designation}
           checkedInAt={checkedInAt}
           onCheckIn={checkIn}
           onClose={() => setShowBadgeQuick(false)}

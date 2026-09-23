@@ -1,10 +1,11 @@
 import QrCode from './QrCode';
+import EventBadge from './EventBadge';
 import { badgeCode } from '../lib/badge';
 
 // A fast path to the check-in QR badge, reachable from a floating button
 // on the Agenda without navigating away to the Resource Hub — meant to
 // cut the morning-of "hunting for the badge" bottleneck at registration.
-export default function BadgeQuickView({ t, userId, checkedInAt, onCheckIn, onClose }) {
+export default function BadgeQuickView({ t, userId, name, avatarUrl, designation, checkedInAt, onCheckIn, onClose }) {
   return (
     <div
       style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(46,16,53,.55)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
@@ -17,6 +18,9 @@ export default function BadgeQuickView({ t, userId, checkedInAt, onCheckIn, onCl
         <div style={{ font: '700 15px/1.2 Poppins', color: '#2E1035', marginBottom: 14 }}>{t.badgeQuickTitle}</div>
         {checkedInAt ? (
           <>
+            <div style={{ marginBottom: 16 }}>
+              <EventBadge t={t} name={name} avatarUrl={avatarUrl} designation={designation} />
+            </div>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
               <QrCode value={badgeCode(userId)} size={150} />
             </div>

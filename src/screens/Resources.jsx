@@ -1,5 +1,6 @@
 import { badgeCode } from '../lib/badge';
 import QrCode from '../components/QrCode';
+import EventBadge from '../components/EventBadge';
 import AdminMaterials from '../components/AdminMaterials';
 import ModeratorReports from '../components/ModeratorReports';
 import CollapsibleSection from '../components/CollapsibleSection';
@@ -14,6 +15,9 @@ export default function Resources({
   onCheckIn,
   onUndoCheckIn,
   userId,
+  name,
+  avatarUrl,
+  designation,
   isModerator,
   sessionFiles,
   onUploadFile,
@@ -54,6 +58,9 @@ export default function Resources({
 
         {checkedInAt && (
           <div style={{ marginTop: 16, textAlign: 'center' }}>
+            <div style={{ marginBottom: 16 }}>
+              <EventBadge t={t} name={name} avatarUrl={avatarUrl} designation={designation} />
+            </div>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
               <QrCode value={badgeCode(userId)} size={128} />
             </div>

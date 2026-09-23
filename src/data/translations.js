@@ -347,6 +347,11 @@ export const TRANSLATIONS = {
     badgeQuickNotCheckedInNote: "You haven't checked in yet. Check in below to get your badge.",
     badgeQuickCheckInNow: 'Check in now',
     badgeQuickClose: 'Close',
+    badgeRoleAttendee: 'Attendee',
+    badgeRoleSpeaker: 'Speaker',
+    badgeRoleLeadership: 'Leadership',
+    badgeRoleVolunteer: 'Volunteer',
+    badgeEventName: 'Centering Women of Color 2026',
 
     quietRoomsTitle: 'Quiet & care spaces',
     quietRoomsBody: 'A designated Quiet Room, Nursing Suite, and hydration stations are available throughout the venue for anyone who needs a break. Exact room locations will be posted at check-in and marked on the venue map.',
@@ -726,6 +731,11 @@ export const TRANSLATIONS = {
     badgeQuickNotCheckedInNote: 'Aún no te has registrado. Regístrate abajo para obtener tu insignia.',
     badgeQuickCheckInNow: 'Registrarme ahora',
     badgeQuickClose: 'Cerrar',
+    badgeRoleAttendee: 'Asistente',
+    badgeRoleSpeaker: 'Oradora',
+    badgeRoleLeadership: 'Liderazgo',
+    badgeRoleVolunteer: 'Voluntaria',
+    badgeEventName: 'Centering Women of Color 2026',
 
     quietRoomsTitle: 'Espacios tranquilos y de cuidado',
     quietRoomsBody: 'Hay una Sala Tranquila designada, una Suite de Lactancia y estaciones de hidratación disponibles en todo el lugar para quien necesite una pausa. Las ubicaciones exactas se publicarán en el registro y se marcarán en el mapa del lugar.',
