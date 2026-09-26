@@ -1458,7 +1458,7 @@ export default function App() {
           onAnswerQuestion={answerQuestion}
           isModerator={!!(profile && profile.is_moderator)}
           recap={sessionRecaps[sid]}
-          onGenerateRecap={() => generateRecap(sid, 'Signature Fireside Chat', msgs)}
+          onGenerateRecap={() => generateRecap(sid, 'Signature Fireside Chat: Expressions of Invisible Illness', msgs)}
           onReport={reportContent}
           onBlock={blockUser}
           onDelete={deleteMessage}
