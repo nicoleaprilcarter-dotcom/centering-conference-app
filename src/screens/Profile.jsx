@@ -41,6 +41,8 @@ export default function Profile({
   onToggleWellnessReminders,
   icebreaker,
   setIcebreaker,
+  textScale,
+  onChangeTextScale,
 }) {
   const fileInputRef = useRef(null);
 
@@ -168,6 +170,39 @@ export default function Profile({
         </div>
         <div className="toggle-track" style={{ background: visible ? '#FF2D95' : 'rgba(46,16,53,.15)', justifyContent: visible ? 'flex-end' : 'flex-start' }}>
           <div className="toggle-knob" />
+        </div>
+      </div>
+      <div className="toggle-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 10, cursor: 'default' }}>
+        <div>
+          <div className="toggle-title">{t.textSizeTitle}</div>
+          <div className="toggle-sub">{t.textSizeSub}</div>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {[
+            [1, t.textSizeDefault],
+            [1.15, t.textSizeLarge],
+            [1.3, t.textSizeLarger],
+          ].map(([scale, label]) => {
+            const active = textScale === scale;
+            return (
+              <div
+                key={scale}
+                onClick={() => onChangeTextScale(scale)}
+                style={{
+                  flex: 1,
+                  textAlign: 'center',
+                  padding: '9px 0',
+                  borderRadius: 999,
+                  font: '600 12.5px/1 Poppins',
+                  cursor: 'pointer',
+                  background: active ? '#2E1035' : '#F3EFF1',
+                  color: active ? '#fff' : '#4A3348',
+                }}
+              >
+                {label}
+              </div>
+            );
+          })}
         </div>
       </div>
       <div className="toggle-row" onClick={onToggleWellnessReminders}>

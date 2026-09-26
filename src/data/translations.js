@@ -366,6 +366,12 @@ export const TRANSLATIONS = {
     crisisSupportLocal: 'Dayton / Montgomery County crisis line: to be confirmed by HUES',
     crisisSupportFirstAid: 'On-site First Aid desk: location to be confirmed by HUES',
 
+    textSizeTitle: 'Text size',
+    textSizeSub: 'Make the app’s text and cards bigger and easier to read.',
+    textSizeDefault: 'Default',
+    textSizeLarge: 'Large',
+    textSizeLarger: 'Larger',
+
     wellnessRemindersTitle: 'Gentle transition reminders',
     wellnessRemindersSub: 'Occasional prompts to breathe or hydrate during the 15-minute passing periods between sessions.',
     microRestDismiss: 'Got it',
@@ -781,6 +787,12 @@ export const TRANSLATIONS = {
     crisisSupportDv: 'Línea Nacional sobre Violencia Doméstica: 1-800-799-7233',
     crisisSupportLocal: 'Línea de crisis de Dayton / Condado de Montgomery: pendiente de confirmar por HUES',
     crisisSupportFirstAid: 'Módulo de primeros auxilios en el lugar: ubicación pendiente de confirmar por HUES',
+
+    textSizeTitle: 'Tamaño del texto',
+    textSizeSub: 'Agranda el texto y las tarjetas de la aplicación para leer más fácil.',
+    textSizeDefault: 'Normal',
+    textSizeLarge: 'Grande',
+    textSizeLarger: 'Más grande',
 
     wellnessRemindersTitle: 'Recordatorios suaves de transición',
     wellnessRemindersSub: 'Avisos ocasionales para respirar o hidratarte durante los 15 minutos de transición entre sesiones.',

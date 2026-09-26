@@ -53,6 +53,15 @@ function readOnboarded() {
   }
 }
 
+function readTextScale() {
+  try {
+    const v = parseFloat(localStorage.getItem('cwoc_text_scale'));
+    return [1, 1.15, 1.3].includes(v) ? v : 1;
+  } catch {
+    return 1;
+  }
+}
+
 function readLastDmRead() {
   try {
     return localStorage.getItem('cwoc_dm_read_at') || '';
@@ -143,6 +152,16 @@ export default function App() {
   const [activeDmUserId, setActiveDmUserId] = useState(null);
 
   const [lang, setLang] = useState(readStoredLang);
+  const [textScale, setTextScale] = useState(readTextScale);
+
+  const changeTextScale = (scale) => {
+    setTextScale(scale);
+    try {
+      localStorage.setItem('cwoc_text_scale', String(scale));
+    } catch {
+      // ignore
+    }
+  };
   const [showOnboarding, setShowOnboarding] = useState(() => !readOnboarded());
 
   const dismissOnboarding = () => {
@@ -1324,7 +1343,7 @@ export default function App() {
       />
       <ErrorBanner message={error} onDismiss={() => setError('')} />
 
-      <div className="content-sheet">
+      <div className="content-sheet" style={{ zoom: textScale }}>
       {viewingPerson ? (
         <PersonProfile
           t={t}
@@ -1638,6 +1657,8 @@ export default function App() {
             onToggleWellnessReminders={toggleWellnessReminders}
             icebreaker={pfIcebreaker}
             setIcebreaker={setPfIcebreaker}
+            textScale={textScale}
+            onChangeTextScale={changeTextScale}
           />
         ))}
         </>
