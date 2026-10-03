@@ -78,21 +78,31 @@ function readDismissedMicroRest() {
   }
 }
 
-function groupSessionHosts(rows) {
+// A session host may not have signed in yet (no linked profile), so
+// their bio/photo/role fall back to the standalone speakers list,
+// matched by name, instead of showing a blank profile page.
+function groupSessionHosts(rows, speakersList) {
+  const speakerByName = {};
+  (speakersList || []).forEach((sp) => {
+    speakerByName[(sp.name || '').trim().toLowerCase()] = sp;
+  });
   const map = {};
   (rows || []).forEach((row) => {
     const profile = row.profile;
+    const fallback = speakerByName[(row.name || '').trim().toLowerCase()];
+    const profileBio = profile && profile.bio;
     if (!map[row.session_id]) map[row.session_id] = [];
     map[row.session_id].push({
       userId: profile ? profile.id : null,
       name: row.name || (profile && profile.display_name) || '',
-      avatarUrl: row.photo_url || (profile && profile.avatar_url) || '',
+      avatarUrl: row.photo_url || (profile && profile.avatar_url) || (fallback && fallback.photo_url) || '',
       pronouns: profile && profile.pronouns,
-      bio: profile && profile.bio,
+      bioEn: profileBio || (fallback && fallback.bio_en) || '',
+      bioEs: profileBio || (fallback && fallback.bio_es) || (fallback && fallback.bio_en) || '',
       interests: profile && profile.interests,
       designations: profile && profile.designations,
-      roleEn: row.role_en,
-      roleEs: row.role_es,
+      roleEn: row.role_en || (fallback && fallback.role_en) || '',
+      roleEs: row.role_es || (fallback && fallback.role_es) || '',
     });
   });
   return map;
@@ -323,7 +333,7 @@ export default function App() {
       setDmMsgs(dm.data || []);
       setSpeakers(sp.data || []);
       setSponsors(sn.data || []);
-      setSessionHosts(groupSessionHosts(sh.data));
+      setSessionHosts(groupSessionHosts(sh.data, sp.data));
       setSessionFiles(groupSessionFiles(sfl.data));
       const notesMap = {};
       (sno.data || []).forEach((r) => {
@@ -418,8 +428,11 @@ export default function App() {
         setSponsors(data || []);
       }
       if (what === 'sessionHosts') {
-        const { data } = await client.from('session_hosts').select('*, profile:profiles(id, display_name, avatar_url, pronouns, bio, interests, designations)').order('sort');
-        setSessionHosts(groupSessionHosts(data));
+        const [shRes, spRes] = await Promise.all([
+          client.from('session_hosts').select('*, profile:profiles(id, display_name, avatar_url, pronouns, bio, interests, designations)').order('sort'),
+          client.from('speakers').select('*').order('sort').order('created_at'),
+        ]);
+        setSessionHosts(groupSessionHosts(shRes.data, spRes.data));
       }
       if (what === 'sessionFiles') {
         const { data } = await client.from('session_files').select('*').order('sort');

@@ -559,7 +559,7 @@ export default function Agenda({
                               name: h.name,
                               avatarUrl: h.avatarUrl,
                               pronouns: h.pronouns,
-                              bio: h.bio,
+                              bio: lang === 'es' ? h.bioEs || h.bioEn : h.bioEn,
                               interests: h.interests,
                               designations: h.designations,
                               role,
