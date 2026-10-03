@@ -526,7 +526,10 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pledges' }, () => reload('pledges'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => reload('people'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'direct_messages' }, () => reload('directMessages'))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'speakers' }, () => reload('speakers'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'speakers' }, () => {
+        reload('speakers');
+        reload('sessionHosts');
+      })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sponsors' }, () => reload('sponsors'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_hosts' }, () => reload('sessionHosts'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'session_files' }, () => reload('sessionFiles'))
