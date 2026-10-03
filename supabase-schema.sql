@@ -640,6 +640,45 @@ create policy "moderators manage session hosts" on session_hosts
   using (exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator))
   with check (exists (select 1 from profiles p where p.id = auth.uid() and p.is_moderator));
 
+-- Auto-links a session host's row to their real account the moment
+-- they sign in and set their display name, matched by name (ignoring
+-- anything after a comma, so "Jane Doe" still matches "Jane Doe, RN").
+-- Without this, a host with no profile yet, and one who has since
+-- signed in, looked identical: both just a name with no bio or
+-- Message button.
+create or replace function link_session_host_to_profile()
+returns trigger as $$
+begin
+  update session_hosts
+  set user_id = new.id
+  where user_id is null
+    and new.display_name is not null and new.display_name <> ''
+    and (
+      lower(trim(name)) = lower(trim(new.display_name))
+      or lower(trim(split_part(name, ',', 1))) = lower(trim(split_part(new.display_name, ',', 1)))
+    );
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists auto_link_session_host on profiles;
+create trigger auto_link_session_host
+  after insert or update of display_name on profiles
+  for each row
+  execute function link_session_host_to_profile();
+
+-- One-time backfill for anyone who already signed in before this
+-- trigger existed.
+update session_hosts sh
+set user_id = p.id
+from profiles p
+where sh.user_id is null
+  and p.display_name is not null and p.display_name <> ''
+  and (
+    lower(trim(sh.name)) = lower(trim(p.display_name))
+    or lower(trim(split_part(sh.name, ',', 1))) = lower(trim(split_part(p.display_name, ',', 1)))
+  );
+
 
 -- ------------------------------------------------------------
 -- SESSION FILES

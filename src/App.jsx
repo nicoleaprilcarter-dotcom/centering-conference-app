@@ -81,15 +81,27 @@ function readDismissedMicroRest() {
 // A session host may not have signed in yet (no linked profile), so
 // their bio/photo/role fall back to the standalone speakers list,
 // matched by name, instead of showing a blank profile page.
+// Matches on the full name first, then falls back to just the part
+// before the first comma, so "Jane Doe, RN" in one list still finds
+// "Jane Doe" (or vice versa) in the other.
+function nameKey(name) {
+  return (name || '').trim().toLowerCase();
+}
+function nameKeyShort(name) {
+  return nameKey((name || '').split(',')[0]);
+}
+
 function groupSessionHosts(rows, speakersList) {
   const speakerByName = {};
+  const speakerByShortName = {};
   (speakersList || []).forEach((sp) => {
-    speakerByName[(sp.name || '').trim().toLowerCase()] = sp;
+    speakerByName[nameKey(sp.name)] = sp;
+    speakerByShortName[nameKeyShort(sp.name)] = sp;
   });
   const map = {};
   (rows || []).forEach((row) => {
     const profile = row.profile;
-    const fallback = speakerByName[(row.name || '').trim().toLowerCase()];
+    const fallback = speakerByName[nameKey(row.name)] || speakerByShortName[nameKeyShort(row.name)];
     const profileBio = profile && profile.bio;
     if (!map[row.session_id]) map[row.session_id] = [];
     map[row.session_id].push({
