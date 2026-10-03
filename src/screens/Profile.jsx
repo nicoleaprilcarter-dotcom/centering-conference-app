@@ -20,7 +20,7 @@ export default function Profile({
   tags,
   visible,
   saving,
-  designation,
+  designations,
   isExisting,
   email,
   avatarUrl,
@@ -49,9 +49,9 @@ export default function Profile({
   return (
     <div className="screen-pad">
       <div style={{ font: '400 12.5px/1.6 Poppins', color: '#4A3348' }}>{t.profileIntro}</div>
-      {designation && (
-        <div style={{ marginTop: 10 }}>
-          <DesignationBadge designation={designation} t={t} />
+      {designations && designations.length > 0 && (
+        <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          <DesignationBadge designations={designations} t={t} />
         </div>
       )}
 

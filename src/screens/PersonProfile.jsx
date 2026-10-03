@@ -5,7 +5,7 @@ import { colorForId } from '../lib/helpers';
 import { translateTagLabel } from '../data/translations';
 
 export default function PersonProfile({ t, lang, person, onBack, onMessage, onReport, onBlock }) {
-  const { userId, name, avatarUrl, pronouns, bio, interests, designation, role } = person;
+  const { userId, name, avatarUrl, pronouns, bio, interests, designations, role } = person;
 
   return (
     <div className="screen-pad">
@@ -38,9 +38,9 @@ export default function PersonProfile({ t, lang, person, onBack, onMessage, onRe
           </div>
         </div>
 
-        {(designation || (interests || []).length > 0) && (
+        {((designations && designations.length > 0) || (interests || []).length > 0) && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 14 }}>
-            <DesignationBadge designation={designation} t={t} />
+            <DesignationBadge designations={designations} t={t} />
             {(interests || []).map((tag) => (
               <span className="person-tag" key={tag}>
                 {translateTagLabel(tag, lang)}

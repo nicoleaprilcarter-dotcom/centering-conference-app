@@ -2,11 +2,14 @@ import { tagColors, normalizeDesignation } from '../lib/helpers';
 
 const LEADERSHIP_DESIGNATIONS = ['founder', 'chair', 'board', 'staff', 'moderator'];
 
-function roleKey(designation) {
-  const norm = normalizeDesignation(designation);
-  if (norm === 'speaker') return 'speaker';
-  if (LEADERSHIP_DESIGNATIONS.includes(norm)) return 'leadership';
-  if (norm === 'volunteer') return 'volunteer';
+// A badge only has room for one role pill, so when someone holds more
+// than one designation (e.g. both "board" and "speaker"), the most
+// prominent one wins: leadership, then speaker, then volunteer.
+function roleKey(designations) {
+  const norms = (Array.isArray(designations) ? designations : [designations]).map(normalizeDesignation);
+  if (norms.some((n) => LEADERSHIP_DESIGNATIONS.includes(n))) return 'leadership';
+  if (norms.includes('speaker')) return 'speaker';
+  if (norms.includes('volunteer')) return 'volunteer';
   return 'attendee';
 }
 
@@ -21,8 +24,8 @@ const ROLE_LABEL_KEY = {
 // The attendee's printable/on-screen check-in badge: photo (or the HUES
 // logo when no photo has been uploaded), name, and a role pill. Shown
 // alongside the QR code both in Resources and the quick badge view.
-export default function EventBadge({ t, name, avatarUrl, designation }) {
-  const role = roleKey(designation);
+export default function EventBadge({ t, name, avatarUrl, designations }) {
+  const role = roleKey(designations);
   const [roleBg, roleFg] = tagColors(ROLE_COLOR_KIND[role]);
   const roleLabel = t[ROLE_LABEL_KEY[role]];
 

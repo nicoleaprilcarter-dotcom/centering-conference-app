@@ -35,9 +35,9 @@ function PersonCard({ p, userId, lang, t, onMessage, onReport, onBlock }) {
           />
         )}
       </div>
-      {(p.designation || (p.interests || []).length > 0) && (
+      {((p.designations && p.designations.length > 0) || (p.interests || []).length > 0) && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 11 }}>
-          <DesignationBadge designation={p.designation} t={t} />
+          <DesignationBadge designations={p.designations} t={t} />
           {(p.interests || []).map((tag) => (
             <span className="person-tag" key={tag}>
               {translateTagLabel(tag, lang)}
@@ -100,9 +100,10 @@ export default function People({
 }) {
   const [tab, setTab] = useState('speakers');
   const visiblePeople = people.filter((p) => p.display_name);
-  const leadership = visiblePeople.filter((p) => ['founder', 'chair', 'board', 'staff'].includes(normalizeDesignation(p.designation)));
-  const volunteers = visiblePeople.filter((p) => normalizeDesignation(p.designation) === 'volunteer');
-  const sponsorAttendees = visiblePeople.filter((p) => normalizeDesignation(p.designation) === 'sponsor');
+  const hasDesignation = (p, match) => (p.designations || []).some((d) => match(normalizeDesignation(d)));
+  const leadership = visiblePeople.filter((p) => hasDesignation(p, (d) => ['founder', 'chair', 'board', 'staff'].includes(d)));
+  const volunteers = visiblePeople.filter((p) => hasDesignation(p, (d) => d === 'volunteer'));
+  const sponsorAttendees = visiblePeople.filter((p) => hasDesignation(p, (d) => d === 'sponsor'));
   const sponsorOrgs = sponsors.filter((sp) => sp.category !== 'partner');
   const partnerOrgs = sponsors.filter((sp) => sp.category === 'partner');
 

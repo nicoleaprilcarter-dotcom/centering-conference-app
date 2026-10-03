@@ -90,7 +90,7 @@ function groupSessionHosts(rows) {
       pronouns: profile && profile.pronouns,
       bio: profile && profile.bio,
       interests: profile && profile.interests,
-      designation: profile && profile.designation,
+      designations: profile && profile.designations,
       roleEn: row.role_en,
       roleEs: row.role_es,
     });
@@ -293,7 +293,7 @@ export default function App() {
         c.from('conference_feedback').select('*').eq('user_id', uid).maybeSingle(),
         c.from('session_feedback').select('*').eq('user_id', uid),
         c.from('sponsors').select('*').order('sort').order('created_at'),
-        c.from('session_hosts').select('*, profile:profiles(id, display_name, avatar_url, pronouns, bio, interests, designation)').order('sort'),
+        c.from('session_hosts').select('*, profile:profiles(id, display_name, avatar_url, pronouns, bio, interests, designations)').order('sort'),
         c.from('session_files').select('*').order('sort'),
         c.from('session_notes').select('*').eq('user_id', uid),
         c.from('session_questions').select('*').eq('session_id', sid).order('created_at'),
@@ -418,7 +418,7 @@ export default function App() {
         setSponsors(data || []);
       }
       if (what === 'sessionHosts') {
-        const { data } = await client.from('session_hosts').select('*, profile:profiles(id, display_name, avatar_url, pronouns, bio, interests, designation)').order('sort');
+        const { data } = await client.from('session_hosts').select('*, profile:profiles(id, display_name, avatar_url, pronouns, bio, interests, designations)').order('sort');
         setSessionHosts(groupSessionHosts(data));
       }
       if (what === 'sessionFiles') {
@@ -1412,7 +1412,7 @@ export default function App() {
           onUndoCheckIn={undoCheckIn}
           userId={user.id}
           avatarUrl={pfAvatarUrl}
-          designation={profile && profile.designation}
+          designations={profile && profile.designations}
           aiRecommendation={aiRecommendation}
           aiRecLoading={aiRecLoading}
           aiRecError={aiRecError}
@@ -1636,7 +1636,7 @@ export default function App() {
             tags={pfTags}
             visible={pfVisible}
             saving={pfSaving}
-            designation={profile && profile.designation}
+            designations={profile && profile.designations}
             isExisting={!!(profile && profile.display_name)}
             email={user.email}
             avatarUrl={pfAvatarUrl}

@@ -149,7 +149,7 @@ function readBadgeExpanded() {
   }
 }
 
-function CheckInCard({ t, checkedInAt, onCheckIn, onUndoCheckIn, userId, name, avatarUrl, designation }) {
+function CheckInCard({ t, checkedInAt, onCheckIn, onUndoCheckIn, userId, name, avatarUrl, designations }) {
   const [expanded, setExpanded] = useState(readBadgeExpanded);
 
   const toggleExpanded = (e) => {
@@ -219,7 +219,7 @@ function CheckInCard({ t, checkedInAt, onCheckIn, onUndoCheckIn, userId, name, a
       {checkedInAt && expanded && (
         <div style={{ marginTop: 16, textAlign: 'center' }}>
           <div style={{ marginBottom: 16 }}>
-            <EventBadge t={t} name={name} avatarUrl={avatarUrl} designation={designation} />
+            <EventBadge t={t} name={name} avatarUrl={avatarUrl} designations={designations} />
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
             <QrCode value={badgeCode(userId)} size={128} />
@@ -261,7 +261,7 @@ export default function Agenda({
   onUndoCheckIn,
   userId,
   avatarUrl,
-  designation,
+  designations,
   aiRecommendation,
   aiRecLoading,
   aiRecError,
@@ -319,7 +319,7 @@ export default function Agenda({
         userId={userId}
         name={name}
         avatarUrl={avatarUrl}
-        designation={designation}
+        designations={designations}
       />
       <Dashboard
         t={t}
@@ -561,7 +561,7 @@ export default function Agenda({
                               pronouns: h.pronouns,
                               bio: h.bio,
                               interests: h.interests,
-                              designation: h.designation,
+                              designations: h.designations,
                               role,
                             })
                           }

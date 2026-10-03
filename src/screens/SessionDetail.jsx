@@ -168,7 +168,7 @@ export default function SessionDetail({
                       pronouns: h.pronouns,
                       bio: h.bio,
                       interests: h.interests,
-                      designation: h.designation,
+                      designations: h.designations,
                       role,
                     })
                   }

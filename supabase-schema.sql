@@ -357,10 +357,20 @@ alter table profiles add column if not exists language text not null default 'en
 -- puts them on the matching People tab (Leadership, Volunteers,
 -- Sponsors). Null/anything else just shows as a regular attendee.
 -- Set it in the Table Editor, profiles table, designation column,
--- using exactly one of:
+-- using one or more of:
 --   speaker | founder | chair | board | staff | volunteer | sponsor | moderator
+-- Kept as a list so someone who is, say, both "board" and "speaker"
+-- shows up under every tab that applies to them.
 -- ------------------------------------------------------------
 alter table profiles add column if not exists designation text;
+alter table profiles add column if not exists designations text[] not null default '{}';
+
+-- One-time backfill: carry over anyone's old single designation into
+-- the new list column. Harmless to run again, it only fills rows that
+-- are still empty.
+update profiles
+set designations = array[designation]
+where designation is not null and designation <> '' and designations = '{}';
 
 
 -- ------------------------------------------------------------
