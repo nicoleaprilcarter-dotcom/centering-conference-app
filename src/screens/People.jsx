@@ -99,6 +99,7 @@ export default function People({
   onLikePerson,
 }) {
   const [tab, setTab] = useState('speakers');
+  const [expandedSpeakers, setExpandedSpeakers] = useState({});
   const visiblePeople = people.filter((p) => p.display_name);
   const hasDesignation = (p, match) => (p.designations || []).some((d) => match(normalizeDesignation(d)));
   const leadership = visiblePeople.filter((p) => hasDesignation(p, (d) => ['founder', 'chair', 'board', 'staff'].includes(d)));
@@ -146,22 +147,37 @@ export default function People({
 
       {tab === 'speakers' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-          {speakers.map((sp) => (
-            <div className="person-card" key={sp.id}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Avatar url={sp.photo_url} name={sp.name} color={colorForId(sp.id)} size={72} fontSize={22} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="person-name">{sp.name}</div>
-                  <div className="person-bio">{lang === 'es' ? sp.role_es || sp.role_en : sp.role_en}</div>
+          {speakers.map((sp) => {
+            const bio = (lang === 'es' ? sp.bio_es || sp.bio_en : sp.bio_en) || '';
+            const isLong = bio.length > 180;
+            const isExpanded = !!expandedSpeakers[sp.id];
+            const shownBio = isLong && !isExpanded ? `${bio.slice(0, 180).trim()}…` : bio;
+            return (
+              <div className="person-card" key={sp.id}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <Avatar url={sp.photo_url} name={sp.name} color={colorForId(sp.id)} size={72} fontSize={22} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="person-name">{sp.name}</div>
+                    <div className="person-bio">{lang === 'es' ? sp.role_es || sp.role_en : sp.role_en}</div>
+                  </div>
                 </div>
+                {bio && (
+                  <div style={{ font: '400 12.5px/1.55 Poppins', color: '#4A3348', marginTop: 11 }}>
+                    {shownBio}
+                    {isLong && (
+                      <span
+                        role="button"
+                        onClick={() => setExpandedSpeakers((m) => ({ ...m, [sp.id]: !m[sp.id] }))}
+                        style={{ color: '#B01253', fontWeight: 600, marginLeft: 6, cursor: 'pointer' }}
+                      >
+                        {isExpanded ? t.readLessBio : t.readMoreBio}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
-              {(lang === 'es' ? sp.bio_es || sp.bio_en : sp.bio_en) && (
-                <div style={{ font: '400 12.5px/1.55 Poppins', color: '#4A3348', marginTop: 11 }}>
-                  {lang === 'es' ? sp.bio_es || sp.bio_en : sp.bio_en}
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
           {speakers.length === 0 && (
             <div className="empty-state">
               <Flourish color="#FBD9BC" size={160} top={-40} right={-40} opacity={0.5} />
