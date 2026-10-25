@@ -413,6 +413,28 @@ export default function Agenda({
                   {title}
                 </div>
                 <div className="session-sub">{s.room}</div>
+                {MATERIALS_TAG_KEYS.includes(s.tagKey) && (
+                  <div
+                    onClick={() => onToggleSessionCheckIn(s.id)}
+                    role="button"
+                    aria-pressed={isCheckedIn}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      marginTop: 9,
+                      padding: '7px 13px',
+                      borderRadius: 999,
+                      cursor: 'pointer',
+                      background: isCheckedIn ? '#FBD9BC' : '#F3EFF1',
+                      color: isCheckedIn ? '#A63D06' : '#4A3348',
+                      font: '600 12px/1 Poppins',
+                    }}
+                  >
+                    <CheckCircleIcon filled={isCheckedIn} color={isCheckedIn ? '#A63D06' : '#7E6A76'} />
+                    {isCheckedIn ? t.sessionCheckedIn : t.sessionCheckIn}
+                  </div>
+                )}
                 {sessionRecaps[s.id] && (
                   <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 10, background: '#F3EFF1' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, font: '700 10px/1 Poppins', color: '#B01253', textTransform: 'uppercase', letterSpacing: '.04em' }}>
@@ -511,17 +533,6 @@ export default function Agenda({
                   aria-pressed={isSaved}
                 >
                   <StarIcon filled={isSaved} color={isSaved ? '#D81B60' : '#7E6A76'} />
-                </div>
-                <div
-                  className="star-btn"
-                  style={{ background: isCheckedIn ? '#FBD9BC' : '#F3EFF1' }}
-                  onClick={() => onToggleSessionCheckIn(s.id)}
-                  title={isCheckedIn ? t.sessionCheckedIn : t.sessionCheckIn}
-                  role="button"
-                  aria-label={isCheckedIn ? t.sessionCheckedIn : t.sessionCheckIn}
-                  aria-pressed={isCheckedIn}
-                >
-                  <CheckCircleIcon filled={isCheckedIn} color={isCheckedIn ? '#A63D06' : '#7E6A76'} />
                 </div>
                 <div
                   className="star-btn"
