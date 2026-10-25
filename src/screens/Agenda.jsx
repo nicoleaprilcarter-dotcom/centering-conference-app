@@ -1,18 +1,15 @@
 import { useState } from 'react';
 import { SESSIONS } from '../data/sessions';
-import { tagColors, colorForId, timeToMinutes, isSessionLiveNow } from '../lib/helpers';
+import { tagColors, colorForId, timeToMinutes, isSessionLiveNow, CONTENT_SESSION_TAG_KEYS } from '../lib/helpers';
 import { StarIcon, CheckCircleIcon, FileIcon, NoteIcon, SparkleIcon } from '../components/icons';
 import Avatar from '../components/Avatar';
 import Flourish from '../components/Flourish';
-import EventBadge from '../components/EventBadge';
-import QrCode from '../components/QrCode';
-import { badgeCode } from '../lib/badge';
 import { downloadICS } from '../lib/ics';
 
 // Only sessions with actual content (not arrival/breaks/transitions) get
 // a "materials coming soon" placeholder when no flyer/worksheet/slides
 // have been uploaded yet.
-const MATERIALS_TAG_KEYS = ['tagPlenary', 'tagFeatured', 'tagWorkshop', 'tagTheme1', 'tagTheme2', 'tagTheme3', 'tagTheme4'];
+const MATERIALS_TAG_KEYS = CONTENT_SESSION_TAG_KEYS;
 const TRACK_FILTERS = ['tagPlenary', 'tagFeatured', 'tagTheme1', 'tagTheme2', 'tagTheme3', 'tagTheme4'];
 
 // Pairs of saved sessions whose time ranges overlap — since every
@@ -34,7 +31,7 @@ function findScheduleConflicts(sessions) {
   return pairs;
 }
 
-function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checkedInAt, aiRecommendation, aiRecLoading, aiRecError, onFetchRecommendation, view, onFilter, onOpenSession }) {
+function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, aiRecommendation, aiRecLoading, aiRecError, onFetchRecommendation, view, onFilter, onOpenSession }) {
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
   const liveSession = SESSIONS.find((s) => isSessionLiveNow(s, nowMin));
   const upNext = liveSession
@@ -83,9 +80,6 @@ function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checke
           <div style={{ marginTop: 10, font: '400 12.5px/1.5 Poppins', color: '#E3D3DF' }}>{t.dashboardDone}</div>
         )}
         <div style={{ display: 'flex', gap: 18, marginTop: 12, flexWrap: 'wrap' }}>
-          <div style={{ font: '400 11.5px/1.4 Poppins', color: '#E3D3DF' }}>
-            {checkedInAt ? t.dashboardCheckedIn : t.dashboardNotCheckedIn}
-          </div>
           <div
             onClick={() => onFilter('mine')}
             style={{ font: '400 11.5px/1.4 Poppins', color: view === 'mine' ? '#FFDCEF' : '#E3D3DF', cursor: 'pointer', textDecoration: view === 'mine' ? 'underline' : 'none' }}
@@ -141,106 +135,6 @@ function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, checke
   );
 }
 
-function readBadgeExpanded() {
-  try {
-    return localStorage.getItem('cwoc_badge_expanded') !== '0';
-  } catch {
-    return true;
-  }
-}
-
-function CheckInCard({ t, checkedInAt, onCheckIn, onUndoCheckIn, userId, name, avatarUrl, designations }) {
-  const [expanded, setExpanded] = useState(readBadgeExpanded);
-
-  const toggleExpanded = (e) => {
-    e.stopPropagation();
-    setExpanded((v) => {
-      const next = !v;
-      try {
-        localStorage.setItem('cwoc_badge_expanded', next ? '1' : '0');
-      } catch {
-        // ignore
-      }
-      return next;
-    });
-  };
-
-  return (
-    <div
-      className="card"
-      style={{
-        marginBottom: 16,
-        background: checkedInAt ? '#FBF0D3' : '#FFF0F6',
-        border: 'none',
-        cursor: 'pointer',
-      }}
-      onClick={checkedInAt ? toggleExpanded : onCheckIn}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-        <div>
-          <div style={{ font: '600 13.5px/1.3 Poppins', color: checkedInAt ? '#8A6A12' : '#B01253' }}>
-            {checkedInAt ? t.checkedInAt : t.checkInPromptTitle}
-          </div>
-          <div style={{ font: '400 11.5px/1.4 Poppins', color: '#7A6070', marginTop: 3 }}>
-            {checkedInAt
-              ? new Date(checkedInAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-              : t.checkInPromptBody}
-          </div>
-        </div>
-        {checkedInAt ? (
-          <div
-            role="button"
-            aria-label={expanded ? t.badgeCollapse : t.badgeExpand}
-            aria-expanded={expanded}
-            style={{
-              flex: 'none',
-              width: 30,
-              height: 30,
-              borderRadius: 999,
-              background: 'rgba(138,106,18,.12)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#8A6A12',
-              font: '700 12px/1 Poppins',
-              transform: expanded ? 'rotate(180deg)' : 'none',
-              transition: 'transform .2s ease',
-            }}
-          >
-            ▾
-          </div>
-        ) : (
-          <div style={{ flex: 'none', padding: '9px 14px', borderRadius: 999, background: '#B01253', color: '#fff', font: '600 12px/1 Poppins' }}>
-            {t.checkInButton}
-          </div>
-        )}
-      </div>
-
-      {checkedInAt && expanded && (
-        <div style={{ marginTop: 16, textAlign: 'center' }}>
-          <div style={{ marginBottom: 16 }}>
-            <EventBadge t={t} name={name} avatarUrl={avatarUrl} designations={designations} />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
-            <QrCode value={badgeCode(userId)} size={128} />
-          </div>
-          <div style={{ font: '600 12.5px/1 Poppins', letterSpacing: '0.08em', color: '#8A6A12' }}>{badgeCode(userId)}</div>
-          <div style={{ font: '400 11.5px/1.5 Poppins', color: '#7A6070', marginTop: 8 }}>{t.badgeShow}</div>
-          <div
-            style={{ font: '400 11px/1 Poppins', color: '#7E6A76', marginTop: 16 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (window.confirm(t.undoCheckInConfirm)) onUndoCheckIn();
-            }}
-          >
-            {t.undoCheckIn}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function Agenda({
   t,
   lang,
@@ -256,12 +150,6 @@ export default function Agenda({
   sessionNotes = {},
   onSaveNote,
   sessionRecaps = {},
-  checkedInAt,
-  onCheckIn,
-  onUndoCheckIn,
-  userId,
-  avatarUrl,
-  designations,
   aiRecommendation,
   aiRecLoading,
   aiRecError,
@@ -311,16 +199,6 @@ export default function Agenda({
 
   return (
     <div className="screen-pad" style={{ display: 'flex', flexDirection: 'column' }}>
-      <CheckInCard
-        t={t}
-        checkedInAt={checkedInAt}
-        onCheckIn={onCheckIn}
-        onUndoCheckIn={onUndoCheckIn}
-        userId={userId}
-        name={name}
-        avatarUrl={avatarUrl}
-        designations={designations}
-      />
       <Dashboard
         t={t}
         lang={lang}
@@ -328,7 +206,6 @@ export default function Agenda({
         saved={saved}
         sessionCheckins={sessionCheckins}
         sessionNotes={sessionNotes}
-        checkedInAt={checkedInAt}
         aiRecommendation={aiRecommendation}
         aiRecLoading={aiRecLoading}
         aiRecError={aiRecError}

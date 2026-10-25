@@ -1,5 +1,47 @@
+import { useState } from 'react';
 import { SESSIONS } from '../data/sessions';
+import { CONTENT_SESSION_TAG_KEYS } from '../lib/helpers';
 import StarRating from '../components/StarRating';
+import SessionEvaluationForm from '../components/SessionEvaluationForm';
+
+const EMPTY_EVALUATION = { presentation: 0, presenter: 0, learning: 0, comment: '' };
+const EVALUABLE_SESSIONS = SESSIONS.filter((s) => CONTENT_SESSION_TAG_KEYS.includes(s.tagKey));
+
+function SessionEvalRow({ t, lang, session, evaluation, onRateSession }) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState(evaluation || EMPTY_EVALUATION);
+  const [justSaved, setJustSaved] = useState(false);
+  const alreadyEvaluated = !!(evaluation && evaluation.presentation);
+
+  const toggleOpen = () => {
+    if (!open) setDraft(evaluation || EMPTY_EVALUATION);
+    setOpen((v) => !v);
+  };
+
+  return (
+    <div className="card">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, cursor: 'pointer' }} onClick={toggleOpen}>
+        <div style={{ flex: 1, minWidth: 0, font: '600 13px/1.35 Poppins' }}>{lang === 'es' ? session.titleEs : session.title}</div>
+        <div style={{ flex: 'none', font: '600 11.5px/1 Poppins', color: alreadyEvaluated ? '#1F7A78' : '#B01253' }}>
+          {alreadyEvaluated ? t.evalAlreadySubmitted : t.evalEvaluateThisSession}
+        </div>
+      </div>
+      {open && (
+        <SessionEvaluationForm
+          t={t}
+          value={draft}
+          onChange={setDraft}
+          onSubmit={async () => {
+            const ok = await onRateSession(session.id, draft);
+            if (ok) setJustSaved(true);
+          }}
+          submitLabel={t.evalSubmit}
+          submitted={justSaved}
+        />
+      )}
+    </div>
+  );
+}
 
 export default function Checkout({
   t,
@@ -12,7 +54,7 @@ export default function Checkout({
   saving,
   saved,
   onSaveOverall,
-  sessionRatings,
+  sessionEvaluations,
   onRateSession,
 }) {
   return (
@@ -52,11 +94,8 @@ export default function Checkout({
         </div>
         <div style={{ font: '400 11.5px/1.5 Poppins', color: '#7E6A76', marginBottom: 14 }}>{t.rateSessionsSub}</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {SESSIONS.map((s) => (
-            <div key={s.id} className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-              <div style={{ flex: 1, minWidth: 0, font: '600 13px/1.35 Poppins' }}>{lang === 'es' ? s.titleEs : s.title}</div>
-              <StarRating value={sessionRatings[s.id] || 0} onChange={(n) => onRateSession(s.id, n)} size={16} />
-            </div>
+          {EVALUABLE_SESSIONS.map((s) => (
+            <SessionEvalRow key={s.id} t={t} lang={lang} session={s} evaluation={sessionEvaluations[s.id]} onRateSession={onRateSession} />
           ))}
         </div>
 

@@ -8,7 +8,7 @@ import {
 import { POLL_QUESTION_ID, SESSIONS } from './data/sessions';
 import { TRANSLATIONS } from './data/translations';
 import { askAssistant } from './lib/ai';
-import { isSessionLiveNow, timeToMinutes } from './lib/helpers';
+import { isSessionLiveNow, timeToMinutes, sessionEndMinutes, CONTENT_SESSION_TAG_KEYS } from './lib/helpers';
 
 import Setup from './screens/Setup';
 import SignIn from './screens/SignIn';
@@ -32,6 +32,8 @@ import ErrorBanner from './components/ErrorBanner';
 import PledgeStream from './components/PledgeStream';
 import MicroRestToast from './components/MicroRestToast';
 import PhotoContest from './components/PhotoContest';
+import SessionCheckInPrompt from './components/SessionCheckInPrompt';
+import SessionEvalPrompt from './components/SessionEvalPrompt';
 
 const LOBBY_SESSION_ID = 'lobby';
 const WAITING_ROOM_SESSION_ID = 'waiting-room';
@@ -73,6 +75,22 @@ function readLastDmRead() {
 function readDismissedMicroRest() {
   try {
     return JSON.parse(localStorage.getItem('cwoc_microrest_dismissed') || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function readDismissedSessionCheckinPrompts() {
+  try {
+    return JSON.parse(localStorage.getItem('cwoc_session_checkin_prompts_dismissed') || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function readDismissedSessionEvalPrompts() {
+  try {
+    return JSON.parse(localStorage.getItem('cwoc_session_eval_prompts_dismissed') || '[]');
   } catch {
     return [];
   }
@@ -194,7 +212,6 @@ export default function App() {
       // ignore
     }
   };
-  const [checkedInAt, setCheckedInAt] = useState(null);
   const [speakers, setSpeakers] = useState([]);
   const [sponsors, setSponsors] = useState([]);
   const [sessionHosts, setSessionHosts] = useState({});
@@ -225,8 +242,7 @@ export default function App() {
   const [feedbackComments, setFeedbackComments] = useState('');
   const [feedbackSaving, setFeedbackSaving] = useState(false);
   const [feedbackSaved, setFeedbackSaved] = useState(false);
-  const [sessionRatings, setSessionRatings] = useState({});
-  const [sessionFeedbackComments, setSessionFeedbackComments] = useState({});
+  const [sessionEvaluations, setSessionEvaluations] = useState({});
 
   const [blocks, setBlocks] = useState([]);
   const [reports, setReports] = useState([]);
@@ -241,6 +257,8 @@ export default function App() {
   const [contestUploading, setContestUploading] = useState(false);
   const [showPledgeStream, setShowPledgeStream] = useState(false);
   const [dismissedMicroRest, setDismissedMicroRest] = useState(readDismissedMicroRest);
+  const [dismissedCheckinPrompts, setDismissedCheckinPrompts] = useState(readDismissedSessionCheckinPrompts);
+  const [dismissedEvalPrompts, setDismissedEvalPrompts] = useState(readDismissedSessionEvalPrompts);
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
@@ -376,14 +394,16 @@ export default function App() {
         setFeedbackComments(cf.data.comments || '');
         setFeedbackSaved(true);
       }
-      const ratingMap = {};
-      const feedbackCommentMap = {};
+      const evalMap = {};
       (sf.data || []).forEach((r) => {
-        ratingMap[r.session_id] = r.rating;
-        feedbackCommentMap[r.session_id] = r.comment || '';
+        evalMap[r.session_id] = {
+          presentation: r.presentation_rating || 0,
+          presenter: r.presenter_rating || 0,
+          learning: r.learning_rating || 0,
+          comment: r.comment || '',
+        };
       });
-      setSessionRatings(ratingMap);
-      setSessionFeedbackComments(feedbackCommentMap);
+      setSessionEvaluations(evalMap);
       setBlocks(blk.data || []);
       setReports(rpt.data || []);
       setWellnessReflection(wfr.data || null);
@@ -588,7 +608,6 @@ export default function App() {
         setPfTags(tagMap);
         setPfVisible(prof.visible);
         setPfAvatarUrl(prof.avatar_url || '');
-        setCheckedInAt(prof.checked_in_at || null);
         setWellnessReminders(!!prof.wellness_reminders);
         if (prof.language) {
           setLang(prof.language);
@@ -897,26 +916,6 @@ export default function App() {
     }
   };
 
-  const checkIn = async () => {
-    const now = new Date().toISOString();
-    setCheckedInAt(now);
-    const { error: err } = await client.from('profiles').update({ checked_in_at: now }).eq('id', user.id);
-    if (err) {
-      setCheckedInAt(null);
-      setError('Could not check in. ' + err.message);
-    }
-  };
-
-  const undoCheckIn = async () => {
-    const prev = checkedInAt;
-    setCheckedInAt(null);
-    const { error: err } = await client.from('profiles').update({ checked_in_at: null }).eq('id', user.id);
-    if (err) {
-      setCheckedInAt(prev);
-      setError('Could not undo check-in. ' + err.message);
-    }
-  };
-
   const toggleWellnessReminders = async () => {
     const next = !wellnessReminders;
     setWellnessReminders(next);
@@ -932,6 +931,30 @@ export default function App() {
       const next = [...d, key];
       try {
         localStorage.setItem('cwoc_microrest_dismissed', JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+
+  const dismissCheckinPrompt = (key) => {
+    setDismissedCheckinPrompts((d) => {
+      const next = [...d, key];
+      try {
+        localStorage.setItem('cwoc_session_checkin_prompts_dismissed', JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+
+  const dismissEvalPrompt = (key) => {
+    setDismissedEvalPrompts((d) => {
+      const next = [...d, key];
+      try {
+        localStorage.setItem('cwoc_session_eval_prompts_dismissed', JSON.stringify(next));
       } catch {
         // ignore
       }
@@ -1153,18 +1176,23 @@ export default function App() {
     setFeedbackSaved(true);
   };
 
-  const rateSession = async (sessionId, rating, comment) => {
-    const prevRating = sessionRatings[sessionId];
-    const prevComment = sessionFeedbackComments[sessionId];
-    const nextComment = comment !== undefined ? comment : prevComment || '';
-    setSessionRatings((s) => ({ ...s, [sessionId]: rating }));
-    if (comment !== undefined) setSessionFeedbackComments((s) => ({ ...s, [sessionId]: comment }));
-    const { error: err } = await client.from('session_feedback').upsert({ user_id: user.id, session_id: sessionId, rating, comment: nextComment });
+  const rateSession = async (sessionId, evaluation) => {
+    const prev = sessionEvaluations[sessionId];
+    setSessionEvaluations((s) => ({ ...s, [sessionId]: evaluation }));
+    const { error: err } = await client.from('session_feedback').upsert({
+      user_id: user.id,
+      session_id: sessionId,
+      presentation_rating: evaluation.presentation,
+      presenter_rating: evaluation.presenter,
+      learning_rating: evaluation.learning,
+      comment: evaluation.comment || '',
+    });
     if (err) {
-      setSessionRatings((s) => ({ ...s, [sessionId]: prevRating }));
-      if (comment !== undefined) setSessionFeedbackComments((s) => ({ ...s, [sessionId]: prevComment }));
-      setError('Could not save that rating. ' + err.message);
+      setSessionEvaluations((s) => ({ ...s, [sessionId]: prev }));
+      setError('Could not save that evaluation. ' + err.message);
+      return false;
     }
+    return true;
   };
 
   const saveNote = async (sessionId, note) => {
@@ -1352,6 +1380,31 @@ export default function App() {
   const showMicroRest = wellnessReminders && upNextSoon && microRestKey && !dismissedMicroRest.includes(microRestKey);
   const microRestMessage = upNextSoon ? t.microRestPrompts[upNextSoon.id.charCodeAt(0) % t.microRestPrompts.length] : '';
 
+  // Prompt to check in during the first 10 minutes of a content
+  // session, and to evaluate it for 20 minutes after it ends — each
+  // only once per session unless dismissed, then never shown again.
+  const today = new Date().toDateString();
+  const checkinCandidate =
+    currentLiveSession &&
+    CONTENT_SESSION_TAG_KEYS.includes(currentLiveSession.tagKey) &&
+    !sessionCheckins[currentLiveSession.id] &&
+    nowMin - timeToMinutes(currentLiveSession.t) <= 10
+      ? currentLiveSession
+      : null;
+  const checkinPromptKey = checkinCandidate ? `${today}-checkin-${checkinCandidate.id}` : null;
+  const checkinPromptSession = checkinCandidate && !dismissedCheckinPrompts.includes(checkinPromptKey) ? checkinCandidate : null;
+
+  const evalCandidate = SESSIONS.find((s) => {
+    if (!CONTENT_SESSION_TAG_KEYS.includes(s.tagKey)) return false;
+    if (!sessionCheckins[s.id]) return false;
+    const existing = sessionEvaluations[s.id];
+    if (existing && existing.presentation) return false;
+    const end = sessionEndMinutes(s);
+    return nowMin >= end && nowMin - end <= 20;
+  });
+  const evalPromptKey = evalCandidate ? `${today}-eval-${evalCandidate.id}` : null;
+  const evalPromptSession = !checkinPromptSession && evalCandidate && !dismissedEvalPrompts.includes(evalPromptKey) ? evalCandidate : null;
+
   return (
     <div className="app-shell">
       {showOnboarding && <OnboardingIntro t={t} onDismiss={dismissOnboarding} />}
@@ -1392,9 +1445,8 @@ export default function App() {
             const s = SESSIONS.find((x) => x.id === viewingSessionId);
             return !!s && nowMin >= timeToMinutes(s.t) + (parseInt(s.d, 10) || 0);
           })()}
-          rating={sessionRatings[viewingSessionId] || 0}
-          feedbackComment={sessionFeedbackComments[viewingSessionId] || ''}
-          onRateSession={(rating, comment) => rateSession(viewingSessionId, rating, comment)}
+          evaluation={sessionEvaluations[viewingSessionId]}
+          onRateSession={(evaluation) => rateSession(viewingSessionId, evaluation)}
           hosts={sessionHosts[viewingSessionId] || []}
           files={sessionFiles[viewingSessionId] || []}
           detail={sessionDetails[viewingSessionId]}
@@ -1435,12 +1487,6 @@ export default function App() {
           sessionNotes={sessionNotes}
           onSaveNote={saveNote}
           sessionRecaps={sessionRecaps}
-          checkedInAt={checkedInAt}
-          onCheckIn={checkIn}
-          onUndoCheckIn={undoCheckIn}
-          userId={user.id}
-          avatarUrl={pfAvatarUrl}
-          designations={profile && profile.designations}
           aiRecommendation={aiRecommendation}
           aiRecLoading={aiRecLoading}
           aiRecError={aiRecError}
@@ -1652,7 +1698,7 @@ export default function App() {
             saving={feedbackSaving}
             saved={feedbackSaved}
             onSaveOverall={saveOverallFeedback}
-            sessionRatings={sessionRatings}
+            sessionEvaluations={sessionEvaluations}
             onRateSession={rateSession}
           />
         ) : (
@@ -1696,6 +1742,30 @@ export default function App() {
       {showPledgeStream && <PledgeStream t={t} pledges={visiblePledges} onExit={() => setShowPledgeStream(false)} />}
       {showMicroRest && (
         <MicroRestToast message={microRestMessage} dismissLabel={t.microRestDismiss} onDismiss={() => dismissMicroRest(microRestKey)} />
+      )}
+      {checkinPromptSession && (
+        <SessionCheckInPrompt
+          t={t}
+          lang={lang}
+          session={checkinPromptSession}
+          onCheckIn={() => {
+            toggleSessionCheckIn(checkinPromptSession.id);
+            dismissCheckinPrompt(checkinPromptKey);
+          }}
+          onDismiss={() => dismissCheckinPrompt(checkinPromptKey)}
+        />
+      )}
+      {evalPromptSession && (
+        <SessionEvalPrompt
+          t={t}
+          lang={lang}
+          session={evalPromptSession}
+          onSubmit={async (evaluation) => {
+            const ok = await rateSession(evalPromptSession.id, evaluation);
+            if (ok) dismissEvalPrompt(evalPromptKey);
+          }}
+          onDismiss={() => dismissEvalPrompt(evalPromptKey)}
+        />
       )}
 
       <BottomNav screen={screen} onNavigate={navigate} t={t} chatUnread={chatUnread} />

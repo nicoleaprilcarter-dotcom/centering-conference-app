@@ -77,3 +77,11 @@ export function isSessionLiveNow(s, nowMin) {
   const duration = parseInt(s.d, 10) || 0;
   return nowMin >= start && nowMin < start + duration;
 }
+
+export function sessionEndMinutes(s) {
+  return timeToMinutes(s.t) + (parseInt(s.d, 10) || 0);
+}
+
+// Arrivals, breaks, and transitions aren't real sessions — only these
+// tags identify something worth checking into or evaluating.
+export const CONTENT_SESSION_TAG_KEYS = ['tagPlenary', 'tagFeatured', 'tagWorkshop', 'tagTheme1', 'tagTheme2', 'tagTheme3', 'tagTheme4'];
