@@ -337,9 +337,10 @@ create policy "delete own direct message" on direct_messages
 
 
 -- ------------------------------------------------------------
--- CHECK-IN
--- Self check-in. checked_in_at is null until the attendee taps
--- "Check in" in the app.
+-- CHECK-IN (deprecated)
+-- Formerly a single whole-event check-in, replaced by per-session
+-- check-ins below. Column kept so past data isn't lost; the app no
+-- longer reads or writes it.
 -- ------------------------------------------------------------
 alter table profiles add column if not exists checked_in_at timestamptz;
 
@@ -397,9 +398,8 @@ create policy "own session checkins" on session_checkins
 
 -- ------------------------------------------------------------
 -- FEEDBACK / CHECKOUT
--- One overall rating per attendee, plus an optional rating per
--- session they want to weigh in on. Upsert on both — tapping a
--- different star just updates the row.
+-- One overall rating per attendee, plus a per-session evaluation
+-- for each session they want to weigh in on. Upsert on both.
 -- ------------------------------------------------------------
 create table if not exists conference_feedback (
   user_id    uuid primary key references auth.users on delete cascade,
@@ -417,16 +417,25 @@ create policy "own conference feedback" on conference_feedback
   using (user_id = auth.uid())
   with check (user_id = auth.uid());
 
+-- Per-session evaluation, prompted when a session ends. Likert (1-5)
+-- on three statements: the presentation, the presenter, and what the
+-- attendee learned. `rating` is the older single-star column, kept
+-- (now nullable) so historical rows stay valid; the app no longer
+-- writes to it.
 create table if not exists session_feedback (
   user_id    uuid not null references auth.users on delete cascade,
   session_id text not null,
-  rating     int not null check (rating between 1 and 5),
+  rating     int check (rating between 1 and 5),
   comment    text not null default '',
   created_at timestamptz not null default now(),
   primary key (user_id, session_id)
 );
 
 alter table session_feedback add column if not exists comment text not null default '';
+alter table session_feedback alter column rating drop not null;
+alter table session_feedback add column if not exists presentation_rating int check (presentation_rating between 1 and 5);
+alter table session_feedback add column if not exists presenter_rating int check (presenter_rating between 1 and 5);
+alter table session_feedback add column if not exists learning_rating int check (learning_rating between 1 and 5);
 
 alter table session_feedback enable row level security;
 

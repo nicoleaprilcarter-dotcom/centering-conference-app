@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { tagColors, colorForId } from '../lib/helpers';
 import { FileIcon, SparkleIcon } from '../components/icons';
 import Avatar from '../components/Avatar';
-import StarRating from '../components/StarRating';
+import SessionEvaluationForm from '../components/SessionEvaluationForm';
 import { downloadICS } from '../lib/ics';
+
+const EMPTY_EVALUATION = { presentation: 0, presenter: 0, learning: 0, comment: '' };
 
 const VENUE_ADDRESS_ENCODED = encodeURIComponent('Dayton Hub, 31 S Main St, Dayton, OH 45402');
 const LIVE_SESSION_ID = 's8';
@@ -14,8 +16,7 @@ export default function SessionDetail({
   session,
   isLive,
   hasEnded,
-  rating = 0,
-  feedbackComment = '',
+  evaluation,
   onRateSession,
   hosts = [],
   files = [],
@@ -30,8 +31,9 @@ export default function SessionDetail({
   const [editing, setEditing] = useState(false);
   const [descDraft, setDescDraft] = useState((detail && detail.description_en) || '');
   const [a11yDraft, setA11yDraft] = useState((detail && detail.accessibility_en) || '');
-  const [commentDraft, setCommentDraft] = useState(feedbackComment);
+  const [evalDraft, setEvalDraft] = useState(evaluation || EMPTY_EVALUATION);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const alreadyEvaluated = !!(evaluation && evaluation.presentation);
 
   if (!session) return null;
 
@@ -214,31 +216,17 @@ export default function SessionDetail({
       {hasEnded && onRateSession && (
         <div style={{ marginTop: 20, padding: 14, borderRadius: 14, background: '#F3EFF1' }}>
           <div style={{ font: '600 13.5px/1.3 Poppins', color: '#2E1035' }}>{t.feedbackWasUseful}</div>
-          <div style={{ marginTop: 8 }}>
-            <StarRating
-              value={rating}
-              onChange={(n) => {
-                onRateSession(n, commentDraft);
-                setFeedbackSubmitted(true);
-              }}
-              size={24}
-            />
-          </div>
-          <div className="field-title" style={{ margin: '14px 0 6px' }}>
-            {t.feedbackNextYear}
-          </div>
-          <textarea
-            className="field-input dark"
-            placeholder={t.feedbackCommentPh}
-            rows={2}
-            value={commentDraft}
-            onChange={(e) => setCommentDraft(e.target.value)}
-            onBlur={() => {
-              if (rating > 0 && commentDraft !== feedbackComment) onRateSession(rating, commentDraft);
+          <SessionEvaluationForm
+            t={t}
+            value={evalDraft}
+            onChange={setEvalDraft}
+            onSubmit={() => {
+              onRateSession(evalDraft);
+              setFeedbackSubmitted(true);
             }}
-            style={{ resize: 'none' }}
+            submitLabel={t.evalSubmit}
           />
-          {(feedbackSubmitted || rating > 0) && <div style={{ font: '400 11.5px/1.4 Poppins', color: '#1F7A78', marginTop: 6 }}>{t.feedbackThanksShort}</div>}
+          {(feedbackSubmitted || alreadyEvaluated) && <div style={{ font: '400 11.5px/1.4 Poppins', color: '#1F7A78', marginTop: 6 }}>{t.feedbackThanksShort}</div>}
         </div>
       )}
 
