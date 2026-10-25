@@ -37,7 +37,18 @@ your database" screen where a visitor can paste the same two values —
 they're stored only in that browser's `localStorage`. Setting the env vars
 is the right choice for your own production deploy.
 
-## 4. Also set up in Supabase
+## 4. Add sponsors (optional)
+
+Sponsor logos and names shown on the People → Sponsors tab live in the
+`sponsors` table, not in this repo's code. After deploying, open the SQL
+Editor and run `supabase-sponsors-seed.sql` to add the current sponsor
+lineup (their logo files are already in `public/images/sponsors/` in this
+repo, so they'll be live at `/images/sponsors/<file>.png` on your deployed
+site once this builds). Running it twice is safe — it skips any sponsor
+that's already in the table. To add, edit, or reorder sponsors after that,
+use the Table Editor → `sponsors` table directly.
+
+## 5. Also set up in Supabase
 
 - **Authentication → URL Configuration** — set the Site URL to your Netlify
   address and add it under Redirect URLs. Magic links won't return to the
