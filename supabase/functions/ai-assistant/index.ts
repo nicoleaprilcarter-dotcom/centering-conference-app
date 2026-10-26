@@ -26,9 +26,9 @@ const CORS_HEADERS = {
 // changes once set, so a static copy here avoids extra API round trips.
 const SCHEDULE_TEXT = `
 [s1] 8:30 (30 min) — Attendee Arrival, Registration, Mobile Coffee Bar & Professional Headshots — Hub/Arcade + Gem City Area
-[s2] 9:00 (20 min) — Opening Ceremony — Upper Deck
+[s2] 9:00 (20 min) — Opening Ceremony — welcome remarks from Mayor Shenise Turner-Sloss (City of Dayton), Commissioner Mary McDonald, and Anjeanette Christian (Pfizer) — Upper Deck
 [s3] 9:20 (25 min) — Coffee, Connection & Continental Breakfast (Transition) — Common Areas
-[s8] 9:45 (90 min) — Signature Fireside Chat — Upper Deck
+[s8] 9:45 (90 min) — Signature Fireside Chat: Expressions of Invisible Illness, with Deb Ault, RN — Upper Deck
 [s4] 11:15 (15 min) — Reflection + Bio Break — Common Areas
 [s5] 11:30 (30 min) — Community Connection, Vendors & Headshots — Gem City/Common Areas
 [s6a] 11:45 (60 min) — Theme 1: Centering Rest and Resistance — The InnerBeing Reset: From Survival Mode to Soft Life (Tiara Bostock, MSW, LSW) — Amber room
