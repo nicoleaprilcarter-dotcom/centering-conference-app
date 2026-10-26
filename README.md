@@ -48,7 +48,17 @@ site once this builds). Running it twice is safe — it skips any sponsor
 that's already in the table. To add, edit, or reorder sponsors after that,
 use the Table Editor → `sponsors` table directly.
 
-## 5. Also set up in Supabase
+## 5. Add breakout presenters (optional)
+
+Who's presenting each breakout session lives in the `session_hosts`
+table, not in this repo's code. After deploying, run
+`supabase-session-hosts-seed.sql` in the SQL Editor to assign the
+current presenter lineup to the 12 breakout sessions. Safe to re-run —
+it clears out the 12 breakout sessions' hosts first, then re-adds the
+current list, so editing the file and re-running it is how you update
+a presenter later.
+
+## 6. Also set up in Supabase
 
 - **Authentication → URL Configuration** — set the Site URL to your Netlify
   address and add it under Redirect URLs. Magic links won't return to the
