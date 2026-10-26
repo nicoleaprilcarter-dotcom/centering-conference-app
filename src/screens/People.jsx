@@ -66,6 +66,29 @@ function PersonList({ list, emptyText, userId, lang, t, onMessage, onReport, onB
   );
 }
 
+// Groups sponsors by tier (read from note_en, e.g. "Platinum Sponsor")
+// so Platinum/Gold/Silver show above Community Sponsors regardless of
+// the order they were added in. A sponsor whose note doesn't name a
+// known tier just lands in its own untitled group at the end, rather
+// than being dropped.
+const TIER_KEYS = ['platinum', 'gold', 'silver', 'community'];
+const TIER_TITLE_KEY = {
+  platinum: 'sponsorTierPlatinum',
+  gold: 'sponsorTierGold',
+  silver: 'sponsorTierSilver',
+  community: 'sponsorTierCommunity',
+};
+
+function groupSponsorsByTier(sponsorOrgs) {
+  const groups = { platinum: [], gold: [], silver: [], community: [], other: [] };
+  sponsorOrgs.forEach((sp) => {
+    const note = (sp.note_en || '').toLowerCase();
+    const tier = TIER_KEYS.find((k) => note.includes(k)) || 'other';
+    groups[tier].push(sp);
+  });
+  return groups;
+}
+
 function SponsorCard({ sp, lang, onOpen }) {
   return (
     <div className="person-card" key={`org-${sp.id}`} onClick={() => onOpen(sp)} style={{ cursor: 'pointer' }}>
@@ -107,6 +130,7 @@ export default function People({
   const sponsorAttendees = visiblePeople.filter((p) => hasDesignation(p, (d) => d === 'sponsor'));
   const sponsorOrgs = sponsors.filter((sp) => sp.category !== 'partner');
   const partnerOrgs = sponsors.filter((sp) => sp.category === 'partner');
+  const sponsorTiers = groupSponsorsByTier(sponsorOrgs);
 
   const TABS = [
     { key: 'discover', label: t.tabDiscover },
@@ -203,7 +227,22 @@ export default function People({
 
       {tab === 'sponsors' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-          {sponsorOrgs.map((sp) => (
+          {TIER_KEYS.map(
+            (tier) =>
+              sponsorTiers[tier].length > 0 && (
+                <div key={tier}>
+                  <div className="field-title" style={{ margin: '10px 0 8px' }}>
+                    {t[TIER_TITLE_KEY[tier]]}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                    {sponsorTiers[tier].map((sp) => (
+                      <SponsorCard key={`org-${sp.id}`} sp={sp} lang={lang} onOpen={onOpenSponsor} />
+                    ))}
+                  </div>
+                </div>
+              ),
+          )}
+          {sponsorTiers.other.map((sp) => (
             <SponsorCard key={`org-${sp.id}`} sp={sp} lang={lang} onOpen={onOpenSponsor} />
           ))}
           {sponsorAttendees.map((p) => (
