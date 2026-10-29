@@ -9,8 +9,9 @@ function emailFromUrl() {
   }
 }
 
-export default function SignIn({ t, onSendLink, sending, linkSent, error, onChangeDatabase }) {
+export default function SignIn({ t, onSendLink, sending, linkSent, onVerifyCode, verifyingCode, error, onChangeDatabase }) {
   const [email, setEmail] = useState(emailFromUrl);
+  const [code, setCode] = useState('');
   const bodyLines = t.signInBody.split('\n');
 
   return (
@@ -36,7 +37,24 @@ export default function SignIn({ t, onSendLink, sending, linkSent, error, onChan
         </div>
         <div className="hero-spacer" />
         {linkSent ? (
-          <div className="hero-success">{t.signInLinkSent}</div>
+          <>
+            <div className="hero-success">{t.signInLinkSent}</div>
+            <div className="hero-body" style={{ marginTop: 14 }}>
+              {t.signInCodeIntro}
+            </div>
+            <input
+              className="field-input"
+              type="text"
+              inputMode="numeric"
+              placeholder={t.signInCodePlaceholder}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              style={{ marginTop: 8 }}
+            />
+            <div className="btn-hero" style={{ marginTop: 12 }} onClick={() => onVerifyCode(code)}>
+              {verifyingCode ? t.signInCodeVerifying : t.signInCodeVerify}
+            </div>
+          </>
         ) : (
           <>
             <input

@@ -206,7 +206,11 @@ export const TRANSLATIONS = {
     signInEmailPlaceholder: 'you@email.com',
     signInSend: 'Email me a link',
     signInSending: 'Sending…',
-    signInLinkSent: 'Check your email. The link signs you straight in — open it on this phone.',
+    signInLinkSent: 'Check your email for a sign-in link.',
+    signInCodeIntro: "If tapping the link doesn't work, or it opens somewhere else, enter the 6-digit code from that same email instead.",
+    signInCodePlaceholder: '6-digit code',
+    signInCodeVerify: 'Enter code',
+    signInCodeVerifying: 'Checking…',
     signInChangeDb: 'Change database connection',
 
     // Agenda
@@ -637,7 +641,11 @@ export const TRANSLATIONS = {
     signInEmailPlaceholder: 'tu@correo.com',
     signInSend: 'Enviarme un enlace',
     signInSending: 'Enviando…',
-    signInLinkSent: 'Revisa tu correo. El enlace te deja entrar directamente — ábrelo en este teléfono.',
+    signInLinkSent: 'Revisa tu correo para ver el enlace para entrar.',
+    signInCodeIntro: 'Si tocar el enlace no funciona, o se abre en otro lugar, escribe el código de 6 dígitos de ese mismo correo.',
+    signInCodePlaceholder: 'Código de 6 dígitos',
+    signInCodeVerify: 'Ingresar código',
+    signInCodeVerifying: 'Verificando…',
     signInChangeDb: 'Cambiar la conexión de la base de datos',
 
     tagWelcome: 'Bienvenida',

@@ -47,5 +47,15 @@ export function resolveConfig() {
 }
 
 export function createSupabaseClient(url, key) {
-  return createClient(url.trim(), key.trim());
+  // Explicit (matches supabase-js's own defaults) rather than implicit, so a
+  // returning attendee's session is always restored from this browser's
+  // storage instead of needing a fresh sign-in link every visit.
+  return createClient(url.trim(), key.trim(), {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      storage: window.localStorage,
+    },
+  });
 }
