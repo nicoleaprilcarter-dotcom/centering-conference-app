@@ -162,6 +162,8 @@ export default function App() {
 
   const [sending, setSending] = useState(false);
   const [linkSent, setLinkSent] = useState(false);
+  const [sentEmail, setSentEmail] = useState('');
+  const [verifyingCode, setVerifyingCode] = useState(false);
 
   const [screen, setScreen] = useState('agenda');
   const [sid] = useState('s8'); // the fireside chat is the one "live" session with chat + poll wired up
@@ -656,7 +658,26 @@ export default function App() {
     });
     setSending(false);
     setLinkSent(!sendErr);
+    setSentEmail(sendErr ? '' : em);
     setError(sendErr ? sendErr.message : '');
+  };
+
+  // A tap-the-link sign-in can land in a different browser context than
+  // the one showing the app (an email app's built-in browser, most often),
+  // which won't share that browser's saved session — so the 6-digit code
+  // from the same email lets someone finish sign-in in the same tab
+  // they're already looking at instead.
+  const handleVerifyCode = async (code) => {
+    const trimmed = code.trim();
+    if (!trimmed) {
+      setError('Enter the code from your email first.');
+      return;
+    }
+    setVerifyingCode(true);
+    setError('');
+    const { error: verifyErr } = await client.auth.verifyOtp({ email: sentEmail, token: trimmed, type: 'email' });
+    setVerifyingCode(false);
+    if (verifyErr) setError(verifyErr.message);
   };
 
   const toggleStar = async (sessionId) => {
@@ -1338,6 +1359,8 @@ export default function App() {
           onSendLink={handleSendLink}
           sending={sending}
           linkSent={linkSent}
+          onVerifyCode={handleVerifyCode}
+          verifyingCode={verifyingCode}
           error={error}
           onChangeDatabase={handleChangeDatabase}
         />
