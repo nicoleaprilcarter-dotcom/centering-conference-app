@@ -1556,6 +1556,7 @@ export default function App() {
           aiRecLoading={aiRecLoading}
           aiRecError={aiRecError}
           onFetchRecommendation={fetchRecommendation}
+          onGoToResources={() => navigate('resources')}
         />
       )}
       {screen === 'resources' && (

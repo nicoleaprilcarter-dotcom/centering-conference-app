@@ -1,4 +1,10 @@
 // Confirmed program schedule.
+// Sessions where the "content" is really the headshot sign-up card on
+// the Resources tab, not a session to read about — tapping these
+// anywhere in the agenda should jump straight to that sign-up instead
+// of opening a session detail page.
+export const HEADSHOT_SESSION_IDS = ['s5', 's9h'];
+
 export const SESSIONS = [
   {
     id: 's1',
