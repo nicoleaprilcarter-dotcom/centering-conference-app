@@ -363,6 +363,13 @@ export const TRANSLATIONS = {
 
     triageSafetyNote: 'For room assistance, accessibility help, and staff support. If experiencing a medical or mental health emergency, please contact 911 or visit the on-site First Aid desk.',
 
+    headshotSignupTitle: 'Professional Headshots',
+    headshotSignupIntro: 'Pick a 10-minute time and we’ll have a spot ready for you. Tap your own time again to cancel it.',
+    headshotSlotOpen: 'Open',
+    headshotSlotFull: 'Full',
+    headshotSlotYours: 'Your time — tap to cancel',
+    headshotSignupEmpty: 'No headshot time slots have been added yet.',
+
     quietRoomsTitle: 'Quiet & care spaces',
     quietRoomsBody: 'A designated Quiet Room, Nursing Suite, and hydration stations are available throughout the venue for anyone who needs a break. Exact room locations will be posted at check-in and marked on the venue map.',
 
@@ -792,6 +799,12 @@ export const TRANSLATIONS = {
 
     triageSafetyNote: 'Para ayuda con salas, accesibilidad y apoyo del personal. Si tienes una emergencia médica o de salud mental, llama al 911 o visita el módulo de primeros auxilios en el lugar.',
 
+    headshotSignupTitle: 'Fotos profesionales',
+    headshotSignupIntro: 'Elige un horario de 10 minutos y tendremos un lugar listo para ti. Toca tu propio horario de nuevo para cancelarlo.',
+    headshotSlotOpen: 'Disponible',
+    headshotSlotFull: 'Lleno',
+    headshotSlotYours: 'Tu horario — toca para cancelar',
+    headshotSignupEmpty: 'Todavía no se han agregado horarios para fotos.',
 
     quietRoomsTitle: 'Espacios tranquilos y de cuidado',
     quietRoomsBody: 'Hay una Sala Tranquila designada, una Suite de Lactancia y estaciones de hidratación disponibles en todo el lugar para quien necesite una pausa. Las ubicaciones exactas se publicarán en el registro y se marcarán en el mapa del lugar.',

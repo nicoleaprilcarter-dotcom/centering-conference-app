@@ -1,6 +1,7 @@
 import AdminMaterials from '../components/AdminMaterials';
 import ModeratorReports from '../components/ModeratorReports';
 import CollapsibleSection from '../components/CollapsibleSection';
+import HeadshotSignup from '../components/HeadshotSignup';
 
 const VENUE_ADDRESS_ENCODED = encodeURIComponent('Dayton Hub, 31 S Main St, Dayton, OH 45402');
 const HELP_DESK_PHONE = '937-540-4313';
@@ -15,6 +16,11 @@ export default function Resources({
   reports,
   people,
   onResolveReport,
+  headshotSlots,
+  headshotBookingCounts,
+  myHeadshotSlotId,
+  onBookHeadshot,
+  onCancelHeadshot,
 }) {
   return (
     <div className="screen-pad" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -30,6 +36,15 @@ export default function Resources({
           {t.venueHelpButton}
         </a>
       </div>
+
+      <HeadshotSignup
+        t={t}
+        slots={headshotSlots}
+        bookingCounts={headshotBookingCounts}
+        mySlotId={myHeadshotSlotId}
+        onBook={onBookHeadshot}
+        onCancel={onCancelHeadshot}
+      />
 
       <div className="card" style={{ marginBottom: 14, border: 'none', background: '#fff' }}>
         <div style={{ font: '600 13.5px/1.3 Poppins', color: '#2E1035', marginBottom: 2 }}>{t.venueTitle}</div>

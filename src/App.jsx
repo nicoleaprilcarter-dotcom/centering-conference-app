@@ -257,6 +257,8 @@ export default function App() {
   const [contestEntries, setContestEntries] = useState([]);
   const [contestVotes, setContestVotes] = useState([]);
   const [contestUploading, setContestUploading] = useState(false);
+  const [headshotSlots, setHeadshotSlots] = useState([]);
+  const [headshotBookings, setHeadshotBookings] = useState([]);
   const [showPledgeStream, setShowPledgeStream] = useState(false);
   const [dismissedMicroRest, setDismissedMicroRest] = useState(readDismissedMicroRest);
   const [dismissedCheckinPrompts, setDismissedCheckinPrompts] = useState(readDismissedSessionCheckinPrompts);
@@ -319,7 +321,7 @@ export default function App() {
   // ---------- after sign-in ----------
   const loadAll = useCallback(
     async (c, uid) => {
-      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh, sfl, sno, sq, sqv, src, sdt, blk, rpt, wfr, pls, tks, mlk, cen, cvo] = await Promise.all([
+      const [sv, ms, pp, vt, wd, pl, lb, dm, sp, sc, wr, tr, cf, sf, sn, sh, sfl, sno, sq, sqv, src, sdt, blk, rpt, wfr, pls, tks, mlk, cen, cvo, hss, hsb] = await Promise.all([
         c.from('saved_sessions').select('session_id').eq('user_id', uid),
         c.from('messages').select('*').eq('session_id', sid).order('created_at'),
         c.from('profiles').select('*').eq('visible', true),
@@ -350,6 +352,8 @@ export default function App() {
         c.from('match_likes').select('*').or(`liker_id.eq.${uid},liked_id.eq.${uid}`),
         c.from('contest_entries').select('*').order('created_at', { ascending: false }),
         c.from('contest_votes').select('*'),
+        c.from('headshot_slots').select('*').order('sort'),
+        c.from('headshot_bookings').select('*'),
       ]);
       const savedMap = {};
       (sv.data || []).forEach((r) => {
@@ -414,6 +418,8 @@ export default function App() {
       setMatchLikes(mlk.data || []);
       setContestEntries(cen.data || []);
       setContestVotes(cvo.data || []);
+      setHeadshotSlots(hss.data || []);
+      setHeadshotBookings(hsb.data || []);
     },
     [sid],
   );
@@ -540,6 +546,14 @@ export default function App() {
         const { data } = await client.from('contest_votes').select('*');
         setContestVotes(data || []);
       }
+      if (what === 'headshotSlots') {
+        const { data } = await client.from('headshot_slots').select('*').order('sort');
+        setHeadshotSlots(data || []);
+      }
+      if (what === 'headshotBookings') {
+        const { data } = await client.from('headshot_bookings').select('*');
+        setHeadshotBookings(data || []);
+      }
     },
     [client, sid, user],
   );
@@ -577,6 +591,8 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'match_likes' }, () => reload('matchLikes'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'contest_entries' }, () => reload('contestEntries'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'contest_votes' }, () => reload('contestVotes'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'headshot_slots' }, () => reload('headshotSlots'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'headshot_bookings' }, () => reload('headshotBookings'))
       .subscribe();
     channelRef.current = ch;
   }, [client, reload]);
@@ -903,6 +919,12 @@ export default function App() {
   const myContestVotedIds = new Set(contestVotes.filter((v) => v.user_id === user.id).map((v) => v.entry_id));
   const visibleContestEntries = contestEntries.filter((e) => !blockedIdSet.has(e.user_id));
 
+  const headshotBookingCounts = {};
+  headshotBookings.forEach((b) => {
+    headshotBookingCounts[b.slot_id] = (headshotBookingCounts[b.slot_id] || 0) + 1;
+  });
+  const myHeadshotSlotId = (headshotBookings.find((b) => b.user_id === user.id) || {}).slot_id || null;
+
   const chatUnread = dmMsgs.some((m) => m.recipient_id === user?.id && m.created_at > lastDmReadAt);
 
   // Mark direct messages as read whenever the Chat screen is open.
@@ -1072,6 +1094,26 @@ export default function App() {
       : await client.from('contest_votes').insert({ entry_id: entryId, user_id: user.id });
     if (err) setError('Could not save that. ' + err.message);
     reload('contestVotes');
+  };
+
+  // Booking a new slot while already holding one releases the old
+  // one first — a delete then an insert, since each attendee can only
+  // hold one row at a time (user_id is unique in headshot_bookings).
+  const bookHeadshotSlot = async (slotId) => {
+    const prev = headshotBookings.find((b) => b.user_id === user.id);
+    if (prev && prev.slot_id === slotId) return;
+    setHeadshotBookings((b) => [...b.filter((x) => x.user_id !== user.id), { id: `temp-${slotId}`, slot_id: slotId, user_id: user.id }]);
+    if (prev) await client.from('headshot_bookings').delete().eq('user_id', user.id);
+    const { error: err } = await client.from('headshot_bookings').insert({ slot_id: slotId, user_id: user.id });
+    if (err) setError('Could not book that time. ' + err.message);
+    reload('headshotBookings');
+  };
+
+  const cancelHeadshotBooking = async () => {
+    setHeadshotBookings((b) => b.filter((x) => x.user_id !== user.id));
+    const { error: err } = await client.from('headshot_bookings').delete().eq('user_id', user.id);
+    if (err) setError('Could not cancel. ' + err.message);
+    reload('headshotBookings');
   };
 
   const toggleSessionCheckIn = async (sessionId) => {
@@ -1527,6 +1569,11 @@ export default function App() {
           reports={reports}
           people={people}
           onResolveReport={resolveReport}
+          headshotSlots={headshotSlots}
+          headshotBookingCounts={headshotBookingCounts}
+          myHeadshotSlotId={myHeadshotSlotId}
+          onBookHeadshot={bookHeadshotSlot}
+          onCancelHeadshot={cancelHeadshotBooking}
         />
       )}
       {screen === 'session' && (

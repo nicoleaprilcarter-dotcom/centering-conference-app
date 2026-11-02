@@ -58,7 +58,17 @@ it clears out the 12 breakout sessions' hosts first, then re-adds the
 current list, so editing the file and re-running it is how you update
 a presenter later.
 
-## 6. Also set up in Supabase
+## 6. Add headshot time slots (optional)
+
+The Resources tab's "Professional Headshots" sign-up needs two things
+run once in the SQL Editor: `supabase-headshot-signup-schema.sql`
+(creates the tables) and then `supabase-headshot-slots-seed.sql`
+(adds the actual bookable times). To add more slots, edit, or remove
+one, use the Table Editor → `headshot_slots` table — `capacity` is how
+many attendees can book that same time (more than 1 if there are
+multiple photo stations running at once).
+
+## 7. Also set up in Supabase
 
 - **Authentication → URL Configuration** — set the Site URL to your Netlify
   address and add it under Redirect URLs. Magic links won't return to the
