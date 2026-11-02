@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SESSIONS } from '../data/sessions';
+import { SESSIONS, HEADSHOT_SESSION_IDS } from '../data/sessions';
 import { tagColors, colorForId, timeToMinutes, isSessionLiveNow, CONTENT_SESSION_TAG_KEYS } from '../lib/helpers';
 import { StarIcon, CheckCircleIcon, FileIcon, NoteIcon, SparkleIcon } from '../components/icons';
 import Avatar from '../components/Avatar';
@@ -31,13 +31,15 @@ function findScheduleConflicts(sessions) {
   return pairs;
 }
 
-function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, aiRecommendation, aiRecLoading, aiRecError, onFetchRecommendation, view, onFilter, onOpenSession }) {
+function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, aiRecommendation, aiRecLoading, aiRecError, onFetchRecommendation, view, onFilter, onOpenSession, onGoToResources }) {
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
   const liveSession = SESSIONS.find((s) => isSessionLiveNow(s, nowMin));
   const upNext = liveSession
     ? SESSIONS.find((s) => timeToMinutes(s.t) > timeToMinutes(liveSession.t))
     : SESSIONS.find((s) => timeToMinutes(s.t) >= nowMin);
   const endingInMin = liveSession ? timeToMinutes(liveSession.t) + (parseInt(liveSession.d, 10) || 0) - nowMin : null;
+  const liveIsHeadshots = liveSession && HEADSHOT_SESSION_IDS.includes(liveSession.id);
+  const upNextIsHeadshots = upNext && HEADSHOT_SESSION_IDS.includes(upNext.id);
   const savedCount = Object.values(saved).filter(Boolean).length;
   const notesCount = Object.values(sessionNotes).filter((n) => n && n.trim()).length;
   const checkinCount = Object.keys(sessionCheckins).length;
@@ -49,7 +51,7 @@ function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, aiReco
         <div style={{ font: '700 18px/1.3 Poppins', color: '#fff' }}>{t.dashboardGreeting}{name ? `, ${name.split(' ')[0]}` : ''}</div>
         {liveSession ? (
           <div
-            onClick={() => onOpenSession(liveSession.id)}
+            onClick={() => (liveIsHeadshots ? onGoToResources() : onOpenSession(liveSession.id))}
             style={{ marginTop: 10, padding: 12, borderRadius: 14, background: 'rgba(255,45,149,.16)', cursor: 'pointer' }}
             role="button"
           >
@@ -61,13 +63,17 @@ function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, aiReco
               {lang === 'es' ? liveSession.titleEs : liveSession.title}
             </div>
             <div style={{ font: '400 11.5px/1.4 Poppins', color: '#E3D3DF', marginTop: 4 }}>
-              {t.dashboardEndingIn} {endingInMin} min
-              {upNext && ` · ${t.dashboardNextUp}: ${lang === 'es' ? upNext.titleEs : upNext.title}`}
+              {liveIsHeadshots
+                ? t.dashboardTapSignUp
+                : <>
+                    {t.dashboardEndingIn} {endingInMin} min
+                    {upNext && ` · ${t.dashboardNextUp}: ${lang === 'es' ? upNext.titleEs : upNext.title}`}
+                  </>}
             </div>
           </div>
         ) : upNext ? (
           <div
-            onClick={() => onOpenSession(upNext.id)}
+            onClick={() => (upNextIsHeadshots ? onGoToResources() : onOpenSession(upNext.id))}
             style={{ marginTop: 10, padding: 12, borderRadius: 14, background: 'rgba(255,255,255,.08)', cursor: 'pointer' }}
             role="button"
           >
@@ -75,6 +81,9 @@ function Dashboard({ t, lang, name, saved, sessionCheckins, sessionNotes, aiReco
             <div style={{ font: '600 14px/1.4 Poppins', color: '#fff', marginTop: 4 }}>
               {upNext.t} · {lang === 'es' ? upNext.titleEs : upNext.title}
             </div>
+            {upNextIsHeadshots && (
+              <div style={{ font: '400 11.5px/1.4 Poppins', color: '#E3D3DF', marginTop: 4 }}>{t.dashboardTapSignUp}</div>
+            )}
           </div>
         ) : (
           <div style={{ marginTop: 10, font: '400 12.5px/1.5 Poppins', color: '#E3D3DF' }}>{t.dashboardDone}</div>
@@ -154,6 +163,7 @@ export default function Agenda({
   aiRecLoading,
   aiRecError,
   onFetchRecommendation,
+  onGoToResources,
 }) {
   const [view, setView] = useState('all');
   const [openNotesFor, setOpenNotesFor] = useState(null);
@@ -213,6 +223,7 @@ export default function Agenda({
         view={view}
         onFilter={(v) => setView((cur) => (cur === v ? 'all' : v))}
         onOpenSession={onOpenSession}
+        onGoToResources={onGoToResources}
       />
       <div style={{ display: 'flex', background: '#F0E7EC', borderRadius: 999, padding: 4, marginBottom: 14 }}>
         <div
@@ -409,7 +420,7 @@ export default function Agenda({
                     {t.liveNow}
                   </span>
                 )}
-                <div className="session-title" onClick={() => onOpenSession(s.id)}>
+                <div className="session-title" onClick={() => (HEADSHOT_SESSION_IDS.includes(s.id) ? onGoToResources() : onOpenSession(s.id))}>
                   {title}
                 </div>
                 <div className="session-sub">{s.room}</div>
