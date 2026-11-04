@@ -31,21 +31,21 @@ const SCHEDULE_TEXT = `
 [s8] 9:45 (90 min) — Signature Fireside Chat: Expressions of Invisible Illness, with Deb Ault, RN — Upper Deck
 [s4] 11:15 (15 min) — Reflection + Bio Break — Common Areas
 [s5] 11:30 (50 min) — Community Connection & Vendors | Professional Headshots — The Square
-[s6a] 11:45 (60 min) — Theme 1: Centering Rest and Resistance — The InnerBeing Reset: From Survival Mode to Soft Life (Tiara Bostock, MSW, LSW) — Amber room
-[s6b] 11:45 (60 min) — Theme 2: Centering the Body and Care — Roots of Resistance: Decoding the Body's Silent Language to Command Your Healthcare (Koree L. Thatcher) — Sapphire room
-[s6c] 11:45 (60 min) — Theme 3: Centering Boundaries and Decentering Strength — More Than Strong: When Strength Becomes Survival (Dr. Gabrielle Reynolds, DSW, LISW-S) — Jade room
-[s6d] 11:45 (60 min) — Theme 4: Centering Our Policies and Stories — KNOW Your Power: Helping Women of Color Navigate Healthcare, Tell Their Stories, and Advocate for Better Care (Nikki King, RN) — Upper Deck
+[s6a] 11:45 (60 min) — Theme 1: Centering Rest and Resistance — The InnerBeing Reset: From Survival Mode to Soft Life (Valencia Woodard, LSW) — Amber room
+[s6b] 11:45 (60 min) — Theme 2: Centering the Body and Care — Roots of Resistance: Decoding the Body's Silent Language to Command Your Healthcare (Jessica Dow) — Sapphire room
+[s6c] 11:45 (60 min) — Theme 3: Centering Boundaries and Decentering Strength — More Than Strong: When Strength Becomes Survival (Brandy B Spears, PMP, PSM) — Jade room
+[s6d] 11:45 (60 min) — Theme 4: Centering Our Policies and Stories — KNOW Your Power: Helping Women of Color Navigate Healthcare, Tell Their Stories, and Advocate for Better Care (Ashley C. Miller, MBA) — Upper Deck
 [s7] 12:45 (50 min) — Midday Break & Lunch (Networking / Exhibits) — Upper Deck/Common Areas
 [s9h] 1:35 (50 min) — Professional Headshots — Gem City Common Areas
-[s9a] 1:35 (60 min) — Theme 1: Centering Rest and Resistance — When Strong Isn't Healthy: Reclaiming Rest, Voice, and the Right to Be Cared For (Terra Fox Williams) — Amber room
-[s9b] 1:35 (60 min) — Theme 2: Centering the Body and Care — Beyond the Polish: Safe Nail Care for All (Jessica Dow) — Sapphire room
-[s9c] 1:35 (60 min) — Theme 3: Centering Boundaries and Decentering Strength — The Weight Of The Crown (Brandy B. Spears) — Jade room
+[s9a] 1:35 (60 min) — Theme 1: Centering Rest and Resistance — When Strong Isn't Healthy: Reclaiming Rest, Voice, and the Right to Be Cared For (Sonya Wells, MSN, APRN, FNP-C) — Amber room
+[s9b] 1:35 (60 min) — Theme 2: Centering the Body and Care — Beyond the Polish: Safe Nail Care for All (Korree L. Thatcher) — Sapphire room
+[s9c] 1:35 (60 min) — Theme 3: Centering Boundaries and Decentering Strength — The Weight Of The Crown (Dr. Gabrielle Reynolds, DSW, LISW-S) — Jade room
 [s9d] 1:35 (60 min) — Theme 4: Centering Our Policies and Stories — The Cost of Being Deemed Undeserving: Menstrual Health, Incarceration, and the Politics of Who Deserves Care (Kayelin Tiggs) — Upper Deck
 [s9t] 2:35 (5 min) — Afternoon Transition & Room Change — Common Areas
-[s10a] 2:40 (60 min) — Theme 1: Centering Rest and Resistance — Pause For You (Valencia Woodard, LSW) — Amber room
+[s10a] 2:40 (60 min) — Theme 1: Centering Rest and Resistance — Pause For You (Tiara Bostock, MSW, LSW) — Amber room
 [s10b] 2:40 (60 min) — Theme 2: Centering the Body and Care — Health Self-Advocacy & Living with Lupus (Pastor Ida Carson) — Sapphire room
-[s10c] 2:40 (60 min) — Theme 3: Centering Boundaries and Decentering Strength — The Many Expressions of Her: Reimagining Health, Wellness, and Joy for Women of Color (Sonya Wells, MSN, FNP-C) — Jade room
-[s10d] 2:40 (60 min) — Theme 4: Centering Our Policies and Stories — Beyond the Data: Turning Community Stories Into Advocacy and Action (Ashley C. Miller, MBA) — Upper Deck
+[s10c] 2:40 (60 min) — Theme 3: Centering Boundaries and Decentering Strength — The Many Expressions of Her: Reimagining Health, Wellness, and Joy for Women of Color (Nikki King, RN) — Jade room
+[s10d] 2:40 (60 min) — Theme 4: Centering Our Policies and Stories — Beyond the Data: Turning Community Stories Into Advocacy and Action (Terra Fox Williams, MPH) — Upper Deck
 [s11] 3:40 (20 min) — Closing Ceremony — Presenter Q&A — Upper Deck
 `.trim();
 
