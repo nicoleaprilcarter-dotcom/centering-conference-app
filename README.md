@@ -68,7 +68,16 @@ one, use the Table Editor → `headshot_slots` table — `capacity` is how
 many attendees can book that same time (more than 1 if there are
 multiple photo stations running at once).
 
-## 7. Also set up in Supabase
+## 7. Add speaker bios (optional)
+
+The People → Speakers tab reads from the `speakers` table (name, role,
+bio, photo — separate from `session_hosts`, which just assigns who's
+presenting a breakout). Run `supabase-speakers-seed.sql` once to add
+the current bios. Safe to re-run — it skips anyone already listed by
+name; to edit a bio afterward, use the Table Editor → `speakers` table
+directly.
+
+## 8. Also set up in Supabase
 
 - **Authentication → URL Configuration** — set the Site URL to your Netlify
   address and add it under Redirect URLs. Magic links won't return to the
